@@ -1,0 +1,6 @@
+Pillow
+pandas
+openpyxl
+adafruit-circuitpython-mcp230xx
+adafruit-blinka
+
