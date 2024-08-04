@@ -32,10 +32,13 @@ jobs:
         with:
           host: ${{ secrets.RASPBERRY_PI_IP }}
           username: ${{ secrets.SSH_USERNAME }}
-          key: ${{ secrets.GIT_KEY }}
+          key: ${{ secrets.GIT_KEY1 }}
           port: 22
           script: |
-            cd /path/to/project
+            cd /home/frekab001tester/TOCTP_TakeOutCableTesterPi
             git pull origin main
-            # Add any commands needed to restart services or applications
-
+            pkill -f homepage.py
+            pkill -f create_article.py
+            pkill -f load_article.py
+            pkill -f fun_article.py
+            nohup python3 homepage.py &
