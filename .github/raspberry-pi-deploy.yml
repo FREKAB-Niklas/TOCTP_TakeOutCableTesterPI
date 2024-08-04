@@ -1,0 +1,41 @@
+name: Deploy to Raspberry Pi
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run tests
+        run: |
+          echo "Run tests here"
+          # Add commands to run your tests
+
+      - name: Deploy to Raspberry Pi
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.RASPBERRY_PI_IP }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.GIT_KEY }}
+          port: 22
+          script: |
+            cd /path/to/project
+            git pull origin main
+            # Add any commands needed to restart services or applications
+
