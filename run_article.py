@@ -43,6 +43,14 @@ mcp2 = MCP23017(i2c, address=0x22)
 relay_mcp1 = MCP23017(i2c, address=0x21)
 relay_mcp2 = MCP23017(i2c, address=0x23)
 
+def enable_probing():
+    global expecting_probe
+    expecting_probe = True
+    print("Probing is now enabled.")
+
+expecting_probe = False
+
+
 # Configure relay pins
 relay_mappings = {
     '1: A': (relay_mcp1, 0),  # Example mapping for 1: A to relay MCP 0x21 pin 0
@@ -162,8 +170,9 @@ def deactivate_relay(pin_label):
         relay_pin.value = False  # Deactivate relay by setting it high
         print(f"Deactivated relay for {pin_label}")
 
-
 def read_mcp_probes():
+    if not is_running or not expecting_probe:
+        return None, None, False
     for mcp_chip, pin in mcp_pins:
         mcp_address = mcp_chip._device.device_address  # Updated to use _device
         mcp_pin = mcp_chip.get_pin(pin)
@@ -407,9 +416,15 @@ def toggle_timer():
     if is_running:
         current_wire_label.config(bg="yellow", text=pins[current_pin_index])
         activate_relay(pins[current_pin_index])  # Activate relay
-        root.after(2000, lambda: deactivate_relay_and_wait_for_probe(pins[current_pin_index]))  # Wait 2 seconds before probing
+        root.after(2000, lambda: start_probing(pins[current_pin_index]))  # Wait 2 seconds before probing
     else:
         current_wire_label.config(bg="orange", text="Pausad")
+
+def start_probing(pin_label):
+    deactivate_relay(pin_label)  # Deactivate relay after 2 seconds
+    print(f"Relay deactivated for {pin_label}, now waiting for probe.")
+    root.after(1000, enable_probing)  # Wait 1 second after deactivating relay before allowing probing
+
 
 def deactivate_relay_and_wait_for_probe(pin_label):
     deactivate_relay(pin_label)  # Deactivate relay after 2 seconds
