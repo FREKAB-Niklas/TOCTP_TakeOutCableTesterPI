@@ -194,7 +194,59 @@ def calculate_average(ws):
         average_time = timedelta()
     return average_time
 
+def confirm_last_probe():
+    global current_pin_index
+    if current_pin_index == len(pins) - 1:
+        print(f"All pins probed, checking all probed status in 500ms")
+        root.after(500, check_all_probed)
+
+def check_all_probed():
+    all_probed = all(label.cget("bg") == "#32CD32" for label in left_panel_labels)
+    print(f"Check all probed: {all_probed}")
+    if all_probed:
+        complete_cycle()
+    else:
+        confirm_complete_cycle()
+
+def complete_probe():
+    global current_pin_index
+    if current_pin_index < len(pins) - 1:
+        left_panel_labels[current_pin_index].config(bg="#32CD32")
+        current_pin_index += 1
+        current_wire_label.config(text=pins[current_pin_index], bg="yellow")
+        left_panel_labels[current_pin_index].config(bg="yellow")
+        print(f"Probe complete for pin: {pins[current_pin_index - 1]}. Next pin: {pins[current_pin_index]}")
+    else:
+        left_panel_labels[current_pin_index].config(bg="#32CD32")
+        print(f"Last pin probed: {pins[current_pin_index]}. Confirming last probe in 500ms")
+        root.after(500, confirm_last_probe)
+
+def complete_cycle():
+    global amount_of_cycles_done, elapsed_time_current_cycle, elapsed_time_previous_cycle, total_elapsed_time, current_pin_index, is_running, skipped_tests
+    amount_of_cycles_done += 1
+    elapsed_time_previous_cycle = elapsed_time_current_cycle
+    total_elapsed_time += elapsed_time_previous_cycle
+    elapsed_time_current_cycle = 0
+    completed_label.config(text=f"Färdiga: {amount_of_cycles_done}st")
+    time_info_label.config(text=f"Tid\nNu: {format_time(elapsed_time_current_cycle)}\nFörra: {format_time(elapsed_time_previous_cycle)}\nTotal: {format_time(total_elapsed_time)}\nStälltid: {format_time(downtime)}")
+
+    # Check if any pins were skipped
+    if any(label.cget("bg") != "#32CD32" for label in left_panel_labels):
+        skipped_tests += 1
+        skipped_label.config(text=f"Antal Avvikande: {skipped_tests}st")
+        print(f"Skipped tests detected. Total skipped: {skipped_tests}")
+
+    # Reset pins for the next cycle
+    current_pin_index = 0
+    for label in left_panel_labels:
+        label.config(bg="light gray")  # Reset to default background color
+    left_panel_labels[current_pin_index].config(bg="yellow")
+    current_wire_label.config(text="Starta", bg="#32CD32")
+    is_running = False
+    print(f"Cycle completed successfully. Pins reset for next cycle.")
+
 def confirm_complete_cycle():
+    print("Opening confirmation window for incomplete cycle.")
     confirm_window = tk.Toplevel(root)
     confirm_window.title("Bekräfta")
     confirm_window.geometry("1920x1080")
@@ -262,58 +314,6 @@ def confirm_complete_cycle():
 
     close_button = tk.Button(keyboard_frame, text="X", font=body_font, width=10, height=5, command=confirm_window.destroy, bg="red")
     close_button.grid(row=5, column=4, columnspan=3, pady=key_pady)
-
-
-
-
-def confirm_last_probe():
-    global current_pin_index
-    if current_pin_index == len(pins) - 1:
-        root.after(500, check_all_probed)
-
-def check_all_probed():
-    all_probed = all(label.cget("bg") == "#32CD32" for label in left_panel_labels)
-    if all_probed:
-        complete_cycle()
-    else:
-        confirm_complete_cycle()
-
-def complete_probe():
-    global current_pin_index
-    if current_pin_index < len(pins) - 1:
-        left_panel_labels[current_pin_index].config(bg="#32CD32")
-        current_pin_index += 1
-        current_wire_label.config(text=pins[current_pin_index], bg="yellow")
-        left_panel_labels[current_pin_index].config(bg="yellow")
-    else:
-        left_panel_labels[current_pin_index].config(bg="#32CD32")
-        root.after(500, confirm_last_probe)
-
-
-
-
-def complete_cycle():
-    global amount_of_cycles_done, elapsed_time_current_cycle, elapsed_time_previous_cycle, total_elapsed_time, current_pin_index, is_running, skipped_tests
-    amount_of_cycles_done += 1
-    elapsed_time_previous_cycle = elapsed_time_current_cycle
-    total_elapsed_time += elapsed_time_previous_cycle
-    elapsed_time_current_cycle = 0
-    completed_label.config(text=f"Färdiga: {amount_of_cycles_done}st")
-    time_info_label.config(text=f"Tid\nNu: {format_time(elapsed_time_current_cycle)}\nFörra: {format_time(elapsed_time_previous_cycle)}\nTotal: {format_time(total_elapsed_time)}\nStälltid: {format_time(downtime)}")
-
-    # Check if any pins were skipped
-    if any(label.cget("bg") != "#32CD32" for label in left_panel_labels):
-        skipped_tests += 1
-        skipped_label.config(text=f"Antal Avvikande: {skipped_tests}st")
-
-    # Reset pins for the next cycle
-    current_pin_index = 0
-    for label in left_panel_labels:
-        label.config(bg="SystemButtonFace")  # Reset to default background color
-    left_panel_labels[current_pin_index].config(bg="yellow")
-    current_wire_label.config(text="Starta", bg="#32CD32")
-    is_running = False
-
 
 
 
