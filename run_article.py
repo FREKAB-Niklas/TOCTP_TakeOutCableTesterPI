@@ -298,7 +298,8 @@ def complete_cycle():
     current_pin_index = 0
     for label in left_panel_labels:
         label.config(bg="light gray")  # Reset to default background color
-    left_panel_labels[current_pin_index].config(bg="yellow")
+
+    # Ensure the start button appears
     current_wire_label.config(text="Starta", bg="#32CD32")
     is_running = False
     print(f"Cycle completed successfully. Pins reset for next cycle.")
@@ -398,7 +399,7 @@ def reset_test():
         for label in left_panel_labels:
             label.config(bg="light gray")
         left_panel_labels[current_pin_index].config(bg="yellow")
-        current_wire_label.config(text=pins[current_pin_index], bg="yellow")
+        current_wire_label.config(text="Starta", bg="#32CD32")  # Ensure the start button appears
         time_info_label.config(text=f"Tid\nNu: {format_time(elapsed_time_current_cycle)}\nFörra: {format_time(elapsed_time_previous_cycle)}\nTotal: {format_time(total_elapsed_time)}\nStälltid: {format_time(downtime)}")
         
         # Reset all MCP23017 pins
