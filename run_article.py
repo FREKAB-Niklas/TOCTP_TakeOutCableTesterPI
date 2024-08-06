@@ -32,6 +32,8 @@ root.attributes('-fullscreen', True)
 i2c = busio.I2C(board.SCL, board.SDA)
 mcp1 = MCP23017(i2c, address=0x20)
 mcp2 = MCP23017(i2c, address=0x22)
+mcp_relay1 = MCP23017(i2c, address=0x21)
+mcp_relay2 = MCP23017(i2c, address=0x23)
 
 # List of MCP23017 pins to test (both chips)
 mcp_pins = [(mcp1, i) for i in range(16)] + [(mcp2, i) for i in range(16)]
@@ -39,6 +41,12 @@ for mcp, pin in mcp_pins:
     mcp_pin = mcp.get_pin(pin)
     mcp_pin.direction = Direction.INPUT
     mcp_pin.pull = Pull.UP
+
+    relay_pins = [(mcp_relay1, i) for i in range(16)] + [(mcp_relay2, i) for i in range(16)]
+for mcp, pin in relay_pins:
+    relay_pin = mcp.get_pin(pin)
+    relay_pin.direction = Direction.OUTPUT
+    relay_pin.value = True  # Assuming relay is off when high
 
 
 config = configparser.ConfigParser()
@@ -121,6 +129,38 @@ def mcp_pin_to_gui_pin(mcp, pin):
         (0x22, 13): '30: g',# MCP 0x22 pin B5 to GUI pin 30: g
         (0x22, 14): '31: h',# MCP 0x22 pin B6 to GUI pin 31: h
         (0x22, 15): '32: j',# MCP 0x22 pin B7 to GUI pin 32: j
+        (0x21, 0): 'Relay 1: A',
+        (0x21, 1): 'Relay 2: B',
+        (0x21, 2): 'Relay 3: C',
+        (0x21, 3): 'Relay 4: D',
+        (0x21, 4): 'Relay 5: E',
+        (0x21, 5): 'Relay 6: F',
+        (0x21, 6): 'Relay 7: G',
+        (0x21, 7): 'Relay 8: H',
+        (0x21, 8): 'Relay 16: S',
+        (0x21, 9): 'Relay 15: R',
+        (0x21, 10): 'Relay 14: P',
+        (0x21, 11): 'Relay 13: N',
+        (0x21, 12): 'Relay 12: M',
+        (0x21, 13): 'Relay 11: L',
+        (0x21, 14): 'Relay 10: K',
+        (0x21, 15): 'Relay 9: J',
+        (0x23, 0): 'Relay 17: T',
+        (0x23, 1): 'Relay 18: U',
+        (0x23, 2): 'Relay 19: V',
+        (0x23, 3): 'Relay 20: W',
+        (0x23, 4): 'Relay 21: X',
+        (0x23, 5): 'Relay 22: Y',
+        (0x23, 6): 'Relay 23: Z',
+        (0x23, 7): 'Relay 24: a',
+        (0x23, 8): 'Relay 25: b',
+        (0x23, 9): 'Relay 26: c',
+        (0x23, 10): 'Relay 27: d',
+        (0x23, 11): 'Relay 28: e',
+        (0x23, 12): 'Relay 29: f',
+        (0x23, 13): 'Relay 30: g',
+        (0x23, 14): 'Relay 31: h',
+        (0x23, 15): 'Relay 32: j',
     }
     return mapping.get((mcp, pin), None)
 
@@ -135,6 +175,11 @@ def read_mcp_probes():
             return mcp_address, pin, True
     return None, None, False
 
+def activate_relay(mcp, pin):
+    mcp_chip = mcp_relay1 if mcp == 0x21 else mcp_relay2
+    relay_pin = mcp_chip.get_pin(pin)
+    relay_pin.value = False  # Assuming relay is active when low
+    print(f"Relay activated: MCP={hex(mcp)}, PIN={pin}")
 
 
 
@@ -148,16 +193,20 @@ def on_pin_probe(gui_pin_label):
         left_panel_labels[current_pin_index].config(bg="#32CD32")
         current_pin_index += 1
 
+        # Activate the relay corresponding to the current pin
+        if gui_pin_label in relay_mapping:
+            relay_mcp, relay_pin = relay_mapping[gui_pin_label]
+            activate_relay(relay_mcp, relay_pin)
+
         if current_pin_index < len(left_panel_labels):
             next_pin_label = left_panel_labels[current_pin_index].cget("text")
-            current_wire_label.config(text=next_pin_label, bg="yellow")
-            left_panel_labels[current_pin_index].config(bg="yellow")
             print(f"Next pin to probe: {next_pin_label}")
         else:
             print("All pins probed successfully.")
             check_all_probed()
     else:
         print(f"Pin mismatch: expected {expected_pin_label}, but got {gui_pin_label}")
+
 
 
 
