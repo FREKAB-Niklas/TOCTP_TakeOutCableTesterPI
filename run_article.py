@@ -197,8 +197,8 @@ def calculate_average(ws):
 def confirm_complete_cycle():
     confirm_window = tk.Toplevel(root)
     confirm_window.title("Bekräfta")
-    confirm_window.geometry("1920x1080")
-    confirm_window.attributes('-fullscreen', True)
+    confirm_window.geometry("800x600")  # Set a fixed size for the window
+    confirm_window.attributes('-fullscreen', False)
 
     message_label = tk.Label(confirm_window, text="Du försöker färdigställa utan att alla punkter är testade, är du säker att du vill fortsätta?\nBekräfta genom att skriva OK", font=body_font)
     message_label.pack(pady=10)
@@ -267,10 +267,15 @@ def confirm_complete_cycle():
 
 
 
+
 def confirm_last_probe():
     global current_pin_index
-    if current_pin_index == len(pins) - 1:
-        root.after(500, check_all_probed)
+    if current_pin_index == len(pins):
+        # Check if all pins are probed
+        if all(label.cget("bg") == "#32CD32" for label in left_panel_labels):
+            complete_cycle()
+        else:
+            confirm_complete_cycle()
 
 
 
