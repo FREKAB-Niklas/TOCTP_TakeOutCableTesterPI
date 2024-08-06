@@ -42,7 +42,7 @@ for mcp, pin in mcp_pins:
     mcp_pin.direction = Direction.INPUT
     mcp_pin.pull = Pull.UP
 
-    relay_pins = [(mcp_relay1, i) for i in range(16)] + [(mcp_relay2, i) for i in range(16)]
+relay_pins = [(mcp_relay1, i) for i in range(16)] + [(mcp_relay2, i) for i in range(16)]
 for mcp, pin in relay_pins:
     relay_pin = mcp.get_pin(pin)
     relay_pin.direction = Direction.OUTPUT
