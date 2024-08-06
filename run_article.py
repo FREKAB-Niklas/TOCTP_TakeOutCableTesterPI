@@ -269,11 +269,13 @@ def confirm_last_probe():
     global current_pin_index
     if current_pin_index == len(pins) - 1:
         left_panel_labels[current_pin_index].config(bg="#32CD32")
-        if any(label.cget("bg") != "#32CD32" for label in left_panel_labels[:-1]):  # Check all except the last pin
-            root.after(500, confirm_complete_cycle)  # Add a 0.5s delay
-        else:
-            time.sleep(0.5)
-            complete_cycle()
+        root.after(500, check_all_probed)  # Adding a 0.5s delay before checking all pins
+
+def check_all_probed():
+    if any(label.cget("bg") != "#32CD32" for label in left_panel_labels):
+        confirm_complete_cycle()
+    else:
+        complete_cycle()
 
 def complete_probe():
     global current_pin_index
@@ -284,6 +286,7 @@ def complete_probe():
         left_panel_labels[current_pin_index].config(bg="yellow")
     else:
         confirm_last_probe()
+
 
 def complete_cycle():
     global amount_of_cycles_done, elapsed_time_current_cycle, elapsed_time_previous_cycle, total_elapsed_time, current_pin_index, is_running, skipped_tests
@@ -308,6 +311,7 @@ def complete_cycle():
     is_running = False
 
 
+
 def update_timer():
     global elapsed_time_current_cycle, downtime
     if is_running:
@@ -320,33 +324,18 @@ def update_timer():
 def reset_test():
     response = messagebox.askyesno("Reset", "Är du säker att du vill reseta?")
     if response:
-        global current_pin_index, elapsed_time_current_cycle, total_elapsed_time, downtime, amount_of_cycles_done, skipped_tests, is_running
-        
-        # Reset all relevant variables
+        global current_pin_index, elapsed_time_current_cycle, total_elapsed_time, downtime, is_running
         total_elapsed_time += elapsed_time_current_cycle
         elapsed_time_current_cycle = 0
-        current_pin_index = 0
-        amount_of_cycles_done = 0
-        skipped_tests = 0
         downtime = 0
+        current_pin_index = 0
         is_running = False
-
-        # Reset all pin labels to default background color
         for label in left_panel_labels:
             label.config(bg="SystemButtonFace")
-        
-        # Set the first pin label to yellow
         left_panel_labels[current_pin_index].config(bg="yellow")
-        
-        # Update the central label
-        current_wire_label.config(text="Starta", bg="#32CD32")
-        
-        # Update the time info label
+        current_wire_label.config(text=pins[current_pin_index], bg="yellow")
         time_info_label.config(text=f"Tid\nNu: {format_time(elapsed_time_current_cycle)}\nFörra: {format_time(elapsed_time_previous_cycle)}\nTotal: {format_time(total_elapsed_time)}\nStälltid: {format_time(downtime)}")
-        
-        # Update the completed and skipped labels
-        completed_label.config(text=f"Färdiga: {amount_of_cycles_done}st")
-        skipped_label.config(text=f"Antal Avvikande: {skipped_tests}st")
+
 
 
 def toggle_timer():
