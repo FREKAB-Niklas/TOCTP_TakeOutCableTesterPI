@@ -218,7 +218,7 @@ def confirm_complete_cycle():
 
     # On-screen keyboard
     keyboard_frame = tk.Frame(confirm_window, bg="blue")
-    keyboard_frame.pack(pady=10, padx=300, fill=tk.BOTH, expand=True)
+    keyboard_frame.pack(pady=10, padx=10, fill=tk.BOTH, expand=True)
 
     def insert_char(char):
         entry.insert(tk.END, char)
@@ -273,16 +273,13 @@ def confirm_last_probe():
         if any(label.cget("bg") != "#32CD32" for label in left_panel_labels):
             confirm_complete_cycle()
         else:
-            complete_cycle()
-
-
-
+            root.after(500, complete_cycle)  # Delay to ensure UI updates
 
 def check_all_probed():
     if any(label.cget("bg") != "#32CD32" for label in left_panel_labels):
         confirm_complete_cycle()
     else:
-        complete_cycle()
+        root.after(500, complete_cycle)  # Delay to ensure UI updates
 
 
 
@@ -323,6 +320,8 @@ def complete_cycle():
     left_panel_labels[current_pin_index].config(bg="yellow")
     current_wire_label.config(text="Starta", bg="#32CD32")
     is_running = False
+    print("Cycle completed successfully and pins reset.")  # Add logging
+
 
 
 
