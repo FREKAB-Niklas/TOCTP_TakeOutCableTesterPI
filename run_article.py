@@ -174,6 +174,7 @@ def monitor_pins():
 
 
 
+
 # Start monitoring pins in a separate thread
 thread = threading.Thread(target=monitor_pins)
 thread.daemon = True
@@ -277,6 +278,7 @@ def check_all_probed():
     else:
         complete_cycle()
 
+
 def complete_probe():
     global current_pin_index
     if current_pin_index < len(pins) - 1:
@@ -286,6 +288,7 @@ def complete_probe():
         left_panel_labels[current_pin_index].config(bg="yellow")
     else:
         confirm_last_probe()
+
 
 
 def complete_cycle():
@@ -312,6 +315,7 @@ def complete_cycle():
 
 
 
+
 def update_timer():
     global elapsed_time_current_cycle, downtime
     if is_running:
@@ -327,8 +331,8 @@ def reset_test():
         global current_pin_index, elapsed_time_current_cycle, total_elapsed_time, downtime, is_running
         total_elapsed_time += elapsed_time_current_cycle
         elapsed_time_current_cycle = 0
-        downtime = 0
         current_pin_index = 0
+        downtime = 0
         is_running = False
         for label in left_panel_labels:
             label.config(bg="SystemButtonFace")
