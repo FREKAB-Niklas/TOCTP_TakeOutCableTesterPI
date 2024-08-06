@@ -140,20 +140,25 @@ def read_mcp_probes():
 
 def on_pin_probe(gui_pin_label):
     global current_pin_index
-    print(f"on_pin_probe called with gui_pin_label={gui_pin_label}, current_pin_index={current_pin_index}")  # Added logging
-    if gui_pin_label == pins[current_pin_index]:
+    expected_pin_label = left_panel_labels[current_pin_index].cget("text")
+
+    print(f"on_pin_probe called with gui_pin_label={gui_pin_label}, current_pin_index={current_pin_index}, expected_pin_label={expected_pin_label}")
+
+    if gui_pin_label == expected_pin_label:
         left_panel_labels[current_pin_index].config(bg="#32CD32")
         current_pin_index += 1
-        if current_pin_index < len(pins):
-            print(f"Next pin to probe: {pins[current_pin_index]}")  # Added logging
-            current_wire_label.config(text=pins[current_pin_index])
+
+        if current_pin_index < len(left_panel_labels):
+            next_pin_label = left_panel_labels[current_pin_index].cget("text")
+            current_wire_label.config(text=next_pin_label, bg="yellow")
             left_panel_labels[current_pin_index].config(bg="yellow")
+            print(f"Next pin to probe: {next_pin_label}")
         else:
-            print("Completed all pins in the cycle.")  # Added logging
-            current_pin_index = 0
-            confirm_complete_cycle()
+            print("All pins probed successfully.")
+            check_all_probed()
     else:
-        print(f"Pin mismatch: expected {pins[current_pin_index]}, but got {gui_pin_label}")  # Added logging
+        print(f"Pin mismatch: expected {expected_pin_label}, but got {gui_pin_label}")
+
 
 
 
