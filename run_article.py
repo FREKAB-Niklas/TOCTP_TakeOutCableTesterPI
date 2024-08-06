@@ -204,11 +204,12 @@ def check_all_probed():
     all_probed = all(label.cget("bg") == "#32CD32" for label in left_panel_labels)
     print(f"Check all probed: {all_probed}")
     for i, label in enumerate(left_panel_labels):
-        print(f"Pin {i+1}: {label.cget('bg')}")
+        print(f"Pin {i+1} background color: {label.cget('bg')}")
     if all_probed:
         complete_cycle()
     else:
         confirm_complete_cycle()
+
 
 def complete_probe():
     global current_pin_index
