@@ -28,13 +28,6 @@ root.title("Testing Interface")
 root.geometry("1920x1080")
 root.attributes('-fullscreen', True)
 
-center_display_label = tk.Label(root, text="", font=("Helvetica", 32))
-center_display_label.pack(pady=20)
-
-pin_labels = [tk.Label(root, text=f"{i+1}: {chr(65+i)}", font=("Helvetica", 16)) for i in range(8)]
-for label in pin_labels:
-    label.pack(anchor='w')
-
 # Initialize I2C bus and MCP23017
 i2c = busio.I2C(board.SCL, board.SDA)
 mcp1 = MCP23017(i2c, address=0x20)
