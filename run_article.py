@@ -270,9 +270,9 @@ def confirm_last_probe():
     if current_pin_index == len(pins) - 1:
         left_panel_labels[current_pin_index].config(bg="#32CD32")
         if any(label.cget("bg") != "#32CD32" for label in left_panel_labels[:-1]):  # Check all except the last pin
-            confirm_complete_cycle()
+            root.after(500, confirm_complete_cycle)  # Add a 0.5s delay
         else:
-            time.sleep(1)
+            time.sleep(0.5)
             complete_cycle()
 
 def complete_probe():
@@ -307,6 +307,7 @@ def complete_cycle():
     current_wire_label.config(text="Starta", bg="#32CD32")
     is_running = False
 
+
 def update_timer():
     global elapsed_time_current_cycle, downtime
     if is_running:
@@ -319,16 +320,34 @@ def update_timer():
 def reset_test():
     response = messagebox.askyesno("Reset", "Är du säker att du vill reseta?")
     if response:
-        global current_pin_index, elapsed_time_current_cycle, total_elapsed_time, downtime
+        global current_pin_index, elapsed_time_current_cycle, total_elapsed_time, downtime, amount_of_cycles_done, skipped_tests, is_running
+        
+        # Reset all relevant variables
         total_elapsed_time += elapsed_time_current_cycle
         elapsed_time_current_cycle = 0
         current_pin_index = 0
+        amount_of_cycles_done = 0
+        skipped_tests = 0
+        downtime = 0
+        is_running = False
+
+        # Reset all pin labels to default background color
         for label in left_panel_labels:
             label.config(bg="SystemButtonFace")
+        
+        # Set the first pin label to yellow
         left_panel_labels[current_pin_index].config(bg="yellow")
+        
+        # Update the central label
         current_wire_label.config(text="Starta", bg="#32CD32")
+        
+        # Update the time info label
         time_info_label.config(text=f"Tid\nNu: {format_time(elapsed_time_current_cycle)}\nFörra: {format_time(elapsed_time_previous_cycle)}\nTotal: {format_time(total_elapsed_time)}\nStälltid: {format_time(downtime)}")
-        is_running = False
+        
+        # Update the completed and skipped labels
+        completed_label.config(text=f"Färdiga: {amount_of_cycles_done}st")
+        skipped_label.config(text=f"Antal Avvikande: {skipped_tests}st")
+
 
 def toggle_timer():
     global is_running
