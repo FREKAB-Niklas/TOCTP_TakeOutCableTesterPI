@@ -269,8 +269,11 @@ def confirm_complete_cycle():
 def confirm_last_probe():
     global current_pin_index
     if current_pin_index == len(pins) - 1:
-        left_panel_labels[current_pin_index].config(bg="#32CD32")
-        root.after(500, check_all_probed)  # Adding a 0.5s delay before checking all pins
+        if any(label.cget("bg") != "#32CD32" for label in left_panel_labels):
+            confirm_complete_cycle()
+        else:
+            complete_cycle()
+
 
 def check_all_probed():
     if any(label.cget("bg") != "#32CD32" for label in left_panel_labels):
@@ -287,7 +290,9 @@ def complete_probe():
         current_wire_label.config(text=pins[current_pin_index], bg="yellow")
         left_panel_labels[current_pin_index].config(bg="yellow")
     else:
-        confirm_last_probe()
+        left_panel_labels[current_pin_index].config(bg="#32CD32")
+        root.after(500, confirm_last_probe)
+
 
 
 
