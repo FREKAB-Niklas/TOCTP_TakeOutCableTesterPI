@@ -200,6 +200,7 @@ def on_pin_probe(gui_pin_label):
             current_wire_label.config(text=next_pin_label, bg="yellow")
             left_panel_labels[current_pin_index].config(bg="yellow")
             print(f"Next pin to probe: {next_pin_label}")
+            root.after(1000, lambda: enable_probing())  # Add 1-second delay before enabling next probe
         else:
             print("All pins probed successfully.")
             check_all_probed()
