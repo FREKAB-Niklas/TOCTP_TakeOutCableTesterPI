@@ -187,7 +187,6 @@ def on_pin_probe(gui_pin_label):
             next_pin_label = left_panel_labels[current_pin_index].cget("text")
             current_wire_label.config(text=next_pin_label, bg="yellow")
             left_panel_labels[current_pin_index].config(bg="yellow")
-            activate_relay(next_pin_label)  # Activate next relay
             print(f"Next pin to probe: {next_pin_label}")
         else:
             print("All pins probed successfully.")
@@ -404,8 +403,14 @@ def toggle_timer():
     is_running = not is_running
     if is_running:
         current_wire_label.config(bg="yellow", text=pins[current_pin_index])
+        activate_relay(pins[current_pin_index])  # Activate relay
+        root.after(2000, lambda: deactivate_relay_and_wait_for_probe(pins[current_pin_index]))  # Wait 2 seconds before probing
     else:
         current_wire_label.config(bg="orange", text="Pausad")
+
+def deactivate_relay_and_wait_for_probe(pin_label):
+    deactivate_relay(pin_label)  # Deactivate relay after 2 seconds
+    print(f"Relay deactivated for {pin_label}, now waiting for probe.")
 
 def on_pin_click(idx):
     global current_pin_index
