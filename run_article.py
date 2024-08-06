@@ -62,9 +62,6 @@ downtime = 0
 skipped_tests = 0
 current_pin_index = 0
 is_running = False
-current_pin_index = 0  # Initialize globally
-current_pin_label = None  # Global variable to keep track of the current pin label
-
 
 
 #Custom fonts
@@ -141,8 +138,8 @@ def read_mcp_probes():
 
 
 
-def on_pin_probe(gui_pin_label):
-    global current_pin_index, current_pin_label
+def on_pin_probe(gui_pin_label, current_pin_index):
+    global current_pin_label
     expected_label = f"{current_pin_index + 1}: {current_pin_label}"
     if gui_pin_label == expected_label:
         pin_labels[current_pin_index].config(bg='green')
@@ -156,27 +153,7 @@ def on_pin_probe(gui_pin_label):
     else:
         print(f"Pin mismatch: expected {expected_label}, but got {gui_pin_label}")
 
-def update_current_pin_display(current_pin_index, current_pin_label):
-    # Update the center display
-    center_display_label.config(text=f"{current_pin_index + 1}: {current_pin_label}", bg='yellow')
 
-    # Update the left panel background color
-    for i, label in enumerate(pin_labels):
-        if i == current_pin_index:
-            label.config(bg='yellow')
-        else:
-            label.config(bg='light gray')  # Reset to default color
-
-
-center_display_label = tk.Label(root, text="", font=("Helvetica", 32))
-center_display_label.pack(pady=20)
-
-pin_labels = [tk.Label(root, text=f"{i+1}: {chr(65+i)}", font=("Helvetica", 16)) for i in range(8)]
-for label in pin_labels:
-    label.pack(anchor='w')
-
-current_pin_label = pin_labels[current_pin_index].cget('text').split(': ')[1]
-update_current_pin_display(current_pin_index, current_pin_label)
 
 
 def monitor_pins():
@@ -248,14 +225,29 @@ def complete_probe():
         root.after(500, confirm_last_probe)
 
 def complete_cycle():
-    global current_pin_index, current_pin_label
-    # Logic for completing the cycle
-    print("Cycle completed successfully.")
-    for label in pin_labels:
-        label.config(bg='SystemButtonFace')  # Reset all to default color
+    global amount_of_cycles_done, elapsed_time_current_cycle, elapsed_time_previous_cycle, total_elapsed_time, current_pin_index, is_running, skipped_tests
+    amount_of_cycles_done += 1
+    elapsed_time_previous_cycle = elapsed_time_current_cycle
+    total_elapsed_time += elapsed_time_previous_cycle
+    elapsed_time_current_cycle = 0
+    completed_label.config(text=f"Färdiga: {amount_of_cycles_done}st")
+    time_info_label.config(text=f"Tid\nNu: {format_time(elapsed_time_current_cycle)}\nFörra: {format_time(elapsed_time_previous_cycle)}\nTotal: {format_time(total_elapsed_time)}\nStälltid: {format_time(downtime)}")
+
+    # Check if any pins were skipped
+    skipped = any(label.cget("bg") != "#32CD32" for label in left_panel_labels)
+    if skipped:
+        skipped_tests += 1
+        skipped_label.config(text=f"Antal Avvikande: {skipped_tests}st")
+        print(f"Skipped tests detected. Total skipped: {skipped_tests}")
+
+    # Reset pins for the next cycle
     current_pin_index = 0
-    current_pin_label = pin_labels[current_pin_index].cget('text').split(': ')[1]
-    update_current_pin_display(current_pin_index, current_pin_label)
+    for label in left_panel_labels:
+        label.config(bg="light gray")  # Reset to default background color
+    left_panel_labels[current_pin_index].config(bg="yellow")
+    current_wire_label.config(text="Starta", bg="#32CD32")
+    is_running = False
+    print(f"Cycle completed successfully. Pins reset for next cycle.")
 
 def confirm_complete_cycle():
     print("Opening confirmation window for incomplete cycle.")
