@@ -175,6 +175,7 @@ def monitor_pins():
 
 
 
+
 # Start monitoring pins in a separate thread
 thread = threading.Thread(target=monitor_pins)
 thread.daemon = True
@@ -269,10 +270,8 @@ def confirm_complete_cycle():
 def confirm_last_probe():
     global current_pin_index
     if current_pin_index == len(pins) - 1:
-        if any(label.cget("bg") != "#32CD32" for label in left_panel_labels):
-            confirm_complete_cycle()
-        else:
-            complete_cycle()
+        root.after(500, check_all_probed)
+
 
 
 def check_all_probed():
@@ -280,6 +279,7 @@ def check_all_probed():
         confirm_complete_cycle()
     else:
         complete_cycle()
+
 
 
 def complete_probe():
@@ -344,6 +344,7 @@ def reset_test():
         left_panel_labels[current_pin_index].config(bg="yellow")
         current_wire_label.config(text=pins[current_pin_index], bg="yellow")
         time_info_label.config(text=f"Tid\nNu: {format_time(elapsed_time_current_cycle)}\nFörra: {format_time(elapsed_time_previous_cycle)}\nTotal: {format_time(total_elapsed_time)}\nStälltid: {format_time(downtime)}")
+        print("Reset complete")  # Add logging for debugging
 
 
 
