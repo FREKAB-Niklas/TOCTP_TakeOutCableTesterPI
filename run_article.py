@@ -214,10 +214,11 @@ def complete_probe():
     global current_pin_index
     if current_pin_index < len(pins) - 1:
         left_panel_labels[current_pin_index].config(bg="#32CD32")
+        print(f"Pin {pins[current_pin_index]} probed successfully, setting to green")
         current_pin_index += 1
         current_wire_label.config(text=pins[current_pin_index], bg="yellow")
         left_panel_labels[current_pin_index].config(bg="yellow")
-        print(f"Probe complete for pin: {pins[current_pin_index - 1]}. Next pin: {pins[current_pin_index]}")
+        print(f"Next pin to probe: {pins[current_pin_index]}")
     else:
         left_panel_labels[current_pin_index].config(bg="#32CD32")
         print(f"Last pin probed: {pins[current_pin_index]}. Confirming last probe in 500ms")
@@ -233,7 +234,8 @@ def complete_cycle():
     time_info_label.config(text=f"Tid\nNu: {format_time(elapsed_time_current_cycle)}\nFörra: {format_time(elapsed_time_previous_cycle)}\nTotal: {format_time(total_elapsed_time)}\nStälltid: {format_time(downtime)}")
 
     # Check if any pins were skipped
-    if any(label.cget("bg") != "#32CD32" for label in left_panel_labels):
+    skipped = any(label.cget("bg") != "#32CD32" for label in left_panel_labels)
+    if skipped:
         skipped_tests += 1
         skipped_label.config(text=f"Antal Avvikande: {skipped_tests}st")
         print(f"Skipped tests detected. Total skipped: {skipped_tests}")
