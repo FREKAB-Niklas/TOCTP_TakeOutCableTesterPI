@@ -53,9 +53,64 @@ expecting_probe = False
 
 # Configure relay pins
 relay_mappings = {
-    '1: A': (relay_mcp1, 0),  # Example mapping for 1: A to relay MCP 0x21 pin 0
-    # Add other pin mappings here...
+    '1: A': (relay_mcp1, 0),   # MCP 0x21 pin A0
+    '2: B': (relay_mcp1, 1),   # MCP 0x21 pin A1
+    '3: C': (relay_mcp1, 2),   # MCP 0x21 pin A2
+    '4: D': (relay_mcp1, 3),   # MCP 0x21 pin A3
+    '5: E': (relay_mcp1, 4),   # MCP 0x21 pin A4
+    '6: F': (relay_mcp1, 5),   # MCP 0x21 pin A5
+    '7: G': (relay_mcp1, 6),   # MCP 0x21 pin A6
+    '8: H': (relay_mcp1, 7),   # MCP 0x21 pin A7
+    '9: J': (relay_mcp1, 8),   # MCP 0x21 pin B0
+    '10: K': (relay_mcp1, 9),  # MCP 0x21 pin B1
+    '11: L': (relay_mcp1, 10), # MCP 0x21 pin B2
+    '12: M': (relay_mcp1, 11), # MCP 0x21 pin B3
+    '13: N': (relay_mcp1, 12), # MCP 0x21 pin B4
+    '14: P': (relay_mcp1, 13), # MCP 0x21 pin B5
+    '15: R': (relay_mcp1, 14), # MCP 0x21 pin B6
+    '16: S': (relay_mcp1, 15), # MCP 0x21 pin B7
+    '17: T': (relay_mcp2, 0),  # MCP 0x23 pin A0
+    '18: U': (relay_mcp2, 1),  # MCP 0x23 pin A1
+    '19: V': (relay_mcp2, 2),  # MCP 0x23 pin A2
+    '20: W': (relay_mcp2, 3),  # MCP 0x23 pin A3
+    '21: X': (relay_mcp2, 4),  # MCP 0x23 pin A4
+    '22: Y': (relay_mcp2, 5),  # MCP 0x23 pin A5
+    '23: Z': (relay_mcp2, 6),  # MCP 0x23 pin A6
+    '24: a': (relay_mcp2, 7),  # MCP 0x23 pin A7
+    '25: b': (relay_mcp2, 8),  # MCP 0x23 pin B0
+    '26: c': (relay_mcp2, 9),  # MCP 0x23 pin B1
+    '27: d': (relay_mcp2, 10), # MCP 0x23 pin B2
+    '28: e': (relay_mcp2, 11), # MCP 0x23 pin B3
+    '29: f': (relay_mcp2, 12), # MCP 0x23 pin B4
+    '30: g': (relay_mcp2, 13), # MCP 0x23 pin B5
+    '31: h': (relay_mcp2, 14), # MCP 0x23 pin B6
+    '32: j': (relay_mcp2, 15)  # MCP 0x23 pin B7
 }
+
+# Initialize relay pins
+for mcp, pin in relay_mappings.values():
+    relay_pin = mcp.get_pin(pin)
+    relay_pin.direction = Direction.OUTPUT
+    relay_pin.value = True  # Assuming relay is off when high
+
+
+def activate_relay(pin_label):
+    if pin_label in relay_mappings:
+        mcp, pin = relay_mappings[pin_label]
+        relay_pin = mcp.get_pin(pin)
+        relay_pin.value = True  # Activate relay by setting it low
+        print(f"Activated relay for {pin_label}")
+
+def deactivate_relay(pin_label):
+    if pin_label in relay_mappings:
+        mcp, pin = relay_mappings[pin_label]
+        relay_pin = mcp.get_pin(pin)
+        relay_pin.value = False  # Deactivate relay by setting it high
+        print(f"Deactivated relay for {pin_label}")
+
+# Ensure to deactivate all relays on startup
+for pin_label in relay_mappings.keys():
+    deactivate_relay(pin_label)
 
 # List of MCP23017 pins to test (both chips)
 mcp_pins = [(mcp1, i) for i in range(16)] + [(mcp2, i) for i in range(16)]
@@ -69,6 +124,8 @@ for mcp, pin in relay_mappings.values():
     relay_pin = mcp.get_pin(pin)
     relay_pin.direction = Direction.OUTPUT
     relay_pin.value = True  # Assuming relay is off when high
+
+
 
 
 config = configparser.ConfigParser()
