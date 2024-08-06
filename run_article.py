@@ -197,7 +197,7 @@ def calculate_average(ws):
 def confirm_complete_cycle():
     confirm_window = tk.Toplevel(root)
     confirm_window.title("Bekräfta")
-    confirm_window.geometry("800x600")  # Set a fixed size for the window
+    confirm_window.geometry("1920x1080")  # Set a fixed size for the window
     confirm_window.attributes('-fullscreen', False)
 
     message_label = tk.Label(confirm_window, text="Du försöker färdigställa utan att alla punkter är testade, är du säker att du vill fortsätta?\nBekräfta genom att skriva OK", font=body_font)
@@ -270,12 +270,11 @@ def confirm_complete_cycle():
 
 def confirm_last_probe():
     global current_pin_index
-    if current_pin_index == len(pins):
-        # Check if all pins are probed
-        if all(label.cget("bg") == "#32CD32" for label in left_panel_labels):
-            complete_cycle()
-        else:
+    if current_pin_index == len(pins) - 1:
+        if any(label.cget("bg") != "#32CD32" for label in left_panel_labels):
             confirm_complete_cycle()
+        else:
+            complete_cycle()
 
 
 
@@ -296,7 +295,9 @@ def complete_probe():
         left_panel_labels[current_pin_index].config(bg="yellow")
     else:
         left_panel_labels[current_pin_index].config(bg="#32CD32")
+        # Add a small delay before checking the last probe
         root.after(500, confirm_last_probe)
+
 
 
 
@@ -318,10 +319,11 @@ def complete_cycle():
     # Reset pins for the next cycle
     current_pin_index = 0
     for label in left_panel_labels:
-        label.config(bg="light gray")  # Reset to default background color
+        label.config(bg="SystemButtonFace")  # Reset to default background color
     left_panel_labels[current_pin_index].config(bg="yellow")
     current_wire_label.config(text="Starta", bg="#32CD32")
     is_running = False
+
 
 
 
