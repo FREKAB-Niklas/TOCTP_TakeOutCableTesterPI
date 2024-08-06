@@ -51,7 +51,7 @@ pins = config['DEFAULT']['pins'].split(',')
 script_dir = os.path.dirname(os.path.abspath(__file__))
 
 # Construct the full path to the image file inside the PI folder
-logo_path = os.path.join(script_dir, "Logo.png")
+logo_path = os.path.join(script_dir, "logo.png")
 
 # Variable Information
 amount_of_cycles_done = 0
