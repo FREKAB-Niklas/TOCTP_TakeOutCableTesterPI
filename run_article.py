@@ -267,7 +267,6 @@ def confirm_complete_cycle():
 
 
 
-
 def confirm_last_probe():
     global current_pin_index
     if current_pin_index == len(pins) - 1:
@@ -275,6 +274,7 @@ def confirm_last_probe():
             confirm_complete_cycle()
         else:
             complete_cycle()
+
 
 
 
@@ -319,11 +319,10 @@ def complete_cycle():
     # Reset pins for the next cycle
     current_pin_index = 0
     for label in left_panel_labels:
-        label.config(bg="SystemButtonFace")  # Reset to default background color
+        label.config(bg="light gray")  # Reset to a more universal default color
     left_panel_labels[current_pin_index].config(bg="yellow")
     current_wire_label.config(text="Starta", bg="#32CD32")
     is_running = False
-
 
 
 
