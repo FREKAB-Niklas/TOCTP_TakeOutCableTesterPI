@@ -138,20 +138,22 @@ def read_mcp_probes():
 
 
 
-def on_pin_probe(gui_pin_label, current_pin_index):
-    global current_pin_label
-    expected_label = f"{current_pin_index + 1}: {current_pin_label}"
-    if gui_pin_label == expected_label:
-        pin_labels[current_pin_index].config(bg='green')
+def on_pin_probe(gui_pin_label):
+    global current_pin_index
+    print(f"on_pin_probe called with gui_pin_label={gui_pin_label}, current_pin_index={current_pin_index}")  # Added logging
+    if gui_pin_label == pins[current_pin_index]:
+        left_panel_labels[current_pin_index].config(bg="#32CD32")
         current_pin_index += 1
-        if current_pin_index < len(pin_labels):
-            next_pin_label = pin_labels[current_pin_index]
-            current_pin_label = next_pin_label.cget('text').split(': ')[1]
-            update_current_pin_display(current_pin_index, current_pin_label)
+        if current_pin_index < len(pins):
+            print(f"Next pin to probe: {pins[current_pin_index]}")  # Added logging
+            current_wire_label.config(text=pins[current_pin_index])
+            left_panel_labels[current_pin_index].config(bg="yellow")
         else:
-            complete_cycle()
+            print("Completed all pins in the cycle.")  # Added logging
+            current_pin_index = 0
+            confirm_complete_cycle()
     else:
-        print(f"Pin mismatch: expected {expected_label}, but got {gui_pin_label}")
+        print(f"Pin mismatch: expected {pins[current_pin_index]}, but got {gui_pin_label}")  # Added logging
 
 
 
@@ -274,7 +276,7 @@ def confirm_complete_cycle():
 
     # On-screen keyboard
     keyboard_frame = tk.Frame(confirm_window, bg="blue")
-    keyboard_frame.pack(pady=10, fill=tk.BOTH, expand=True)
+    keyboard_frame.pack(pady=10,fill=tk.BOTH, expand=True)
 
     def insert_char(char):
         entry.insert(tk.END, char)
@@ -378,7 +380,7 @@ def on_pin_click(idx):
     # Preserve the green status if the pin was already tested
     current_color = left_panel_labels[current_pin_index].cget("bg")
     if current_color != "#32CD32":
-        left_panel_labels[current_pin_index].config(bg="SystemButtonFace")
+        left_panel_labels[current_pin_index].config(bg="light gray")
     
     current_pin_index = idx
     left_panel_labels[current_pin_index].config(bg="yellow")
