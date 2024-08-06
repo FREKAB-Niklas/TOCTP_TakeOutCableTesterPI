@@ -203,6 +203,8 @@ def confirm_last_probe():
 def check_all_probed():
     all_probed = all(label.cget("bg") == "#32CD32" for label in left_panel_labels)
     print(f"Check all probed: {all_probed}")
+    for i, label in enumerate(left_panel_labels):
+        print(f"Pin {i+1}: {label.cget('bg')}")
     if all_probed:
         complete_cycle()
     else:
@@ -314,7 +316,6 @@ def confirm_complete_cycle():
 
     close_button = tk.Button(keyboard_frame, text="X", font=body_font, width=10, height=5, command=confirm_window.destroy, bg="red")
     close_button.grid(row=5, column=4, columnspan=3, pady=key_pady)
-
 
 
 
