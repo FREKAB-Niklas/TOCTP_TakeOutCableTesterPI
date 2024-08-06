@@ -21,7 +21,7 @@ root.attributes('-fullscreen', True)
 script_dir = os.path.dirname(os.path.abspath(__file__))
 
 # Construct the full path to the image file inside the PI folder
-logo_path = os.path.join(script_dir, "Logo.png")
+logo_path = os.path.join(script_dir, "logo.png")
 
 def run_article(filename, pins):
     # Get the directory where the script is located

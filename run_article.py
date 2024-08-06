@@ -19,8 +19,14 @@ from adafruit_mcp230xx.mcp23017 import MCP23017
 import board
 import busio
 from digitalio import Direction, Pull
+import pygame
 
 print("run_article.py is starting...")
+
+# Initialize pygame for sound effects
+pygame.mixer.init()
+success_sound = pygame.mixer.Sound("success.mp3")
+reject_sound = pygame.mixer.Sound("reject.mp3")
 
 # Initialize main window
 root = tk.Tk()
@@ -33,12 +39,28 @@ i2c = busio.I2C(board.SCL, board.SDA)
 mcp1 = MCP23017(i2c, address=0x20)
 mcp2 = MCP23017(i2c, address=0x22)
 
+# Initialize I2C bus and MCP23017 for relays
+relay_mcp1 = MCP23017(i2c, address=0x21)
+relay_mcp2 = MCP23017(i2c, address=0x23)
+
+# Configure relay pins
+relay_mappings = {
+    '1: A': (relay_mcp1, 0),  # Example mapping for 1: A to relay MCP 0x21 pin 0
+    # Add other pin mappings here...
+}
+
 # List of MCP23017 pins to test (both chips)
 mcp_pins = [(mcp1, i) for i in range(16)] + [(mcp2, i) for i in range(16)]
 for mcp, pin in mcp_pins:
     mcp_pin = mcp.get_pin(pin)
     mcp_pin.direction = Direction.INPUT
     mcp_pin.pull = Pull.UP
+
+# Initialize relay pins
+for mcp, pin in relay_mappings.values():
+    relay_pin = mcp.get_pin(pin)
+    relay_pin.direction = Direction.OUTPUT
+    relay_pin.value = True  # Assuming relay is off when high
 
 
 config = configparser.ConfigParser()
@@ -124,7 +146,19 @@ def mcp_pin_to_gui_pin(mcp, pin):
     }
     return mapping.get((mcp, pin), None)
 
+def activate_relay(pin_label):
+    if pin_label in relay_mappings:
+        mcp, pin = relay_mappings[pin_label]
+        relay_pin = mcp.get_pin(pin)
+        relay_pin.value = False  # Activate relay by setting it low
+        print(f"Activated relay for {pin_label}")
 
+def deactivate_relay(pin_label):
+    if pin_label in relay_mappings:
+        mcp, pin = relay_mappings[pin_label]
+        relay_pin = mcp.get_pin(pin)
+        relay_pin.value = True  # Deactivate relay by setting it high
+        print(f"Deactivated relay for {pin_label}")
 
 def read_mcp_probes():
     for mcp_chip, pin in mcp_pins:
@@ -137,7 +171,6 @@ def read_mcp_probes():
 
 
 
-
 def on_pin_probe(gui_pin_label):
     global current_pin_index
     expected_pin_label = left_panel_labels[current_pin_index].cget("text")
@@ -145,22 +178,27 @@ def on_pin_probe(gui_pin_label):
     print(f"on_pin_probe called with gui_pin_label={gui_pin_label}, current_pin_index={current_pin_index}, expected_pin_label={expected_pin_label}")
 
     if gui_pin_label == expected_pin_label:
+        pygame.mixer.Sound.play(success_sound)
         left_panel_labels[current_pin_index].config(bg="#32CD32")
+        deactivate_relay(expected_pin_label)  # Deactivate previous relay
         current_pin_index += 1
 
         if current_pin_index < len(left_panel_labels):
             next_pin_label = left_panel_labels[current_pin_index].cget("text")
             current_wire_label.config(text=next_pin_label, bg="yellow")
             left_panel_labels[current_pin_index].config(bg="yellow")
+            activate_relay(next_pin_label)  # Activate next relay
             print(f"Next pin to probe: {next_pin_label}")
         else:
             print("All pins probed successfully.")
             check_all_probed()
     else:
+        pygame.mixer.Sound.play(reject_sound)
         print(f"Pin mismatch: expected {expected_pin_label}, but got {gui_pin_label}")
 
-
-
+# Ensure to deactivate all relays on startup
+for pin_label in relay_mappings.keys():
+    deactivate_relay(pin_label)
 
 
 def monitor_pins():
@@ -175,9 +213,6 @@ def monitor_pins():
             else:
                 print(f"No mapping found for MCP={hex(mcp)}, PIN={pin}")  # Log for missing mapping
         time.sleep(0.1)
-
-
-
 
 
 
