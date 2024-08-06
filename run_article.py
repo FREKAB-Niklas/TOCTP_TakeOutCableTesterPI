@@ -62,6 +62,9 @@ downtime = 0
 skipped_tests = 0
 current_pin_index = 0
 is_running = False
+current_pin_index = 0  # Initialize globally
+current_pin_label = None  # Global variable to keep track of the current pin label
+
 
 
 #Custom fonts
@@ -138,8 +141,8 @@ def read_mcp_probes():
 
 
 
-def on_pin_probe(gui_pin_label, current_pin_index):
-    global current_pin_label
+def on_pin_probe(gui_pin_label):
+    global current_pin_index, current_pin_label
     expected_label = f"{current_pin_index + 1}: {current_pin_label}"
     if gui_pin_label == expected_label:
         pin_labels[current_pin_index].config(bg='green')
@@ -162,7 +165,18 @@ def update_current_pin_display(current_pin_index, current_pin_label):
         if i == current_pin_index:
             label.config(bg='yellow')
         else:
-            label.config(bg='SystemButtonFace')
+            label.config(bg='light gray')  # Reset to default color
+
+
+center_display_label = tk.Label(root, text="", font=("Helvetica", 32))
+center_display_label.pack(pady=20)
+
+pin_labels = [tk.Label(root, text=f"{i+1}: {chr(65+i)}", font=("Helvetica", 16)) for i in range(8)]
+for label in pin_labels:
+    label.pack(anchor='w')
+
+current_pin_label = pin_labels[current_pin_index].cget('text').split(': ')[1]
+update_current_pin_display(current_pin_index, current_pin_label)
 
 
 def monitor_pins():
@@ -234,7 +248,7 @@ def complete_probe():
         root.after(500, confirm_last_probe)
 
 def complete_cycle():
-    global current_pin_label
+    global current_pin_index, current_pin_label
     # Logic for completing the cycle
     print("Cycle completed successfully.")
     for label in pin_labels:
