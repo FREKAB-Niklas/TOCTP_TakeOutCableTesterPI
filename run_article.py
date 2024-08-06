@@ -129,40 +129,43 @@ def mcp_pin_to_gui_pin(mcp, pin):
         (0x22, 13): '30: g',# MCP 0x22 pin B5 to GUI pin 30: g
         (0x22, 14): '31: h',# MCP 0x22 pin B6 to GUI pin 31: h
         (0x22, 15): '32: j',# MCP 0x22 pin B7 to GUI pin 32: j
-        (0x21, 0): 'Relay 1: A',
-        (0x21, 1): 'Relay 2: B',
-        (0x21, 2): 'Relay 3: C',
-        (0x21, 3): 'Relay 4: D',
-        (0x21, 4): 'Relay 5: E',
-        (0x21, 5): 'Relay 6: F',
-        (0x21, 6): 'Relay 7: G',
-        (0x21, 7): 'Relay 8: H',
-        (0x21, 8): 'Relay 16: S',
-        (0x21, 9): 'Relay 15: R',
-        (0x21, 10): 'Relay 14: P',
-        (0x21, 11): 'Relay 13: N',
-        (0x21, 12): 'Relay 12: M',
-        (0x21, 13): 'Relay 11: L',
-        (0x21, 14): 'Relay 10: K',
-        (0x21, 15): 'Relay 9: J',
-        (0x23, 0): 'Relay 17: T',
-        (0x23, 1): 'Relay 18: U',
-        (0x23, 2): 'Relay 19: V',
-        (0x23, 3): 'Relay 20: W',
-        (0x23, 4): 'Relay 21: X',
-        (0x23, 5): 'Relay 22: Y',
-        (0x23, 6): 'Relay 23: Z',
-        (0x23, 7): 'Relay 24: a',
-        (0x23, 8): 'Relay 25: b',
-        (0x23, 9): 'Relay 26: c',
-        (0x23, 10): 'Relay 27: d',
-        (0x23, 11): 'Relay 28: e',
-        (0x23, 12): 'Relay 29: f',
-        (0x23, 13): 'Relay 30: g',
-        (0x23, 14): 'Relay 31: h',
-        (0x23, 15): 'Relay 32: j',
     }
     return mapping.get((mcp, pin), None)
+
+relay_mapping = {
+    '1: A': (0x21, 0),
+    '2: B': (0x21, 1),
+    '3: C': (0x21, 2),
+    '4: D': (0x21, 3),
+    '5: E': (0x21, 4),
+    '6: F': (0x21, 5),
+    '7: G': (0x21, 6),
+    '8: H': (0x21, 7),
+    '16: S': (0x21, 8),
+    '15: R': (0x21, 9),
+    '14: P': (0x21, 10),
+    '13: N': (0x21, 11),
+    '12: M': (0x21, 12),
+    '11: L': (0x21, 13),
+    '10: K': (0x21, 14),
+    '9: J': (0x21, 15),
+    '17: T': (0x23, 0),
+    '18: U': (0x23, 1),
+    '19: V': (0x23, 2),
+    '20: W': (0x23, 3),
+    '21: X': (0x23, 4),
+    '22: Y': (0x23, 5),
+    '23: Z': (0x23, 6),
+    '24: a': (0x23, 7),
+    '25: b': (0x23, 8),
+    '26: c': (0x23, 9),
+    '27: d': (0x23, 10),
+    '28: e': (0x23, 11),
+    '29: f': (0x23, 12),
+    '30: g': (0x23, 13),
+    '31: h': (0x23, 14),
+    '32: j': (0x23, 15)
+}
 
 
 
@@ -176,13 +179,14 @@ def read_mcp_probes():
     return None, None, False
 
 def activate_relay(mcp, pin):
-    mcp_chip = mcp_relay1 if mcp == 0x21 else mcp_relay2
-    relay_pin = mcp_chip.get_pin(pin)
-    relay_pin.value = False  # Assuming relay is active when low
-    print(f"Relay activated: MCP={hex(mcp)}, PIN={pin}")
+    for mcp_chip, relay_pin in relay_pins:
+        if mcp_chip._device.device_address == mcp and relay_pin._pin == pin:
+            relay_pin.value = False  # Activate the correct relay (active low)
+            print(f"Relay activated: MCP={hex(mcp)}, PIN={pin}")
+        else:
+            relay_pin.value = True  # Deactivate all other relays
 
-
-
+# Updated on_pin_probe function
 def on_pin_probe(gui_pin_label):
     global current_pin_index
     expected_pin_label = left_panel_labels[current_pin_index].cget("text")
