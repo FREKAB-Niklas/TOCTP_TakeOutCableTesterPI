@@ -197,8 +197,8 @@ def calculate_average(ws):
 def confirm_complete_cycle():
     confirm_window = tk.Toplevel(root)
     confirm_window.title("Bekräfta")
-    confirm_window.geometry("1920x1080")  # Set a fixed size for the window
-    confirm_window.attributes('-fullscreen', False)
+    confirm_window.geometry("1920x1080")
+    confirm_window.attributes('-fullscreen', True)
 
     message_label = tk.Label(confirm_window, text="Du försöker färdigställa utan att alla punkter är testade, är du säker att du vill fortsätta?\nBekräfta genom att skriva OK", font=body_font)
     message_label.pack(pady=10)
@@ -218,7 +218,7 @@ def confirm_complete_cycle():
 
     # On-screen keyboard
     keyboard_frame = tk.Frame(confirm_window, bg="blue")
-    keyboard_frame.pack(pady=10, padx=10, fill=tk.BOTH, expand=True)
+    keyboard_frame.pack(pady=10, fill=tk.BOTH, expand=True)
 
     def insert_char(char):
         entry.insert(tk.END, char)
@@ -266,22 +266,17 @@ def confirm_complete_cycle():
 
 
 
-
 def confirm_last_probe():
     global current_pin_index
     if current_pin_index == len(pins) - 1:
-        if any(label.cget("bg") != "#32CD32" for label in left_panel_labels):
-            confirm_complete_cycle()
-        else:
-            root.after(500, complete_cycle)  # Delay to ensure UI updates
+        root.after(500, check_all_probed)
 
 def check_all_probed():
-    if any(label.cget("bg") != "#32CD32" for label in left_panel_labels):
-        confirm_complete_cycle()
+    all_probed = all(label.cget("bg") == "#32CD32" for label in left_panel_labels)
+    if all_probed:
+        complete_cycle()
     else:
-        root.after(500, complete_cycle)  # Delay to ensure UI updates
-
-
+        confirm_complete_cycle()
 
 def complete_probe():
     global current_pin_index
@@ -292,9 +287,7 @@ def complete_probe():
         left_panel_labels[current_pin_index].config(bg="yellow")
     else:
         left_panel_labels[current_pin_index].config(bg="#32CD32")
-        # Add a small delay before checking the last probe
         root.after(500, confirm_last_probe)
-
 
 
 
@@ -316,11 +309,10 @@ def complete_cycle():
     # Reset pins for the next cycle
     current_pin_index = 0
     for label in left_panel_labels:
-        label.config(bg="light gray")  # Reset to a more universal default color
+        label.config(bg="SystemButtonFace")  # Reset to default background color
     left_panel_labels[current_pin_index].config(bg="yellow")
     current_wire_label.config(text="Starta", bg="#32CD32")
     is_running = False
-    print("Cycle completed successfully and pins reset.")  # Add logging
 
 
 
