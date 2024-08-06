@@ -313,10 +313,11 @@ def complete_cycle():
     # Reset pins for the next cycle
     current_pin_index = 0
     for label in left_panel_labels:
-        label.config(bg="SystemButtonFace")  # Reset to default background color
+        label.config(bg="light gray")  # Reset to default background color
     left_panel_labels[current_pin_index].config(bg="yellow")
     current_wire_label.config(text="Starta", bg="#32CD32")
     is_running = False
+
 
 
 
@@ -340,11 +341,18 @@ def reset_test():
         downtime = 0
         is_running = False
         for label in left_panel_labels:
-            label.config(bg="SystemButtonFace")
+            label.config(bg="light gray")
         left_panel_labels[current_pin_index].config(bg="yellow")
         current_wire_label.config(text=pins[current_pin_index], bg="yellow")
         time_info_label.config(text=f"Tid\nNu: {format_time(elapsed_time_current_cycle)}\nFörra: {format_time(elapsed_time_previous_cycle)}\nTotal: {format_time(total_elapsed_time)}\nStälltid: {format_time(downtime)}")
-        print("Reset complete")  # Add logging for debugging
+        
+        # Reset all MCP23017 pins
+        for mcp, pin in mcp_pins:
+            mcp_pin = mcp.get_pin(pin)
+            mcp_pin.direction = Direction.INPUT
+            mcp_pin.pull = Pull.UP
+        print("Reset complete and MCP23017 pins reset")  # Add logging for debugging
+
 
 
 
