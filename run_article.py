@@ -34,6 +34,11 @@ root.title("Testing Interface")
 root.geometry("1920x1080")
 root.attributes('-fullscreen', True)
 
+# Ensure the window is brought to the front
+root.lift()
+root.attributes('-topmost', True)
+root.after(10, lambda: root.attributes('-topmost', False))
+
 # Initialize I2C bus and MCP23017
 i2c = busio.I2C(board.SCL, board.SDA)
 mcp1 = MCP23017(i2c, address=0x20)

@@ -17,6 +17,11 @@ root.title("Loading Interface")
 root.geometry("1920x1080")
 root.attributes('-fullscreen', True)
 
+# Ensure the window is brought to the front
+root.lift()
+root.attributes('-topmost', True)
+root.after(10, lambda: root.attributes('-topmost', False))
+
 # Get the directory where the script is located
 script_dir = os.path.dirname(os.path.abspath(__file__))
 
