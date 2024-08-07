@@ -24,6 +24,11 @@ root.title("Home")
 root.geometry("1920x1080")
 root.attributes('-fullscreen', True)
 
+# Ensure the window is brought to the front
+root.lift()
+root.attributes('-topmost', True)
+root.after(10, lambda: root.attributes('-topmost', False))
+
 # Custom Fonts
 header_font = font.Font(family="Helvetica", size=24, weight="bold")
 button_font = font.Font(family="Helvetica", size=36, weight="bold")
