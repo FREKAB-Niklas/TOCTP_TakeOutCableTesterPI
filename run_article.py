@@ -256,13 +256,17 @@ def on_pin_probe(gui_pin_label):
             current_wire_label.config(text=next_pin_label, bg="yellow")
             left_panel_labels[current_pin_index].config(bg="yellow")
             print(f"Next pin to probe: {next_pin_label}")
-            root.after(1000, enable_probing)  # Add 1-second delay before enabling next probe
+            root.after(1000, lambda: activate_relay_and_wait(next_pin_label))  # Add 1-second delay before enabling next probe
         else:
             print("All pins probed successfully.")
             check_all_probed()
     else:
         pygame.mixer.Sound.play(reject_sound)
         print(f"Pin mismatch: expected {expected_pin_label}, but got {gui_pin_label}")
+
+def activate_relay_and_wait(pin_label):
+    activate_relay(pin_label)
+    root.after(2000, lambda: start_probing(pin_label))  # Wait 2 seconds before probing
 
 
 
@@ -477,6 +481,7 @@ def reset_test():
 
 
 
+
 def toggle_timer():
     global is_running, expecting_probe
     is_running = not is_running
@@ -490,9 +495,12 @@ def toggle_timer():
 
 
 def start_probing(pin_label):
+    global expecting_probe
     deactivate_relay(pin_label)  # Deactivate relay after 2 seconds
     print(f"Relay deactivated for {pin_label}, now waiting for probe.")
     root.after(1000, enable_probing)  # Wait 1 second after deactivating relay before allowing probing
+    expecting_probe = True
+
 
 
 def deactivate_relay_and_wait_for_probe(pin_label):
