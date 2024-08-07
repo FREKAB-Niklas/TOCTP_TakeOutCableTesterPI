@@ -48,6 +48,7 @@ def enable_probing():
     expecting_probe = True
     print("Probing is now enabled.")
 
+
 expecting_probe = False
 
 
@@ -127,11 +128,9 @@ for mcp, pin in relay_mappings.values():
 
 
 def start_probing(pin_label):
-    global is_probing_allowed
     deactivate_relay(pin_label)  # Deactivate relay after 2 seconds
     print(f"Relay deactivated for {pin_label}, now waiting for probe.")
     root.after(1000, enable_probing)  # Wait 1 second after deactivating relay before allowing probing
-    is_probing_allowed = True
 
 
 
@@ -225,7 +224,7 @@ def mcp_pin_to_gui_pin(mcp, pin):
 
 
 def read_mcp_probes():
-    if not is_running or not is_probing_allowed:
+    if not is_running or not expecting_probe:
         return None, None, False
     for mcp_chip, pin in mcp_pins:
         mcp_address = mcp_chip._device.device_address  # Updated to use _device
@@ -238,10 +237,7 @@ def read_mcp_probes():
 
 
 def on_pin_probe(gui_pin_label):
-    global current_pin_index, is_probing_allowed
-    if not is_probing_allowed:
-        return
-
+    global current_pin_index
     expected_pin_label = left_panel_labels[current_pin_index].cget("text")
 
     print(f"on_pin_probe called with gui_pin_label={gui_pin_label}, current_pin_index={current_pin_index}, expected_pin_label={expected_pin_label}")
@@ -251,20 +247,20 @@ def on_pin_probe(gui_pin_label):
         left_panel_labels[current_pin_index].config(bg="#32CD32")
         deactivate_relay(expected_pin_label)  # Deactivate previous relay
         current_pin_index += 1
-        is_probing_allowed = False  # Disable further probing until the next pin
 
         if current_pin_index < len(left_panel_labels):
             next_pin_label = left_panel_labels[current_pin_index].cget("text")
             current_wire_label.config(text=next_pin_label, bg="yellow")
             left_panel_labels[current_pin_index].config(bg="yellow")
             print(f"Next pin to probe: {next_pin_label}")
-            root.after(1000, lambda: activate_relay_and_wait(next_pin_label))  # Add 1-second delay before enabling next probe
+            root.after(1000, lambda: enable_probing())  # Add 1-second delay before enabling next probe
         else:
             print("All pins probed successfully.")
             check_all_probed()
     else:
         pygame.mixer.Sound.play(reject_sound)
         print(f"Pin mismatch: expected {expected_pin_label}, but got {gui_pin_label}")
+
 
 def activate_relay_and_wait(pin_label):
     activate_relay(pin_label)
@@ -344,7 +340,7 @@ def complete_probe():
         root.after(500, confirm_last_probe)
 
 def complete_cycle():
-    global amount_of_cycles_done, elapsed_time_current_cycle, elapsed_time_previous_cycle, total_elapsed_time, current_pin_index, is_running, skipped_tests, is_probing_allowed
+    global amount_of_cycles_done, elapsed_time_current_cycle, elapsed_time_previous_cycle, total_elapsed_time, current_pin_index, is_running, skipped_tests, expecting_probe
     amount_of_cycles_done += 1
     elapsed_time_previous_cycle = elapsed_time_current_cycle
     total_elapsed_time += elapsed_time_previous_cycle
@@ -367,8 +363,9 @@ def complete_cycle():
     # Ensure the start button appears
     current_wire_label.config(text="Starta", bg="#32CD32")
     is_running = False
-    is_probing_allowed = False
+    expecting_probe = False  # Disable probing until the start button is pressed
     print(f"Cycle completed successfully. Pins reset for next cycle.")
+
 
 
 def confirm_complete_cycle():
