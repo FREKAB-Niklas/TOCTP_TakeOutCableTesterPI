@@ -130,8 +130,9 @@ def start_probing(pin_label):
     global expecting_probe
     deactivate_relay(pin_label)  # Deactivate relay after 2 seconds
     print(f"Relay deactivated for {pin_label}, now waiting for probe.")
-    expecting_probe = False
     root.after(1000, enable_probing)  # Wait 1 second after deactivating relay before allowing probing
+    expecting_probe = True
+
 
 
 config = configparser.ConfigParser()
@@ -233,6 +234,7 @@ def read_mcp_probes():
 
 
 
+
 def on_pin_probe(gui_pin_label):
     global current_pin_index, expecting_probe
     if not expecting_probe:
@@ -247,6 +249,7 @@ def on_pin_probe(gui_pin_label):
         left_panel_labels[current_pin_index].config(bg="#32CD32")
         deactivate_relay(expected_pin_label)  # Deactivate previous relay
         current_pin_index += 1
+        expecting_probe = False  # Disable further probing until the next pin
 
         if current_pin_index < len(left_panel_labels):
             next_pin_label = left_panel_labels[current_pin_index].cget("text")
@@ -260,6 +263,7 @@ def on_pin_probe(gui_pin_label):
     else:
         pygame.mixer.Sound.play(reject_sound)
         print(f"Pin mismatch: expected {expected_pin_label}, but got {gui_pin_label}")
+
 
 
 # Ensure to deactivate all relays on startup
@@ -474,7 +478,7 @@ def reset_test():
 
 
 def toggle_timer():
-    global is_running
+    global is_running, expecting_probe
     is_running = not is_running
     if is_running:
         current_wire_label.config(bg="yellow", text=pins[current_pin_index])
@@ -482,6 +486,8 @@ def toggle_timer():
         root.after(2000, lambda: start_probing(pins[current_pin_index]))  # Wait 2 seconds before probing
     else:
         current_wire_label.config(bg="orange", text="Pausad")
+        expecting_probe = False  # Ensure probing is not expected when paused
+
 
 def start_probing(pin_label):
     deactivate_relay(pin_label)  # Deactivate relay after 2 seconds
