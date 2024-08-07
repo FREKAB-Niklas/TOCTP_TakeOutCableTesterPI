@@ -98,20 +98,15 @@ def activate_relay(pin_label):
     if pin_label in relay_mappings:
         mcp, pin = relay_mappings[pin_label]
         relay_pin = mcp.get_pin(pin)
-        relay_pin.value = False  # Activate relay by setting it low
+        relay_pin.value = True  # Activate relay by setting it low
         print(f"Activated relay for {pin_label}")
 
 def deactivate_relay(pin_label):
     if pin_label in relay_mappings:
         mcp, pin = relay_mappings[pin_label]
         relay_pin = mcp.get_pin(pin)
-        relay_pin.value = True  # Deactivate relay by setting it high
+        relay_pin.value = False  # Deactivate relay by setting it high
         print(f"Deactivated relay for {pin_label}")
-
-def deactivate_relay_and_wait_for_probe(pin_label):
-    deactivate_relay(pin_label)  # Deactivate relay after 2 seconds
-    print(f"Relay deactivated for {pin_label}, now waiting for probe.")
-
 
 # Ensure to deactivate all relays on startup
 for pin_label in relay_mappings.keys():
@@ -218,6 +213,20 @@ def mcp_pin_to_gui_pin(mcp, pin):
 
 
 
+def activate_relay(pin_label):
+    if pin_label in relay_mappings:
+        mcp, pin = relay_mappings[pin_label]
+        relay_pin = mcp.get_pin(pin)
+        relay_pin.value = True  # Activate relay by setting it low
+        print(f"Activated relay for {pin_label}")
+
+def deactivate_relay(pin_label):
+    if pin_label in relay_mappings:
+        mcp, pin = relay_mappings[pin_label]
+        relay_pin = mcp.get_pin(pin)
+        relay_pin.value = False  # Deactivate relay by setting it high
+        print(f"Deactivated relay for {pin_label}")
+
 def read_mcp_probes():
     if not is_running or not expecting_probe:
         return None, None, False
@@ -240,7 +249,7 @@ def on_pin_probe(gui_pin_label):
     if gui_pin_label == expected_pin_label:
         pygame.mixer.Sound.play(success_sound)
         left_panel_labels[current_pin_index].config(bg="#32CD32")
-        root.after(1000, lambda: deactivate_relay(expected_pin_label))  # Deactivate previous relay with delay
+        deactivate_relay(expected_pin_label)  # Deactivate previous relay
         current_pin_index += 1
 
         if current_pin_index < len(left_panel_labels):
@@ -248,6 +257,7 @@ def on_pin_probe(gui_pin_label):
             current_wire_label.config(text=next_pin_label, bg="yellow")
             left_panel_labels[current_pin_index].config(bg="yellow")
             print(f"Next pin to probe: {next_pin_label}")
+            root.after(1000, lambda: enable_probing())  # Add 1-second delay before enabling next probe
         else:
             print("All pins probed successfully.")
             check_all_probed()
@@ -255,6 +265,9 @@ def on_pin_probe(gui_pin_label):
         pygame.mixer.Sound.play(reject_sound)
         print(f"Pin mismatch: expected {expected_pin_label}, but got {gui_pin_label}")
 
+# Ensure to deactivate all relays on startup
+for pin_label in relay_mappings.keys():
+    deactivate_relay(pin_label)
 
 
 def monitor_pins():
@@ -462,10 +475,9 @@ def toggle_timer():
     if is_running:
         current_wire_label.config(bg="yellow", text=pins[current_pin_index])
         activate_relay(pins[current_pin_index])  # Activate relay
-        root.after(2000, lambda: deactivate_relay_and_wait_for_probe(pins[current_pin_index]))  # Wait 2 seconds before probing
+        root.after(2000, lambda: start_probing(pins[current_pin_index]))  # Wait 2 seconds before probing
     else:
         current_wire_label.config(bg="orange", text="Pausad")
-
 
 def start_probing(pin_label):
     deactivate_relay(pin_label)  # Deactivate relay after 2 seconds
