@@ -14,7 +14,7 @@ logo_path = os.path.join(script_dir, "logo.png")
 
 def toggle_button(button):
     current_color = button.cget("bg")
-    new_color = "#32CD32" if current_color == "SystemButtonFace" else "SystemButtonFace"
+    new_color = "#32CD32" if current_color == "light gray" else "light gray"
     button.config(bg=new_color)
 
 def select_all_column(col_idx):
