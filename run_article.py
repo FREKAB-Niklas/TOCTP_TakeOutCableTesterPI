@@ -31,33 +31,35 @@ log_file = os.path.join(script_dir, "run_article.log")
 sys.stdout = open(log_file, "a")
 sys.stderr = open(log_file, "a")
 
-print("run_article.py is starting...")
+print(f"{datetime.now()}: run_article.py is starting...")
 
 
-# Initialize pygame for sound effects
-pygame.mixer.init()
-success_sound = pygame.mixer.Sound("success.mp3")
-reject_sound = pygame.mixer.Sound("reject.mp3")
+try:
+    # Initialize pygame for sound effects
+    pygame.mixer.init()
+    success_sound = pygame.mixer.Sound("success.mp3")
+    reject_sound = pygame.mixer.Sound("reject.mp3")
+    print(f"{datetime.now()}: Pygame initialized.")
 
-# Initialize main window
-root = tk.Tk()
-root.title("Testing Interface")
-root.geometry("1920x1080")
-root.attributes('-fullscreen', True)
+    # Initialize main window
+    root = tk.Tk()
+    root.title("Testing Interface")
+    root.geometry("1920x1080")
+    root.attributes('-fullscreen', True)
+    root.lift()
+    root.attributes('-topmost', True)
+    root.after(10, lambda: root.attributes('-topmost', False))
 
-# Ensure the window is brought to the front
-root.lift()
-root.attributes('-topmost', True)
-root.after(10, lambda: root.attributes('-topmost', False))
+    print(f"{datetime.now()}: Tkinter window initialized.")
 
-# Initialize I2C bus and MCP23017
-i2c = busio.I2C(board.SCL, board.SDA)
-mcp1 = MCP23017(i2c, address=0x20)
-mcp2 = MCP23017(i2c, address=0x22)
+    # Initialize I2C bus and MCP23017
+    i2c = busio.I2C(board.SCL, board.SDA)
+    mcp1 = MCP23017(i2c, address=0x20)
+    mcp2 = MCP23017(i2c, address=0x22)
+    relay_mcp1 = MCP23017(i2c, address=0x21)
+    relay_mcp2 = MCP23017(i2c, address=0x23)
 
-# Initialize I2C bus and MCP23017 for relays
-relay_mcp1 = MCP23017(i2c, address=0x21)
-relay_mcp2 = MCP23017(i2c, address=0x23)
+    print(f"{datetime.now()}: MCP23017 initialized.")
 
 def enable_probing():
     global expecting_probe
@@ -150,6 +152,8 @@ config.read('article_config.txt')
 
 filename = config['DEFAULT']['filename']
 pins = config['DEFAULT']['pins'].split(',')
+
+print(f"{datetime.now()}: Config read successfully. Filename: {filename}, Pins: {pins}")
 
 # Get the directory where the script is located
 script_dir = os.path.dirname(os.path.abspath(__file__))
