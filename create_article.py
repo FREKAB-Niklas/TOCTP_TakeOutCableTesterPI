@@ -22,11 +22,11 @@ def select_all_column(col_idx):
         idx = col_idx * 8 + i
         toggle_button(buttons[idx])
 
-# Replace standard message boxes with custom message boxes for better touch screen compatibility
 def custom_messagebox(title, message, box_type="info"):
     custom_box = tk.Toplevel(root)
     custom_box.title(title)
     custom_box.geometry("400x200")
+    custom_box.attributes('-topmost', 'true')  # Make the message box topmost
     custom_box.grab_set()
 
     msg_label = tk.Label(custom_box, text=message, font=body_font, wraplength=350)
@@ -74,6 +74,10 @@ def save_pins():
             file.write(pin + "\n")
 
     custom_messagebox("Färdig", "Artikel Sparad.", "info")
+
+
+
+
 
 
 
