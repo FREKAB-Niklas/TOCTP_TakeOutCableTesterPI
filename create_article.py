@@ -128,7 +128,7 @@ save_button.pack(side=tk.BOTTOM, pady=60)
 def show_keyboard(entry_widget):
     keyboard_window = tk.Toplevel(root, bg="#0A60C5")
     keyboard_window.title("On-Screen Keyboard")
-    keyboard_window.geometry("1400x850+250+180")
+    keyboard_window.geometry("1920x850+250+180")
     keyboard_window.resizable(False, False)
     keyboard_window.overrideredirect(True)  # Remove the window frame
 
