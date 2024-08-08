@@ -21,7 +21,6 @@ def create_article():
 # Initialize main window
 root = tk.Tk()
 root.title("Home")
-# Get screen width and height
 root.geometry("1920x1080")
 root.attributes('-fullscreen', True)
 
