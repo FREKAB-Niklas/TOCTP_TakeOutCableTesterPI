@@ -61,6 +61,10 @@ try:
 
     print(f"{datetime.now()}: MCP23017 initialized.")
 
+
+except Exception as e:
+        print(f"{datetime.now()}: Error occurred in some_function: {e}")
+
 def enable_probing():
     global expecting_probe
     expecting_probe = True
