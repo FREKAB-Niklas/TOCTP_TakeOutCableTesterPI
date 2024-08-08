@@ -24,13 +24,18 @@ import pygame
 
 print(f"{datetime.now()}: run_article.py is starting...")
 
+# Get the directory where the script is located
+script_dir = os.path.dirname(os.path.abspath(__file__))
+
 pygame_initialized = False
 for attempt in range(5):  # Try 5 times with delays
     try:
         # Attempt to initialize pygame for sound effects
         pygame.mixer.init()
-        success_sound = pygame.mixer.Sound("success.mp3")
-        reject_sound = pygame.mixer.Sound("reject.mp3")
+        success_sound_path = os.path.join(script_dir, "success.mp3")
+        reject_sound_path = os.path.join(script_dir, "reject.mp3")
+        success_sound = pygame.mixer.Sound(success_sound_path)
+        reject_sound = pygame.mixer.Sound(success_sound_path)
         print(f"{datetime.now()}: Pygame initialized.")
         pygame_initialized = True
         break
