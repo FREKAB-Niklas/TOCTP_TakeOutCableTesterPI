@@ -92,25 +92,19 @@ relay_mappings = {
     '32: j': (relay_mcp2, 15)  # MCP 0x23 pin B7
 }
 
-# Initialize relay pins
-for mcp, pin in relay_mappings.values():
-    relay_pin = mcp.get_pin(pin)
-    relay_pin.direction = Direction.OUTPUT
-    relay_pin.value = False  # Assuming relay is off when high
-
 
 def activate_relay(pin_label):
     if pin_label in relay_mappings:
         mcp, pin = relay_mappings[pin_label]
         relay_pin = mcp.get_pin(pin)
-        relay_pin.value = True  # Activate relay by setting it low
+        relay_pin.value = True  # Activate relay by setting it high
         print(f"Activated relay for {pin_label}")
 
 def deactivate_relay(pin_label):
     if pin_label in relay_mappings:
         mcp, pin = relay_mappings[pin_label]
         relay_pin = mcp.get_pin(pin)
-        relay_pin.value = False  # Deactivate relay by setting it high
+        relay_pin.value = False  # Deactivate relay by setting it low
         print(f"Deactivated relay for {pin_label}")
 
 # Ensure to deactivate all relays on startup
@@ -128,7 +122,7 @@ for mcp, pin in mcp_pins:
 for mcp, pin in relay_mappings.values():
     relay_pin = mcp.get_pin(pin)
     relay_pin.direction = Direction.OUTPUT
-    relay_pin.value = True  # Assuming relay is off when high
+    relay_pin.value = False  # Assuming relay is off when low
 
 
 def start_probing(pin_label):
