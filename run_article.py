@@ -31,15 +31,13 @@ reject_sound = pygame.mixer.Sound("reject.mp3")
 # Initialize main window
 root = tk.Tk()
 root.title("Testing Interface")
-# Get screen width and height
-screen_width = root.winfo_screenwidth()
-screen_height = root.winfo_screenheight()
-
-# Set the geometry to the screen size
-root.geometry(f"{screen_width}x{screen_height}")
+root.geometry("1920x1080")
 root.attributes('-fullscreen', True)
-root.overrideredirect(True)  # Remove window decorations
-root.bind("<Escape>", lambda e: root.destroy())  # Allow exiting fullscreen with the Esc key
+
+# Ensure the window is brought to the front
+root.lift()
+root.attributes('-topmost', True)
+root.after(10, lambda: root.attributes('-topmost', False))
 
 # Ensure the window is brought to the front
 root.lift()
