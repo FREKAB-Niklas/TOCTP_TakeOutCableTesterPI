@@ -112,12 +112,12 @@ buttons = []
 for col in range(4):
     col_frame = tk.Frame(pins_frame)
     col_frame.grid(row=0, column=col, padx=10)
-    select_all_button = tk.Button(col_frame, text=f"Selektera Rad", font=body_font, command=lambda c=col: select_all_column(c))
+    select_all_button = tk.Button(col_frame, text=f"Selektera Rad", font=body_font, command=lambda c=col: select_all_column(c), bg="light gray")
     select_all_button.pack(pady=5)
     for row in range(8):
         idx = row + col * 8
         button = tk.Button(col_frame, text=pins[idx], font=body_font, width=10, height=2,
-                           command=lambda b=idx: toggle_button(buttons[b]))
+                           command=lambda b=idx: toggle_button(buttons[b]), bg="light gray")
         button.pack(pady=5)
         buttons.append(button)
 
