@@ -22,48 +22,34 @@ import busio
 from digitalio import Direction, Pull
 import pygame
 
-# Ensure the script runs in its directory
-script_dir = os.path.dirname(os.path.abspath(__file__))
-os.chdir(script_dir)
-
-# Redirect stdout and stderr to a log file
-log_file = os.path.join(script_dir, "run_article.log")
-sys.stdout = open(log_file, "a")
-sys.stderr = open(log_file, "a")
-
 print(f"{datetime.now()}: run_article.py is starting...")
 
 
-try:
-    # Initialize pygame for sound effects
-    pygame.mixer.init()
-    success_sound = pygame.mixer.Sound("success.mp3")
-    reject_sound = pygame.mixer.Sound("reject.mp3")
-    print(f"{datetime.now()}: Pygame initialized.")
+# Initialize pygame for sound effects
+pygame.mixer.init()
+success_sound = pygame.mixer.Sound("success.mp3")
+reject_sound = pygame.mixer.Sound("reject.mp3")
 
-    # Initialize main window
-    root = tk.Tk()
-    root.title("Testing Interface")
-    root.geometry("1920x1080")
-    root.attributes('-fullscreen', True)
-    root.lift()
-    root.attributes('-topmost', True)
-    root.after(10, lambda: root.attributes('-topmost', False))
+print(f"{datetime.now()}: Sound loaded...")
 
-    print(f"{datetime.now()}: Tkinter window initialized.")
+# Initialize main window
+root = tk.Tk()
+root.title("Testing Interface")
+root.geometry("1920x1080")
+root.attributes('-fullscreen', True)
+root.lift()
+root.attributes('-topmost', True)
+root.after(10, lambda: root.attributes('-topmost', False))
 
-    # Initialize I2C bus and MCP23017
-    i2c = busio.I2C(board.SCL, board.SDA)
-    mcp1 = MCP23017(i2c, address=0x20)
-    mcp2 = MCP23017(i2c, address=0x22)
-    relay_mcp1 = MCP23017(i2c, address=0x21)
-    relay_mcp2 = MCP23017(i2c, address=0x23)
+print(f"{datetime.now()}: Window opened")
 
-    print(f"{datetime.now()}: MCP23017 initialized.")
+# Initialize I2C bus and MCP23017
+i2c = busio.I2C(board.SCL, board.SDA)
+mcp1 = MCP23017(i2c, address=0x20)
+mcp2 = MCP23017(i2c, address=0x22)
+relay_mcp1 = MCP23017(i2c, address=0x21)
+relay_mcp2 = MCP23017(i2c, address=0x23)
 
-
-except Exception as e:
-        print(f"{datetime.now()}: Error occurred in some_function: {e}")
 
 def enable_probing():
     global expecting_probe
