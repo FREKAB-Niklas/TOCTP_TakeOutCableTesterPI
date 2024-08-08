@@ -21,6 +21,10 @@ def create_article():
 # Initialize main window
 root = tk.Tk()
 root.title("Home")
+# Get screen width and height
+screen_width = root.winfo_screenwidth()
+screen_height = root.winfo_screenheight()
+
 root.attributes('-fullscreen', True)
 root.overrideredirect(True)  # Remove window decorations
 root.bind("<Escape>", lambda e: root.destroy())  # Allow exiting fullscreen with the Esc key
