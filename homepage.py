@@ -21,8 +21,8 @@ def create_article():
 # Initialize main window
 root = tk.Tk()
 root.title("Home")
-root.geometry("1920x1080")
 root.attributes('-fullscreen', True)
+root.bind("<Escape>", lambda e: root.destroy())  # Allow exiting fullscreen with the Esc key
 
 # Ensure the window is brought to the front
 root.lift()
