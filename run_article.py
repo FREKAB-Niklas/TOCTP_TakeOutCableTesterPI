@@ -269,9 +269,7 @@ def activate_relay_and_wait(pin_label):
 
 
 
-# Ensure to deactivate all relays on startup
-for pin_label in relay_mappings.keys():
-    deactivate_relay(pin_label)
+
 
 
 def monitor_pins():
@@ -470,9 +468,6 @@ def reset_test():
             mcp_pin.direction = Direction.INPUT
             mcp_pin.pull = Pull.UP
         
-        # Deactivate all relays
-        for pin_label in relay_mappings.keys():
-            deactivate_relay(pin_label)
         
         print("Reset complete and MCP23017 pins reset")  # Add logging for debugging
 
