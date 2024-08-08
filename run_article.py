@@ -32,12 +32,28 @@ reject_sound_path = os.path.join(script_dir, "reject.mp3")
 # Set environment variables for SDL to use the PulseAudio driver
 os.environ["SDL_AUDIODRIVER"] = "pulseaudio"
 
+# Function to start PulseAudio if it's not running
+def start_pulseaudio():
+    try:
+        # Check if PulseAudio is running
+        subprocess.run(["pulseaudio", "--check"], check=True)
+        print(f"{datetime.now()}: PulseAudio is already running.")
+    except subprocess.CalledProcessError:
+        # Start PulseAudio if not running
+        subprocess.run(["pulseaudio", "--start"])
+        print(f"{datetime.now()}: PulseAudio started.")
+
+# Attempt to initialize pygame for sound effects
 pygame_initialized = False
+
+# Start PulseAudio
+start_pulseaudio()
+
 for _ in range(5):
     try:
         pygame.mixer.init()
-        success_sound = pygame.mixer.Sound(success_sound_path)
-        reject_sound = pygame.mixer.Sound(reject_sound_path)
+        success_sound = pygame.mixer.Sound("success.mp3")
+        reject_sound = pygame.mixer.Sound("reject.mp3")
         print(f"{datetime.now()}: Pygame initialized.")
         pygame_initialized = True
         break
@@ -51,7 +67,6 @@ if not pygame_initialized:
     reject_sound = None
 else:
     print(f"{datetime.now()}: Pygame initialized successfully with audio support.")
-
 # Check if the sound objects are None before playing them
 def play_sound(sound):
     if sound:
