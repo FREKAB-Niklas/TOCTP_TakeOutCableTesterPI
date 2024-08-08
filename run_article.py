@@ -96,7 +96,7 @@ relay_mappings = {
 for mcp, pin in relay_mappings.values():
     relay_pin = mcp.get_pin(pin)
     relay_pin.direction = Direction.OUTPUT
-    relay_pin.value = True  # Assuming relay is off when high
+    relay_pin.value = False  # Assuming relay is off when high
 
 
 def activate_relay(pin_label):
