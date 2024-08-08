@@ -26,27 +26,35 @@ print(f"{datetime.now()}: run_article.py is starting...")
 
 # Get the directory where the script is located
 script_dir = os.path.dirname(os.path.abspath(__file__))
+success_sound_path = os.path.join(script_dir, "success.mp3")
+reject_sound_path = os.path.join(script_dir, "reject.mp3")
 
+# Set environment variables for SDL to use the PulseAudio driver
+os.environ["SDL_AUDIODRIVER"] = "pulseaudio"
+
+# Attempt to initialize pygame for sound effects
 pygame_initialized = False
-for attempt in range(5):  # Try 5 times with delays
+for _ in range(5):  # Try 5 times with delays
     try:
-        # Attempt to initialize pygame for sound effects
         pygame.mixer.init()
-        success_sound_path = os.path.join(script_dir, "success.mp3")
-        reject_sound_path = os.path.join(script_dir, "reject.mp3")
-        success_sound = pygame.mixer.Sound(success_sound_path)
-        reject_sound = pygame.mixer.Sound(success_sound_path)
+        success_sound = pygame.mixer.Sound(success_sound_path)  # Replace with actual path
+        reject_sound = pygame.mixer.Sound(reject_sound_path)  # Replace with actual path
         print(f"{datetime.now()}: Pygame initialized.")
         pygame_initialized = True
         break
     except pygame.error as e:
-        print(f"{datetime.now()}: Pygame initialization failed on attempt {attempt+1}: {e}. Retrying...")
+        print(f"{datetime.now()}: Pygame initialization failed: {e}. Retrying...")
         time.sleep(2)  # Wait for 2 seconds before retrying
 
 if not pygame_initialized:
     print(f"{datetime.now()}: Pygame initialization failed after retries. Continuing without sound.")
     success_sound = None
     reject_sound = None
+
+# If initialization was successful, play a test sound
+if success_sound is not None:
+    success_sound.play()
+    pygame.time.wait(3000)  # Wait for 3 seconds to allow the sound to play
 
 # Initialize main window
 root = tk.Tk()
