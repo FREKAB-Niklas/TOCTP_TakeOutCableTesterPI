@@ -22,36 +22,59 @@ def select_all_column(col_idx):
         idx = col_idx * 8 + i
         toggle_button(buttons[idx])
 
+# Replace standard message boxes with custom message boxes for better touch screen compatibility
+def custom_messagebox(title, message, box_type="info"):
+    custom_box = tk.Toplevel(root)
+    custom_box.title(title)
+    custom_box.geometry("400x200")
+    custom_box.grab_set()
+
+    msg_label = tk.Label(custom_box, text=message, font=body_font, wraplength=350)
+    msg_label.pack(pady=20)
+
+    if box_type == "error":
+        button_text = "OK"
+        button_command = custom_box.destroy
+    elif box_type == "info":
+        button_text = "OK"
+        button_command = custom_box.destroy
+    elif box_type == "askyesno":
+        button_frame = tk.Frame(custom_box)
+        button_frame.pack(pady=20)
+        yes_button = tk.Button(button_frame, text="Yes", font=body_font, width=10, height=2, command=lambda: (custom_box.destroy(), root.quit()))
+        yes_button.pack(side=tk.LEFT, padx=10)
+        no_button = tk.Button(button_frame, text="No", font=body_font, width=10, height=2, command=custom_box.destroy)
+        no_button.pack(side=tk.RIGHT, padx=10)
+        return custom_box.wait_window()
+
+    ok_button = tk.Button(custom_box, text=button_text, font=body_font, width=10, height=2, command=button_command)
+    ok_button.pack(pady=20)
+
 def save_pins():
     selected_pins = [button['text'] for button in buttons if button.cget("bg") == "#32CD32"]
     article_name = article_name_entry.get()
     if not article_name:
-        messagebox.showerror("Error", "Please enter the article name.")
+        custom_messagebox("Fel", "Vänligen ange ett artikelnummer.", "error")
         return
 
-    # Get the directory where the script is located
     script_dir = os.path.dirname(os.path.abspath(__file__))
-
-    # Construct the full path to the 'Artiklar' directory inside the PI folder
     folder_path = os.path.join(script_dir, "Artiklar")
 
-    # Check if the directory exists, if not, create it
     if not os.path.exists(folder_path):
         os.makedirs(folder_path)
 
     file_path = os.path.join(folder_path, f"{article_name}.txt")
 
-    # Check if the file already exists
     if os.path.exists(file_path):
-        overwrite = messagebox.askyesno("File Exists", f"A file named '{article_name}.txt' already exists. Do you want to overwrite it?")
-        if not overwrite:
+        if not custom_messagebox("Artikeln finns", f"En artikel med namnet '{article_name}.txt' finns redan. Vill du spara över den?", "askyesno"):
             return
 
     with open(file_path, "w") as file:
         for pin in selected_pins:
             file.write(pin + "\n")
 
-    messagebox.showinfo("Success", "Pins saved successfully.")
+    custom_messagebox("Färdig", "Artikel Sparad.", "info")
+
 
 
 
@@ -107,6 +130,9 @@ pins = [
     "18: U", "19: V", "20: W", "21: X", "22: Y", "23: Z", "24: a", "25: b",
     "26: c", "27: d", "28: e", "29: f", "30: g", "31: h", "32: j"
 ]
+
+
+
 
 buttons = []
 for col in range(4):
