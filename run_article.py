@@ -53,8 +53,8 @@ start_pulseaudio()
 for _ in range(5):
     try:
         pygame.mixer.init()
-        success_sound = pygame.mixer.Sound(success_sound_path)
-        reject_sound = pygame.mixer.Sound(reject_sound_path)
+        success_sound = pygame.mixer.Sound("success.mp3")
+        reject_sound = pygame.mixer.Sound("reject.mp3")
         print(f"{datetime.now()}: Pygame initialized.")
         pygame_initialized = True
         break
@@ -68,12 +68,6 @@ if not pygame_initialized:
     reject_sound = None
 else:
     print(f"{datetime.now()}: Pygame initialized successfully with audio support.")
-# Check if the sound objects are None before playing them
-def play_sound(sound):
-    if sound:
-        sound.play()
-    else:
-        print(f"{datetime.now()}: Sound is not initialized.")
 
 # Initialize main window
 root = tk.Tk()
