@@ -52,8 +52,8 @@ start_pulseaudio()
 for _ in range(5):
     try:
         pygame.mixer.init()
-        success_sound = pygame.mixer.Sound("success.mp3")
-        reject_sound = pygame.mixer.Sound("reject.mp3")
+        success_sound = pygame.mixer.Sound(success_sound_path)
+        reject_sound = pygame.mixer.Sound(reject_sound_path)
         print(f"{datetime.now()}: Pygame initialized.")
         pygame_initialized = True
         break
