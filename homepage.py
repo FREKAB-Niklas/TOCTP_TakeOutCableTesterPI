@@ -25,6 +25,7 @@ root.title("Home")
 screen_width = root.winfo_screenwidth()
 screen_height = root.winfo_screenheight()
 
+root.geometry(f"{screen_width}x{screen_height}")
 root.attributes('-fullscreen', True)
 root.overrideredirect(True)  # Remove window decorations
 root.bind("<Escape>", lambda e: root.destroy())  # Allow exiting fullscreen with the Esc key
