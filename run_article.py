@@ -26,6 +26,8 @@ print(f"{datetime.now()}: run_article.py is starting...")
 
 # Get the directory where the script is located
 script_dir = os.path.dirname(os.path.abspath(__file__))
+success_sound_path = os.path.join(script_dir, "success.mp3")
+reject_sound_path = os.path.join(script_dir, "reject.mp3")
 
 # Set environment variables for SDL to use the PulseAudio driver
 os.environ["SDL_AUDIODRIVER"] = "pulseaudio"
@@ -34,8 +36,8 @@ pygame_initialized = False
 for _ in range(5):
     try:
         pygame.mixer.init()
-        success_sound = pygame.mixer.Sound("success.mp3")
-        reject_sound = pygame.mixer.Sound("reject.mp3")
+        success_sound = pygame.mixer.Sound(success_sound_path)
+        reject_sound = pygame.mixer.Sound(reject_sound_path)
         print(f"{datetime.now()}: Pygame initialized.")
         pygame_initialized = True
         break
