@@ -24,13 +24,24 @@ import pygame
 
 print(f"{datetime.now()}: run_article.py is starting...")
 
+pygame_initialized = False
+for attempt in range(5):  # Try 5 times with delays
+    try:
+        # Attempt to initialize pygame for sound effects
+        pygame.mixer.init()
+        success_sound = pygame.mixer.Sound("success.mp3")
+        reject_sound = pygame.mixer.Sound("reject.mp3")
+        print(f"{datetime.now()}: Pygame initialized.")
+        pygame_initialized = True
+        break
+    except pygame.error as e:
+        print(f"{datetime.now()}: Pygame initialization failed on attempt {attempt+1}: {e}. Retrying...")
+        time.sleep(2)  # Wait for 2 seconds before retrying
 
-# Initialize pygame for sound effects
-pygame.mixer.init()
-success_sound = pygame.mixer.Sound("success.mp3")
-reject_sound = pygame.mixer.Sound("reject.mp3")
-
-print(f"{datetime.now()}: Sound loaded...")
+if not pygame_initialized:
+    print(f"{datetime.now()}: Pygame initialization failed after retries. Continuing without sound.")
+    success_sound = None
+    reject_sound = None
 
 # Initialize main window
 root = tk.Tk()
