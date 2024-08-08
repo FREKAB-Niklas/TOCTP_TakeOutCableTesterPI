@@ -26,22 +26,31 @@ print(f"{datetime.now()}: run_article.py is starting...")
 
 # Get the directory where the script is located
 script_dir = os.path.dirname(os.path.abspath(__file__))
-success_sound_path = os.path.join(script_dir, "success.mp3")
-reject_sound_path = os.path.join(script_dir, "reject.mp3")
 
 # Set environment variables for SDL to use the PulseAudio driver
 os.environ["SDL_AUDIODRIVER"] = "pulseaudio"
 
 # Attempt to initialize pygame for sound effects
 pygame_initialized = False
-for _ in range(5):  # Try 5 times with delays
+success_sound = None
+reject_sound = None
+
+for attempt in range(5):  # Try 5 times with delays
     try:
         pygame.mixer.init()
-        success_sound = pygame.mixer.Sound(success_sound_path)  # Replace with actual path
-        reject_sound = pygame.mixer.Sound(reject_sound_path)  # Replace with actual path
-        print(f"{datetime.now()}: Pygame initialized.")
-        pygame_initialized = True
-        break
+        success_sound_path = os.path.join(script_dir, "success.mp3")
+        reject_sound_path = os.path.join(script_dir, "reject.mp3")
+
+        
+        if os.path.exists(success_sound_path) and os.path.exists(reject_sound_path):
+            success_sound = pygame.mixer.Sound(success_sound_path)
+            reject_sound = pygame.mixer.Sound(reject_sound_path)
+            print(f"{datetime.now()}: Pygame initialized.")
+            pygame_initialized = True
+            break
+        else:
+            print(f"{datetime.now()}: Sound files not found.")
+            break
     except pygame.error as e:
         print(f"{datetime.now()}: Pygame initialization failed: {e}. Retrying...")
         time.sleep(2)  # Wait for 2 seconds before retrying
@@ -50,11 +59,18 @@ if not pygame_initialized:
     print(f"{datetime.now()}: Pygame initialization failed after retries. Continuing without sound.")
     success_sound = None
     reject_sound = None
+else:
+    # If initialization was successful, play a test sound
+    if success_sound:
+        success_sound.play()
+        pygame.time.wait(3000)  # Wait for 3 seconds to allow the sound to play
 
-# If initialization was successful, play a test sound
-if success_sound is not None:
-    success_sound.play()
-    pygame.time.wait(3000)  # Wait for 3 seconds to allow the sound to play
+# Check if the sound objects are None before playing them
+def play_sound(sound):
+    if sound:
+        sound.play()
+    else:
+        print(f"{datetime.now()}: Sound is not initialized.")
 
 # Initialize main window
 root = tk.Tk()
