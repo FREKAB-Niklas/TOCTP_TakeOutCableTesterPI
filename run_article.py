@@ -5,6 +5,7 @@ from tkinter import messagebox
 from PIL import Image, ImageTk
 import pandas as pd
 import os
+import sys
 from datetime import datetime, timedelta
 import openpyxl
 from openpyxl import load_workbook
@@ -21,7 +22,17 @@ import busio
 from digitalio import Direction, Pull
 import pygame
 
+# Ensure the script runs in its directory
+script_dir = os.path.dirname(os.path.abspath(__file__))
+os.chdir(script_dir)
+
+# Redirect stdout and stderr to a log file
+log_file = os.path.join(script_dir, "run_article.log")
+sys.stdout = open(log_file, "a")
+sys.stderr = open(log_file, "a")
+
 print("run_article.py is starting...")
+
 
 # Initialize pygame for sound effects
 pygame.mixer.init()
