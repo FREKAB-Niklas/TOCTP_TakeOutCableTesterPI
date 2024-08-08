@@ -31,13 +31,21 @@ reject_sound = pygame.mixer.Sound("reject.mp3")
 # Initialize main window
 root = tk.Tk()
 root.title("Testing Interface")
-root.geometry("1920x1080")
+# Get screen width and height
+screen_width = root.winfo_screenwidth()
+screen_height = root.winfo_screenheight()
+
+# Set the geometry to the screen size
+root.geometry(f"{screen_width}x{screen_height}")
 root.attributes('-fullscreen', True)
+root.overrideredirect(True)  # Remove window decorations
+root.bind("<Escape>", lambda e: root.destroy())  # Allow exiting fullscreen with the Esc key
 
 # Ensure the window is brought to the front
 root.lift()
 root.attributes('-topmost', True)
 root.after(10, lambda: root.attributes('-topmost', False))
+
 
 # Initialize I2C bus and MCP23017
 i2c = busio.I2C(board.SCL, board.SDA)
