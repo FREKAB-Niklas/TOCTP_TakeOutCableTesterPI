@@ -280,7 +280,7 @@ def read_mcp_probes():
 
 
 def on_pin_probe(gui_pin_label):
-    global current_pin_index, expecting_probe
+    global current_pin_index, expecting_probe, success_sound, reject_sound
     if not expecting_probe:
         return
 
@@ -289,7 +289,11 @@ def on_pin_probe(gui_pin_label):
     print(f"on_pin_probe called with gui_pin_label={gui_pin_label}, current_pin_index={current_pin_index}, expected_pin_label={expected_pin_label}")
 
     if gui_pin_label == expected_pin_label:
-        pygame.mixer.Sound.play(success_sound)
+        if success_sound:
+            success_sound.play()
+        else:
+            print(f"{datetime.now()}: success_sound is not initialized.")
+        
         left_panel_labels[current_pin_index].config(bg="#32CD32")
         deactivate_relay(expected_pin_label)  # Deactivate previous relay
         current_pin_index += 1
@@ -305,8 +309,13 @@ def on_pin_probe(gui_pin_label):
             print("All pins probed successfully.")
             check_all_probed()
     else:
-        pygame.mixer.Sound.play(reject_sound)
+        if reject_sound:
+            reject_sound.play()
+        else:
+            print(f"{datetime.now()}: reject_sound is not initialized.")
+        
         print(f"Pin mismatch: expected {expected_pin_label}, but got {gui_pin_label}")
+
 
 def activate_relay_and_wait(pin_label):
     activate_relay(pin_label)
