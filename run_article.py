@@ -33,7 +33,7 @@ reject_sound_path = os.path.join(script_dir, "reject.mp3")
 import pygame
 # Set the environment variables for the audio driver and device
 os.environ["SDL_AUDIODRIVER"] = "alsa"
-os.environ["AUDIODEV"] = "hw:CARD=vc4hdmi0,DEV=0"  # Adjust based on your setup
+os.environ["AUDIODEV"] = "hw:CARD=vc4hdmi1"  # Adjust based on your setup
 
 # Attempt to initialize pygame for sound effects
 pygame_initialized = False
