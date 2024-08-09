@@ -161,7 +161,7 @@ def show_keyboard(entry_widget, on_submit=None, message="Enter input:"):
     keyboard_window.geometry("1920x1080")
     keyboard_window.attributes('-fullscreen', True)
     keyboard_window.resizable(False, False)
-    keyboard_window.overrideredirect(True)  # Remove the window frame
+    keyboard_window.overrideredirect(True)
     keyboard_window.grab_set()
 
     def insert_char(char):
@@ -234,6 +234,10 @@ def show_keyboard(entry_widget, on_submit=None, message="Enter input:"):
 
     # Set focus to the entry field
     entry_field.focus()
+
+    # Add a delay after opening the keyboard window to ensure it fully renders
+    keyboard_window.after(100, lambda: keyboard_window.focus_force())
+
 
 
 
