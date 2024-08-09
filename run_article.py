@@ -70,7 +70,7 @@ for _ in range(5):
 
 try:
     success_sound.play()
-    pygame.time.wair(3000)
+    pygame.time.wait(3000)
 except Exception as e:
     print(f"Error playing success sound: {e}")
 
