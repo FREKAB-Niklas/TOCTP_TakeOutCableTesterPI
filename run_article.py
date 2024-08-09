@@ -30,6 +30,7 @@ script_dir = os.path.dirname(os.path.abspath(__file__))
 success_sound_path = os.path.join(script_dir, "success.mp3")
 reject_sound_path = os.path.join(script_dir, "reject.mp3")
 
+import pygame
 # Set the environment variables for the audio driver and device
 os.environ["SDL_AUDIODRIVER"] = "alsa"
 os.environ["AUDIODEV"] = "hw:CARD=vc4hdmi0,DEV=0"  # Adjust based on your setup
