@@ -613,7 +613,7 @@ def on_pin_click(idx):
         for i in range(current_pin_index + 1, idx + 1):
             if left_panel_labels[i].cget("bg") != "#32CD32":  # Not green
                 response = custom_messagebox("Hoppa över", "Du hoppar över flera punkter, är du säker att du vill fortsätta?")
-                if not response:
+                if response is None or not response:
                     return
                 break
     # Preserve the green status if the pin was already tested
