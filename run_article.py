@@ -617,7 +617,7 @@ def on_pin_click(idx):
         # Check if the jump skips any pins in the current cycle
         for i in range(current_pin_index + 1, idx + 1):
             if left_panel_labels[i].cget("bg") != "#32CD32":  # Not green
-                response = custom_messagebox("Hoppa över", "Du hoppar över flera punkter, är du säker att du vill fortsätta?", "askyesno")
+                response = custom_messagebox("Hoppa över", "Du hoppar över flera punkter, är du säker att du vill fortsätta?", "info")
                 if not response:
                     return
                 break
