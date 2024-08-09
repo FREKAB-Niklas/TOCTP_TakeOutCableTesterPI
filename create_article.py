@@ -22,49 +22,36 @@ def select_all_column(col_idx):
         idx = col_idx * 8 + i
         toggle_button(buttons[idx])
 
-def custom_messagebox(title, message, box_type="info"):
-    root.attributes("-disabled", True)  # Disable the main window
+def custom_messagebox(title, message, box_type="info"): 
     custom_box = tk.Toplevel(root)
     custom_box.title(title)
     custom_box.overrideredirect(True)  # Remove window decorations
-    custom_box.bind("<Escape>", lambda e: (root.attributes("-disabled", False), custom_box.destroy()))  # Allow exiting fullscreen with the Esc key
-
-    # Calculate the position to center the window
-    window_width = 600
-    window_height = 300
-    screen_width = root.winfo_screenwidth()
-    screen_height = root.winfo_screenheight()
-    position_top = int(screen_height/2 - window_height/2)
-    position_right = int(screen_width/2 - window_width/2)
-
-    custom_box.geometry(f"{window_width}x{window_height}+{position_right}+{position_top}")
+    custom_box.bind("<Escape>", lambda e: root.destroy())  # Allow exiting fullscreen with the Esc key
+    custom_box.geometry("600x300+500+500")  # Increase the size of the message box
     custom_box.attributes('-topmost', 'true')  # Make the message box topmost
     custom_box.grab_set()
-    custom_box.focus_force()  # Force focus on the custom_box
+    custom_box.focus_force()
 
     msg_label = tk.Label(custom_box, text=message, font=("Helvetica", 18), wraplength=550)
     msg_label.pack(pady=40)  # Increase padding for better touch response
 
-    if box_type == "error" or box_type == "info":
+    if box_type == "error":
         button_text = "OK"
-        button_command = lambda: (root.attributes("-disabled", False), custom_box.destroy())
-        ok_button = tk.Button(custom_box, text=button_text, font=("Helvetica", 18), width=12, height=3, command=button_command)
-        ok_button.pack(pady=40)  # Increase padding for better touch response
-        ok_button.focus_set()  # Explicitly set focus to the OK button
-        ok_button.update()  # Force an update to ensure the button is ready to receive events
-        custom_box.update()  # Force an update of the custom_box window to register focus
+        button_command = custom_box.destroy
+    elif box_type == "info":
+        button_text = "OK"
+        button_command = custom_box.destroy
     elif box_type == "askyesno":
         button_frame = tk.Frame(custom_box)
         button_frame.pack(pady=40)  # Increase padding for better touch response
-        yes_button = tk.Button(button_frame, text="Yes", font=("Helvetica", 18), width=12, height=3, command=lambda: (root.attributes("-disabled", False), custom_box.destroy(), root.quit()))
+        yes_button = tk.Button(button_frame, text="Yes", font=("Helvetica", 18), width=12, height=3, command=lambda: (custom_box.destroy(), root.quit()))
         yes_button.pack(side=tk.LEFT, padx=20)  # Increase padding for better touch response
-        no_button = tk.Button(button_frame, text="No", font=("Helvetica", 18), width=12, height=3, command=lambda: (root.attributes("-disabled", False), custom_box.destroy()))
+        no_button = tk.Button(button_frame, text="No", font=("Helvetica", 18), width=12, height=3, command=custom_box.destroy)
         no_button.pack(side=tk.RIGHT, padx=20)  # Increase padding for better touch response
-        yes_button.focus_set()  # Set focus to the Yes button
-        yes_button.update()  # Force an update to ensure the button is ready to receive events
-        custom_box.update()  # Force an update of the custom_box window to register focus
         return custom_box.wait_window()
 
+    ok_button = tk.Button(custom_box, text=button_text, font=("Helvetica", 18), width=12, height=3, command=button_command)
+    ok_button.pack(pady=40)  # Increase padding for better touch response
 
 def save_pins():
     selected_pins = [button['text'] for button in buttons if button.cget("bg") == "#32CD32"]
