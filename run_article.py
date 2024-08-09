@@ -27,8 +27,8 @@ print(f"{datetime.now()}: run_article.py is starting...")
 
 # Get the directory where the script is located
 script_dir = os.path.dirname(os.path.abspath(__file__))
-success_sound_path = os.path.join(script_dir, "success.mp3")
-reject_sound_path = os.path.join(script_dir, "reject.mp3")
+success_sound_path = os.path.join(script_dir, "success.wav")
+reject_sound_path = os.path.join(script_dir, "reject.wav")
 
 import pygame
 # Set the environment variables for the audio driver and device
