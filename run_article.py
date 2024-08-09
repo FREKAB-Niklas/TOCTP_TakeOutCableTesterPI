@@ -92,7 +92,7 @@ root.attributes('-topmost', True)
 root.after(100, lambda: root.attributes('-topmost', False, '-fullscreen', True))
 
 
-def custom_messagebox(title, message, box_type="info"):
+ddef custom_messagebox(title, message, box_type="info"):
     custom_box = tk.Toplevel(root)
     custom_box.title(title)
     custom_box.geometry("600x300+600+200")
@@ -102,6 +102,9 @@ def custom_messagebox(title, message, box_type="info"):
 
     msg_label = tk.Label(custom_box, text=message, font=("Helvetica", 18), wraplength=550)
     msg_label.pack(pady=40)
+
+    # Force update of the window to make sure everything is displayed
+    custom_box.update()
 
     if box_type == "error":
         button_text = "OK"
@@ -113,11 +116,11 @@ def custom_messagebox(title, message, box_type="info"):
         button_frame = tk.Frame(custom_box)
         button_frame.pack(pady=40)
         response_var = tk.BooleanVar()  # Use a BooleanVar to store the response
-        
+
         def on_yes():
             response_var.set(True)
             custom_box.destroy()
-        
+
         def on_no():
             response_var.set(False)
             custom_box.destroy()
@@ -133,6 +136,10 @@ def custom_messagebox(title, message, box_type="info"):
 
     ok_button = tk.Button(custom_box, text=button_text, font=("Helvetica", 18), width=12, height=3, command=button_command)
     ok_button.pack(pady=40)
+    
+    custom_box.update()  # Ensure the window displays properly
+
+
 
 
 
@@ -617,7 +624,7 @@ def on_pin_click(idx):
         # Check if the jump skips any pins in the current cycle
         for i in range(current_pin_index + 1, idx + 1):
             if left_panel_labels[i].cget("bg") != "#32CD32":  # Not green
-                response = custom_messagebox("Hoppa över", "Du hoppar över flera punkter, är du säker att du vill fortsätta?", "info")
+                response = custom_messagebox("Hoppa över", "Du hoppar över flera punkter, är du säker att du vill fortsätta?", "askyesno")
                 if not response:
                     return
                 break
