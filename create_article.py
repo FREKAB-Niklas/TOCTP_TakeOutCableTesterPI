@@ -27,9 +27,9 @@ def custom_messagebox(title, message, box_type="info"):
     custom_box.title(title)
     custom_box.bind("<Escape>", lambda e: root.destroy())  # Allow exiting fullscreen with the Esc key
     custom_box.geometry("600x300+600+200")  # Increase the size of the message box
-    #custom_box.attributes('-topmost', 'true')  # Make the message box topmost
-    #custom_box.grab_set()
-    #custom_box.focus_force()
+    custom_box.attributes('-topmost', 'true')  # Make the message box topmost
+    custom_box.grab_set()
+    custom_box.focus_force()
 
     msg_label = tk.Label(custom_box, text=message, font=("Helvetica", 18), wraplength=550)
     msg_label.pack(pady=40)  # Increase padding for better touch response
@@ -90,9 +90,9 @@ root.attributes('-fullscreen', True)
 root.bind("<Escape>", lambda e: root.destroy())  # Allow exiting fullscreen with the Esc key
 
 # Ensure the window is brought to the front
-#root.lift()
+root.lift()
 root.attributes('-topmost', True)
-#root.after(100, lambda: root.attributes('-topmost', False, '-fullscreen', True))
+root.after(100, lambda: root.attributes('-topmost', False, '-fullscreen', True))
 
 # Custom Fonts
 header_font = font.Font(family="Helvetica", size=24, weight="bold")
