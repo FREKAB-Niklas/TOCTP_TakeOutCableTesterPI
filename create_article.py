@@ -22,8 +22,7 @@ def select_all_column(col_idx):
         idx = col_idx * 8 + i
         toggle_button(buttons[idx])
 
-def custom_messagebox(title, message, box_type="info"):
-    root.attributes("-disabled", True)  # Disable the main window
+def custom_messagebox(title, message, box_type="info"): 
     custom_box = tk.Toplevel(root)
     custom_box.title(title)
     custom_box.overrideredirect(True)  # Remove window decorations
