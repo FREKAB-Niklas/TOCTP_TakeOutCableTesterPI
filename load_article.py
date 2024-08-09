@@ -105,6 +105,7 @@ def show_log(filename):
     log_window = tk.Toplevel(root)
     log_window.title("Log Data")
     log_window.attributes('-fullscreen', True)
+    log_window.after(100, lambda: root.attributes('-topmost', False, '-fullscreen', True))
     
     # Create a Frame for the header
     header_frame = tk.Frame(log_window)
