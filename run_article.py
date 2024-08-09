@@ -83,13 +83,14 @@ else:
 
 # Initialize main window
 root = tk.Tk()
-root.title("Testing Interface")
+root.title("Testen")
 root.geometry("1920x1080")
 root.attributes('-fullscreen', True)
 root.bind("<Escape>", lambda e: root.destroy())  # Allow exiting fullscreen with the Esc key
 root.lift()
 root.attributes('-topmost', True)
-root.after(10, lambda: root.attributes('-topmost', False))
+root.after(1000, lambda: root.attributes('-topmost', False, '-fullscreen', True))
+
 
 print(f"{datetime.now()}: Window opened")
 
