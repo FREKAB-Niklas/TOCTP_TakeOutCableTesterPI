@@ -260,7 +260,7 @@ def select_file(row_frame, filename):
 
 def load_article_file():
     if not selected_file:
-        custom_messagebox("No file selected. Please select a file first.")
+        show_custom_error("No file selected. Please select a file first.")
         return
     
     # Get the directory where the script is located

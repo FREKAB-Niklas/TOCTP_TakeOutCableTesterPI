@@ -92,6 +92,36 @@ root.attributes('-topmost', True)
 root.after(100, lambda: root.attributes('-topmost', False, '-fullscreen', True))
 
 
+def custom_messagebox(title, message, box_type="info"): 
+    custom_box = tk.Toplevel(root)
+    custom_box.title(title)
+    custom_box.bind("<Escape>", lambda e: root.destroy())  # Allow exiting fullscreen with the Esc key
+    custom_box.geometry("600x300+600+200")  # Increase the size of the message box
+    custom_box.attributes('-topmost', 'true')  # Make the message box topmost
+    custom_box.grab_set()
+    custom_box.focus_force()
+
+    msg_label = tk.Label(custom_box, text=message, font=("Helvetica", 18), wraplength=550)
+    msg_label.pack(pady=40)  # Increase padding for better touch response
+
+    if box_type == "error":
+        button_text = "OK"
+        button_command = custom_box.destroy
+    elif box_type == "info":
+        button_text = "OK"
+        button_command = custom_box.destroy
+    elif box_type == "askyesno":
+        button_frame = tk.Frame(custom_box)
+        button_frame.pack(pady=40)  # Increase padding for better touch response
+        yes_button = tk.Button(button_frame, text="Yes", font=("Helvetica", 18), width=12, height=3, command=lambda: (custom_box.destroy(), root.quit()))
+        yes_button.pack(side=tk.LEFT, padx=20)  # Increase padding for better touch response
+        no_button = tk.Button(button_frame, text="No", font=("Helvetica", 18), width=12, height=3, command=custom_box.destroy)
+        no_button.pack(side=tk.RIGHT, padx=20)  # Increase padding for better touch response
+        return custom_box.wait_window()
+
+    ok_button = tk.Button(custom_box, text=button_text, font=("Helvetica", 18), width=12, height=3, command=button_command)
+    ok_button.pack(pady=40)  # Increase padding for better touch response
+
 print(f"{datetime.now()}: Window opened")
 
 # Initialize I2C bus and MCP23017
@@ -512,7 +542,7 @@ def update_timer():
     root.after(1000, update_timer)  # Update every second (1000 milliseconds)
 
 def reset_test():
-    response = messagebox.askyesno("Reset", "Är du säker att du vill reseta?")
+    response = custom_messagebox("Reset", "Är du säker att du vill reseta?")
     if response:
         global current_pin_index, elapsed_time_current_cycle, total_elapsed_time, downtime, is_running, expecting_probe
         total_elapsed_time += elapsed_time_current_cycle
@@ -572,7 +602,7 @@ def on_pin_click(idx):
         # Check if the jump skips any pins in the current cycle
         for i in range(current_pin_index + 1, idx + 1):
             if left_panel_labels[i].cget("bg") != "#32CD32":  # Not green
-                response = messagebox.askyesno("Hoppa över", "Du hoppar över flera punkter, är du säker att du vill fortsätta?")
+                response = custom_messagebox("Hoppa över", "Du hoppar över flera punkter, är du säker att du vill fortsätta?")
                 if not response:
                     return
                 break
