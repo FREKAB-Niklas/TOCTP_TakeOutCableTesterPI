@@ -95,40 +95,45 @@ root.after(100, lambda: root.attributes('-topmost', False, '-fullscreen', True))
 def custom_messagebox(title, message, box_type="info"):
     custom_box = tk.Toplevel(root)
     custom_box.title(title)
-    custom_box.geometry("600x300+600+200")  # Position the window at the center of the screen
-    custom_box.attributes('-topmost', 'true')  # Make the message box topmost
-    custom_box.grab_set()  # Ensure that the dialog is modal
-    custom_box.focus_force()  # Focus on the message box
+    custom_box.geometry("600x300+600+200")
+    custom_box.attributes('-topmost', 'true')
+    custom_box.grab_set()
+    custom_box.focus_force()
 
     msg_label = tk.Label(custom_box, text=message, font=("Helvetica", 18), wraplength=550)
-    msg_label.pack(pady=40)  # Increase padding for better touch response
+    msg_label.pack(pady=40)
 
-    result = [None]  # Use a list to store the result to modify it within nested functions
-
-    def on_yes():
-        result[0] = True
-        custom_box.destroy()
-
-    def on_no():
-        result[0] = False
-        custom_box.destroy()
-
-    if box_type == "askyesno":
+    if box_type == "error":
+        button_text = "OK"
+        button_command = custom_box.destroy
+    elif box_type == "info":
+        button_text = "OK"
+        button_command = custom_box.destroy
+    elif box_type == "askyesno":
         button_frame = tk.Frame(custom_box)
-        button_frame.pack(pady=40)  # Increase padding for better touch response
+        button_frame.pack(pady=40)
+        response_var = tk.BooleanVar()  # Use a BooleanVar to store the response
+        
+        def on_yes():
+            response_var.set(True)
+            custom_box.destroy()
+        
+        def on_no():
+            response_var.set(False)
+            custom_box.destroy()
+
         yes_button = tk.Button(button_frame, text="Yes", font=("Helvetica", 18), width=12, height=3, command=on_yes)
-        yes_button.pack(side=tk.LEFT, padx=20)  # Increase padding for better touch response
+        yes_button.pack(side=tk.LEFT, padx=20)
+
         no_button = tk.Button(button_frame, text="No", font=("Helvetica", 18), width=12, height=3, command=on_no)
-        no_button.pack(side=tk.RIGHT, padx=20)  # Increase padding for better touch response
-        custom_box.wait_window()  # Wait for the window to be destroyed
-        return result[0]
+        no_button.pack(side=tk.RIGHT, padx=20)
 
-    elif box_type == "error" or box_type == "info":
-        ok_button = tk.Button(custom_box, text="OK", font=("Helvetica", 18), width=12, height=3, command=custom_box.destroy)
-        ok_button.pack(pady=40)  # Increase padding for better touch response
-        custom_box.wait_window()  # Wait for the window to be destroyed
+        custom_box.wait_window()  # Wait for the user to respond
+        return response_var.get()
 
-    return None
+    ok_button = tk.Button(custom_box, text=button_text, font=("Helvetica", 18), width=12, height=3, command=button_command)
+    ok_button.pack(pady=40)
+
 
 
 
@@ -612,8 +617,8 @@ def on_pin_click(idx):
         # Check if the jump skips any pins in the current cycle
         for i in range(current_pin_index + 1, idx + 1):
             if left_panel_labels[i].cget("bg") != "#32CD32":  # Not green
-                response = custom_messagebox("Hoppa över", "Du hoppar över flera punkter, är du säker att du vill fortsätta?")
-                if response is None or not response:
+                response = custom_messagebox("Hoppa över", "Du hoppar över flera punkter, är du säker att du vill fortsätta?", "askyesno")
+                if not response:
                     return
                 break
     # Preserve the green status if the pin was already tested
