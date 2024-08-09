@@ -57,6 +57,9 @@ for _ in range(5):
         reject_sound = pygame.mixer.Sound("reject.mp3")
         print(f"{datetime.now()}: Pygame initialized.")
         pygame_initialized = True
+        sound = pygame.mixer.Sound("success.mp3")
+        sound.play()
+        pygame.time.wait(2000)  # Wait for 2 seconds to let the sound play
         break
     except pygame.error as e:
         print(f"{datetime.now()}: Pygame initialization failed: {e}. Retrying...")
