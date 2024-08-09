@@ -92,7 +92,7 @@ root.attributes('-topmost', True)
 root.after(100, lambda: root.attributes('-topmost', False, '-fullscreen', True))
 
 
-ddef custom_messagebox(title, message, box_type="info"):
+def custom_messagebox(title, message, box_type="info"):
     custom_box = tk.Toplevel(root)
     custom_box.title(title)
     custom_box.geometry("600x300+600+200")
