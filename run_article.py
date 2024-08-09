@@ -92,40 +92,44 @@ root.attributes('-topmost', True)
 root.after(100, lambda: root.attributes('-topmost', False, '-fullscreen', True))
 
 
-def custom_messagebox(title, message, box_type="info"): 
+def custom_messagebox(title, message, box_type="info"):
     custom_box = tk.Toplevel(root)
     custom_box.title(title)
-    custom_box.bind("<Escape>", lambda e: root.destroy())  # Allow exiting fullscreen with the Esc key
-    custom_box.geometry("600x300+600+200")  # Increase the size of the message box
+    custom_box.geometry("600x300+600+200")  # Position the window at the center of the screen
     custom_box.attributes('-topmost', 'true')  # Make the message box topmost
-    custom_box.grab_set()
-    custom_box.focus_force()
+    custom_box.grab_set()  # Ensure that the dialog is modal
+    custom_box.focus_force()  # Focus on the message box
 
     msg_label = tk.Label(custom_box, text=message, font=("Helvetica", 18), wraplength=550)
     msg_label.pack(pady=40)  # Increase padding for better touch response
 
-    result = None  # Initialize result
+    result = [None]  # Use a list to store the result to modify it within nested functions
 
-    if box_type == "error" or box_type == "info":
-        button_text = "OK"
-        button_command = lambda: (custom_box.destroy(), set_result(False))
-    elif box_type == "askyesno":
+    def on_yes():
+        result[0] = True
+        custom_box.destroy()
+
+    def on_no():
+        result[0] = False
+        custom_box.destroy()
+
+    if box_type == "askyesno":
         button_frame = tk.Frame(custom_box)
         button_frame.pack(pady=40)  # Increase padding for better touch response
-        yes_button = tk.Button(button_frame, text="Yes", font=("Helvetica", 18), width=12, height=3, command=lambda: set_result(True))
+        yes_button = tk.Button(button_frame, text="Yes", font=("Helvetica", 18), width=12, height=3, command=on_yes)
         yes_button.pack(side=tk.LEFT, padx=20)  # Increase padding for better touch response
-        no_button = tk.Button(button_frame, text="No", font=("Helvetica", 18), width=12, height=3, command=lambda: set_result(False))
+        no_button = tk.Button(button_frame, text="No", font=("Helvetica", 18), width=12, height=3, command=on_no)
         no_button.pack(side=tk.RIGHT, padx=20)  # Increase padding for better touch response
-        custom_box.wait_window()
-        return result
+        custom_box.wait_window()  # Wait for the window to be destroyed
+        return result[0]
 
-    ok_button = tk.Button(custom_box, text=button_text, font=("Helvetica", 18), width=12, height=3, command=button_command)
-    ok_button.pack(pady=40)  # Increase padding for better touch response
+    elif box_type == "error" or box_type == "info":
+        ok_button = tk.Button(custom_box, text="OK", font=("Helvetica", 18), width=12, height=3, command=custom_box.destroy)
+        ok_button.pack(pady=40)  # Increase padding for better touch response
+        custom_box.wait_window()  # Wait for the window to be destroyed
 
-    def set_result(value):
-        global result
-        result = value
-        custom_box.destroy()
+    return None
+
 
 
 print(f"{datetime.now()}: Window opened")
