@@ -104,23 +104,29 @@ def custom_messagebox(title, message, box_type="info"):
     msg_label = tk.Label(custom_box, text=message, font=("Helvetica", 18), wraplength=550)
     msg_label.pack(pady=40)  # Increase padding for better touch response
 
-    if box_type == "error":
+    result = None  # Initialize result
+
+    if box_type == "error" or box_type == "info":
         button_text = "OK"
-        button_command = custom_box.destroy
-    elif box_type == "info":
-        button_text = "OK"
-        button_command = custom_box.destroy
+        button_command = lambda: (custom_box.destroy(), set_result(False))
     elif box_type == "askyesno":
         button_frame = tk.Frame(custom_box)
         button_frame.pack(pady=40)  # Increase padding for better touch response
-        yes_button = tk.Button(button_frame, text="Yes", font=("Helvetica", 18), width=12, height=3, command=lambda: (custom_box.destroy(), root.quit()))
+        yes_button = tk.Button(button_frame, text="Yes", font=("Helvetica", 18), width=12, height=3, command=lambda: set_result(True))
         yes_button.pack(side=tk.LEFT, padx=20)  # Increase padding for better touch response
-        no_button = tk.Button(button_frame, text="No", font=("Helvetica", 18), width=12, height=3, command=custom_box.destroy)
+        no_button = tk.Button(button_frame, text="No", font=("Helvetica", 18), width=12, height=3, command=lambda: set_result(False))
         no_button.pack(side=tk.RIGHT, padx=20)  # Increase padding for better touch response
-        return custom_box.wait_window()
+        custom_box.wait_window()
+        return result
 
     ok_button = tk.Button(custom_box, text=button_text, font=("Helvetica", 18), width=12, height=3, command=button_command)
     ok_button.pack(pady=40)  # Increase padding for better touch response
+
+    def set_result(value):
+        global result
+        result = value
+        custom_box.destroy()
+
 
 print(f"{datetime.now()}: Window opened")
 
