@@ -162,8 +162,8 @@ def show_keyboard(entry_widget):
     keyboard_window.geometry("1650x850+250+180")
     keyboard_window.resizable(False, False)
     keyboard_window.grab_set()
-    keyboard_window.after(100, lambda: root.attributes('-topmost', False))
-
+    keyboard_window.focus_force()  # Ensure the keyboard window is focused
+    keyboard_window.attributes('-topmost', True)  # Ensure it is always on top
 
     def insert_char(char):
         entry_widget.insert(tk.END, char)
@@ -205,6 +205,10 @@ def show_keyboard(entry_widget):
 
     close_button = tk.Button(keyboard_window, text="X", font=body_font, width=10, height=5, command=keyboard_window.destroy, bg="red")
     close_button.grid(row=5, column=4, columnspan=3, pady=5)
+
+    # Ensure the keyboard window is correctly displayed on top
+    keyboard_window.update_idletasks()
+    keyboard_window.lift()
 
 
 
