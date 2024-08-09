@@ -25,7 +25,6 @@ def select_all_column(col_idx):
 def custom_messagebox(title, message, box_type="info"): 
     custom_box = tk.Toplevel(root)
     custom_box.title(title)
-    custom_box.overrideredirect(True)  # Remove window decorations
     custom_box.bind("<Escape>", lambda e: root.destroy())  # Allow exiting fullscreen with the Esc key
     custom_box.geometry("600x300+600+200")  # Increase the size of the message box
     custom_box.attributes('-topmost', 'true')  # Make the message box topmost
@@ -161,7 +160,6 @@ def show_keyboard(entry_widget):
     keyboard_window.title("On-Screen Keyboard")
     keyboard_window.geometry("1650x850+250+180")
     keyboard_window.resizable(False, False)
-    keyboard_window.overrideredirect(True)  # Remove the window frame
     keyboard_window.grab_set()
 
 

@@ -86,7 +86,6 @@ root = tk.Tk()
 root.title("Testing Interface")
 root.geometry("1920x1080")
 root.attributes('-fullscreen', True)
-root.overrideredirect(True)  # Remove window decorations
 root.bind("<Escape>", lambda e: root.destroy())  # Allow exiting fullscreen with the Esc key
 root.lift()
 root.attributes('-topmost', True)
