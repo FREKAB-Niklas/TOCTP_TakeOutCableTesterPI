@@ -25,27 +25,61 @@ from digitalio import Direction, Pull
 
 print(f"{datetime.now()}: run_article.py is starting...")
 
-# Define the paths to the sound files (WAV format)
+# Get the directory where the script is located
 script_dir = os.path.dirname(os.path.abspath(__file__))
-success_sound_path = os.path.join(script_dir, "success.wav")
-reject_sound_path = os.path.join(script_dir, "reject.wav")
+success_sound_path = os.path.join(script_dir, "success.mp3")
+reject_sound_path = os.path.join(script_dir, "reject.mp3")
 
-# Define the audio device to use
-audio_device = "sysdefault:CARD=vc4hdmi1"
+# Set environment variables for SDL to use the PulseAudio driver
+os.environ["SDL_AUDIODRIVER"] = "pulseaudio"
+os.environ["AUDIODEV"] = "hdmi:CARD=vc4hdmi0"  # Replace "hw:0,0" with the correct device from aplay --list-pcms
 
-# Function to play sound using aplay
-def play_sound(sound_file):
+import pygame
+
+# Function to start PulseAudio if it's not running
+def start_pulseaudio():
     try:
-        # Run aplay command to play the sound
-        subprocess.run(["aplay", "-D", audio_device, sound_file])
-        print(f"Played sound: {sound_file}")
-    except Exception as e:
-        print(f"Failed to play sound: {e}")
+        # Check if PulseAudio is running
+        subprocess.run(["pulseaudio", "--check"], check=True)
+        print(f"{datetime.now()}: PulseAudio is already running.")
+    except subprocess.CalledProcessError:
+        # Start PulseAudio if not running
+        subprocess.run(["pulseaudio", "--start"])
+        print(f"{datetime.now()}: PulseAudio started.")
 
-# Play success and reject sounds as an example
-play_sound(success_sound_path)
-play_sound(reject_sound_path)
+# Attempt to initialize pygame for sound effects
+pygame_initialized = False
 
+# Start PulseAudio
+start_pulseaudio()
+
+for _ in range(5):
+    try:
+        pygame.mixer.init()
+        success_sound = pygame.mixer.Sound("success.mp3")
+        reject_sound = pygame.mixer.Sound("reject.mp3")
+        success_sound.set_volume(1.0)
+        reject_sound.set_volume(1.0)
+        print(f"{datetime.now()}: Pygame initialized.")
+        pygame_initialized = True
+        sound = pygame.mixer.Sound("success.mp3")
+        break
+    except pygame.error as e:
+        print(f"{datetime.now()}: Pygame initialization failed: {e}. Retrying...")
+        time.sleep(2)  # Wait for 2 seconds before retrying
+
+try:
+    success_sound.play()
+    pygame.time.wair(3000)
+except Exception as e:
+    print(f"Error playing success sound: {e}")
+
+if not pygame_initialized:
+    print(f"{datetime.now()}: Pygame initialization failed after retries. Continuing without sound.")
+    success_sound = None
+    reject_sound = None
+else:
+    print(f"{datetime.now()}: Pygame initialized successfully with audio support.")
 
 # Initialize main window
 root = tk.Tk()
@@ -264,7 +298,10 @@ def on_pin_probe(gui_pin_label):
     print(f"on_pin_probe called with gui_pin_label={gui_pin_label}, current_pin_index={current_pin_index}, expected_pin_label={expected_pin_label}")
 
     if gui_pin_label == expected_pin_label:
-        play_sound(success_sound_path)
+        if success_sound:
+            success_sound.play()
+        else:
+            print(f"{datetime.now()}: success_sound is not initialized.")
         
         left_panel_labels[current_pin_index].config(bg="#32CD32")
         deactivate_relay(expected_pin_label)  # Deactivate previous relay
@@ -281,7 +318,10 @@ def on_pin_probe(gui_pin_label):
             print("All pins probed successfully.")
             check_all_probed()
     else:
-        play_sound(reject_sound_path)
+        if reject_sound:
+            reject_sound.play()
+        else:
+            print(f"{datetime.now()}: reject_sound is not initialized.")
         
         print(f"Pin mismatch: expected {expected_pin_label}, but got {gui_pin_label}")
 
