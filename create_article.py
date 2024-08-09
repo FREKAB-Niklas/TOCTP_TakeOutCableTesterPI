@@ -161,6 +161,8 @@ def show_keyboard(entry_widget):
     keyboard_window.geometry("1650x850+250+180")
     keyboard_window.resizable(False, False)
     keyboard_window.overrideredirect(True)  # Remove the window frame
+    keyboard_window.grab_set()
+
 
     def insert_char(char):
         entry_widget.insert(tk.END, char)
