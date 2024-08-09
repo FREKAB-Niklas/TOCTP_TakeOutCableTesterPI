@@ -25,6 +25,8 @@ def select_all_column(col_idx):
 def custom_messagebox(title, message, box_type="info"):
     custom_box = tk.Toplevel(root)
     custom_box.title(title)
+    custom_box.overrideredirect(True)  # Remove window decorations
+    custom_box.bind("<Escape>", lambda e: root.destroy())  # Allow exiting fullscreen with the Esc key
     custom_box.geometry("600x300")  # Increase the size of the message box
     custom_box.attributes('-topmost', 'true')  # Make the message box topmost
     custom_box.grab_set()
