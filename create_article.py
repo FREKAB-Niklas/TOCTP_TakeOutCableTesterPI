@@ -92,7 +92,7 @@ root.bind("<Escape>", lambda e: root.destroy())  # Allow exiting fullscreen with
 # Ensure the window is brought to the front
 root.lift()
 root.attributes('-topmost', True)
-#root.after(100, lambda: root.attributes('-topmost', False, '-fullscreen', True))
+root.after(100, lambda: root.attributes('-topmost', False, '-fullscreen', True))
 
 # Custom Fonts
 header_font = font.Font(family="Helvetica", size=24, weight="bold")
@@ -155,17 +155,34 @@ for col in range(4):
 save_button = tk.Button(root, text="Spara", font=body_font, bg="#32CD32", fg="black", command=save_pins, width=10, height=6)
 save_button.pack(side=tk.BOTTOM, pady=60)
 
-def show_keyboard(entry_widget):
+def show_keyboard(entry_widget, on_submit=None, message="Enter input:"):
     keyboard_window = tk.Toplevel(root, bg="#0A60C5")
     keyboard_window.title("On-Screen Keyboard")
-    keyboard_window.overrideredirect(True)  # Remove window decorations
-    keyboard_window.geometry("1650x850+250+180")
+    keyboard_window.geometry("1920x1080")
+    keyboard_window.attributes('-fullscreen', True)
     keyboard_window.resizable(False, False)
+    keyboard_window.overrideredirect(True)  # Remove the window frame
     keyboard_window.grab_set()
 
-
     def insert_char(char):
-        entry_widget.insert(tk.END, char)
+        entry_field.insert(tk.END, char)
+
+    # Add message label
+    message_label = tk.Label(keyboard_window, text=message, font=("Helvetica", 24), bg="#0A60C5", fg="white")
+    message_label.pack(pady=20)
+
+    # Add entry widget for input
+    entry_field = tk.Entry(keyboard_window, font=("Helvetica", 24))
+    entry_field.pack(pady=10)
+
+    main_frame = tk.Frame(keyboard_window, bg="#0A60C5")
+    main_frame.pack(pady=20)
+
+    key_frame = tk.Frame(main_frame, bg="#0A60C5")
+    key_frame.grid(row=0, column=0, pady=20)
+
+    numpad_frame = tk.Frame(main_frame, bg="#0A60C5")
+    numpad_frame.grid(row=0, column=1, padx=20, pady=20, sticky='n')
 
     keys = [
         'QWERTYUIOP',
@@ -174,15 +191,15 @@ def show_keyboard(entry_widget):
     ]
 
     # Arrange keys in the keyboard window
-    for i, key_row in enumerate(keys):
-        row_frame = tk.Frame(keyboard_window, bg="#0A60C5")
-        row_frame.grid(row=i, column=0, columnspan=3, pady=5, padx=1)
+    for key_row in keys:
+        row_frame = tk.Frame(key_frame, bg="#0A60C5")
+        row_frame.pack(side=tk.TOP, pady=5)
         for char in key_row:
-            button = tk.Button(row_frame, text=char, font=body_font, width=6, height=4, command=lambda c=char: insert_char(c))
+            button = tk.Button(row_frame, text=char, font=("Helvetica", 18), width=6, height=4, command=lambda c=char: insert_char(c))
             button.pack(side=tk.LEFT, padx=5)
 
-    space_button = tk.Button(keyboard_window, text="SPACE", font=body_font, width=20, height=2, command=lambda: insert_char(" "))
-    space_button.grid(row=3, column=0, columnspan=3, pady=5)
+    space_button = tk.Button(key_frame, text="SPACE", font=("Helvetica", 18), width=60, height=2, command=lambda: insert_char(" "))
+    space_button.pack(pady=10)
 
     # Arrange numpad keys in the keyboard window
     numpad_keys = [
@@ -192,18 +209,33 @@ def show_keyboard(entry_widget):
         '0+-'
     ]
 
-    numpad_frame = tk.Frame(keyboard_window, bg="#0A60C5")
-    numpad_frame.grid(row=0, column=4, rowspan=4, padx=100, pady=25)
-
     for i, key_row in enumerate(numpad_keys):
         row_frame = tk.Frame(numpad_frame, bg="#0A60C5")
         row_frame.pack(pady=5)
         for char in key_row:
-            button = tk.Button(row_frame, text=char, font=body_font, width=8, height=5, command=lambda c=char: insert_char(c))
+            button = tk.Button(row_frame, text=char, font=("Helvetica", 18), width=6, height=4, command=lambda c=char: insert_char(c))
             button.pack(side=tk.LEFT, padx=5)
 
-    close_button = tk.Button(keyboard_window, text="X", font=body_font, width=10, height=5, command=keyboard_window.destroy, bg="red")
-    close_button.grid(row=5, column=4, columnspan=3, pady=5)
+    bottom_frame = tk.Frame(numpad_frame, bg="#0A60C5")
+    bottom_frame.pack(pady=5)
+
+    close_button = tk.Button(bottom_frame, text="X", font=("Helvetica", 18), width=6, height=4, command=keyboard_window.destroy, bg="red")
+    close_button.pack(side=tk.LEFT, padx=5)
+
+    if on_submit is None:
+        # Default behavior: just destroy the window without doing anything
+        on_submit = lambda entry_value, win: win.destroy()
+
+    submit_button = tk.Button(bottom_frame, text="Submit", font=("Helvetica", 18), width=6, height=4, command=lambda: on_submit(entry_field.get(), keyboard_window))
+    submit_button.pack(side=tk.LEFT, padx=5)
+
+    # Pre-fill the entry field if there's any initial text
+    entry_field.insert(0, entry_widget.get())
+
+    # Set focus to the entry field
+    entry_field.focus()
+
+
 
 
 
