@@ -25,41 +25,27 @@ from digitalio import Direction, Pull
 
 print(f"{datetime.now()}: run_article.py is starting...")
 
-# Get the directory where the script is located
+# Define the paths to the sound files (WAV format)
 script_dir = os.path.dirname(os.path.abspath(__file__))
 success_sound_path = os.path.join(script_dir, "success.wav")
 reject_sound_path = os.path.join(script_dir, "reject.wav")
 
-import pygame
-# Set the environment variables for the audio driver and device
-os.environ["SDL_AUDIODRIVER"] = "alsa"
-os.environ["AUDIODEV"] = "hw:CARD=vc4hdmi1"  # Adjust based on your setup
+# Define the audio device to use
+audio_device = "sysdefault:CARD=vc4hdmi1"
 
-# Attempt to initialize pygame for sound effects
-pygame_initialized = False
-
-for _ in range(5):
+# Function to play sound using aplay
+def play_sound(sound_file):
     try:
-        pygame.mixer.init()
-        success_sound = pygame.mixer.Sound(success_sound_path)
-        reject_sound = pygame.mixer.Sound(reject_sound_path)
-        success_sound.set_volume(1.0)
-        reject_sound.set_volume(1.0)
-        print(f"{datetime.now()}: Pygame initialized.")
-        pygame_initialized = True
-        success_sound.play()
-        pygame.time.wait(3000)  # Wait for the sound to play
-        break
-    except pygame.error as e:
-        print(f"{datetime.now()}: Pygame initialization failed: {e}. Retrying...")
-        time.sleep(2)  # Wait for 2 seconds before retrying
+        # Run aplay command to play the sound
+        subprocess.run(["aplay", "-D", audio_device, sound_file])
+        print(f"Played sound: {sound_file}")
+    except Exception as e:
+        print(f"Failed to play sound: {e}")
 
-if not pygame_initialized:
-    print(f"{datetime.now()}: Pygame initialization failed after retries. Continuing without sound.")
-    success_sound = None
-    reject_sound = None
-else:
-    print(f"{datetime.now()}: Pygame initialized successfully with audio support.")
+# Play success and reject sounds as an example
+play_sound(success_sound_path)
+play_sound(reject_sound_path)
+
 
 # Initialize main window
 root = tk.Tk()
