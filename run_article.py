@@ -21,7 +21,7 @@ from adafruit_mcp230xx.mcp23017 import MCP23017
 import board
 import busio
 from digitalio import Direction, Pull
-import pygame
+
 
 print(f"{datetime.now()}: run_article.py is starting...")
 
@@ -32,6 +32,9 @@ reject_sound_path = os.path.join(script_dir, "reject.mp3")
 
 # Set environment variables for SDL to use the PulseAudio driver
 os.environ["SDL_AUDIODRIVER"] = "pulseaudio"
+os.environ["AUDIODEV"] = "hw:0,0"  # Replace "hw:0,0" with the correct device from aplay --list-pcms
+
+import pygame
 
 # Function to start PulseAudio if it's not running
 def start_pulseaudio():
