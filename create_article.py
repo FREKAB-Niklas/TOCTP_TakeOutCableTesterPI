@@ -158,26 +158,52 @@ save_button.pack(side=tk.BOTTOM, pady=60)
 def show_keyboard(entry_widget):
     keyboard_window = tk.Toplevel(root, bg="#0A60C5")
     keyboard_window.title("On-Screen Keyboard")
-    keyboard_window.geometry("600x300+300+200")  # Smaller window for testing
+    keyboard_window.overrideredirect(True)  # Remove window decorations
+    keyboard_window.geometry("1650x850+250+180")
+    keyboard_window.resizable(False, False)
     keyboard_window.grab_set()
-    keyboard_window.focus_force()
-    keyboard_window.attributes('-topmost', True)  # Ensure it is always on top
+
 
     def insert_char(char):
         entry_widget.insert(tk.END, char)
 
-    # Create a simple button for testing
-    test_button = tk.Button(keyboard_window, text="Test Button", font=body_font, width=20, height=5, command=lambda: insert_char("T"))
-    test_button.pack(pady=10)
+    keys = [
+        'QWERTYUIOP',
+        'ASDFGHJKL',
+        'ZXCVBNM'
+    ]
 
-    # Force update to see if the button appears
-    keyboard_window.update_idletasks()
-    keyboard_window.update()
+    # Arrange keys in the keyboard window
+    for i, key_row in enumerate(keys):
+        row_frame = tk.Frame(keyboard_window, bg="#0A60C5")
+        row_frame.grid(row=i, column=0, columnspan=3, pady=5, padx=1)
+        for char in key_row:
+            button = tk.Button(row_frame, text=char, font=body_font, width=6, height=4, command=lambda c=char: insert_char(c))
+            button.pack(side=tk.LEFT, padx=5)
 
-    # Show the keyboard window
-    keyboard_window.lift()
-    keyboard_window.mainloop()
+    space_button = tk.Button(keyboard_window, text="SPACE", font=body_font, width=20, height=2, command=lambda: insert_char(" "))
+    space_button.grid(row=3, column=0, columnspan=3, pady=5)
 
+    # Arrange numpad keys in the keyboard window
+    numpad_keys = [
+        '789',
+        '456',
+        '123',
+        '0+-'
+    ]
+
+    numpad_frame = tk.Frame(keyboard_window, bg="#0A60C5")
+    numpad_frame.grid(row=0, column=4, rowspan=4, padx=100, pady=25)
+
+    for i, key_row in enumerate(numpad_keys):
+        row_frame = tk.Frame(numpad_frame, bg="#0A60C5")
+        row_frame.pack(pady=5)
+        for char in key_row:
+            button = tk.Button(row_frame, text=char, font=body_font, width=8, height=5, command=lambda c=char: insert_char(c))
+            button.pack(side=tk.LEFT, padx=5)
+
+    close_button = tk.Button(keyboard_window, text="X", font=body_font, width=10, height=5, command=keyboard_window.destroy, bg="red")
+    close_button.grid(row=5, column=4, columnspan=3, pady=5)
 
 
 
