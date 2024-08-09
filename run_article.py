@@ -264,10 +264,7 @@ def on_pin_probe(gui_pin_label):
     print(f"on_pin_probe called with gui_pin_label={gui_pin_label}, current_pin_index={current_pin_index}, expected_pin_label={expected_pin_label}")
 
     if gui_pin_label == expected_pin_label:
-        if success_sound:
-            success_sound.play()
-        else:
-            print(f"{datetime.now()}: success_sound is not initialized.")
+        play_sound(success_sound_path)
         
         left_panel_labels[current_pin_index].config(bg="#32CD32")
         deactivate_relay(expected_pin_label)  # Deactivate previous relay
@@ -284,10 +281,7 @@ def on_pin_probe(gui_pin_label):
             print("All pins probed successfully.")
             check_all_probed()
     else:
-        if reject_sound:
-            reject_sound.play()
-        else:
-            print(f"{datetime.now()}: reject_sound is not initialized.")
+        play_sound(reject_sound_path)
         
         print(f"Pin mismatch: expected {expected_pin_label}, but got {gui_pin_label}")
 
