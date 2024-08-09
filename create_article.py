@@ -155,7 +155,7 @@ for col in range(4):
 save_button = tk.Button(root, text="Spara", font=body_font, bg="#32CD32", fg="black", command=save_pins, width=10, height=6)
 save_button.pack(side=tk.BOTTOM, pady=60)
 
-def show_keyboard(entry_widget, on_submit=None, message="Enter input:"):
+def show_keyboard(entry_widget, on_submit=None, message="Artikelnummer:"):
     keyboard_window = tk.Toplevel(root, bg="#0A60C5")
     keyboard_window.title("On-Screen Keyboard")
     keyboard_window.geometry("1920x1080")

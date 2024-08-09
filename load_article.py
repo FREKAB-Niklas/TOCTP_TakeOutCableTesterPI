@@ -351,7 +351,7 @@ def show_keyboard(entry_widget, on_submit, message="Enter password to delete fil
 
 def delete_file():
     if not selected_file:
-        custom_messagebox("No file selected", "Please select a file first.")
+        custom_messagebox("Ingen fil vald", "Vänligen välj en.")
         return
 
     def on_password_submit(password, keyboard_window):
@@ -373,11 +373,11 @@ def delete_file():
             keyboard_window.destroy()
             refresh_file_list()
         else:
-            show_custom_error("Incorrect password.")
+            show_custom_error("Fel lösenord.")
             keyboard_window.destroy()
 
     password_entry = tk.Entry(root, show='*')
-    show_keyboard(password_entry, on_password_submit, message="Enter password to delete file:")
+    show_keyboard(password_entry, on_password_submit, message="Skriv in lösenord för att radera fil:")
 
 
 
