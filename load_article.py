@@ -43,6 +43,36 @@ def run_article(filename, pins):
     
     subprocess.run([sys.executable, run_article_script_path])
 
+def custom_messagebox(title, message, box_type="info"): 
+    custom_box = tk.Toplevel(root)
+    custom_box.title(title)
+    custom_box.bind("<Escape>", lambda e: root.destroy())  # Allow exiting fullscreen with the Esc key
+    custom_box.geometry("600x300+600+200")  # Increase the size of the message box
+    custom_box.attributes('-topmost', 'true')  # Make the message box topmost
+    custom_box.grab_set()
+    custom_box.focus_force()
+
+    msg_label = tk.Label(custom_box, text=message, font=("Helvetica", 18), wraplength=550)
+    msg_label.pack(pady=40)  # Increase padding for better touch response
+
+    if box_type == "error":
+        button_text = "OK"
+        button_command = custom_box.destroy
+    elif box_type == "info":
+        button_text = "OK"
+        button_command = custom_box.destroy
+    elif box_type == "askyesno":
+        button_frame = tk.Frame(custom_box)
+        button_frame.pack(pady=40)  # Increase padding for better touch response
+        yes_button = tk.Button(button_frame, text="Yes", font=("Helvetica", 18), width=12, height=3, command=lambda: (custom_box.destroy(), root.quit()))
+        yes_button.pack(side=tk.LEFT, padx=20)  # Increase padding for better touch response
+        no_button = tk.Button(button_frame, text="No", font=("Helvetica", 18), width=12, height=3, command=custom_box.destroy)
+        no_button.pack(side=tk.RIGHT, padx=20)  # Increase padding for better touch response
+        return custom_box.wait_window()
+
+    ok_button = tk.Button(custom_box, text=button_text, font=("Helvetica", 18), width=12, height=3, command=button_command)
+    ok_button.pack(pady=40)  # Increase padding for better touch response
+
 def parse_time_with_decimal(time_str):
     parts = time_str.split(":")
     if len(parts) == 3:
@@ -69,7 +99,7 @@ def show_log(filename):
     log_filepath = os.path.join(script_dir, "Artiklar", log_filename)
 
     if not os.path.exists(log_filepath):
-        messagebox.showerror("Error", f"Log file {log_filename} does not exist.")
+        custom_messagebox("Error", f"Log file {log_filename} does not exist.")
         return
     
     df = pd.read_excel(log_filepath)
@@ -321,7 +351,7 @@ def show_keyboard(entry_widget, on_submit, message="Enter password to delete fil
 
 def delete_file():
     if not selected_file:
-        messagebox.showwarning("No file selected", "Please select a file first.")
+        custom_messagebox("No file selected", "Please select a file first.")
         return
 
     def on_password_submit(password, keyboard_window):
