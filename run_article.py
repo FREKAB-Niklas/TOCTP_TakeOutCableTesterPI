@@ -139,7 +139,22 @@ def custom_messagebox(title, message, box_type="info"):
     
     custom_box.update()  # Ensure the window displays properly
 
+def custom_info_popup(title, message):
+    custom_box = tk.Toplevel(root)
+    custom_box.title(title)
+    custom_box.geometry("600x300+600+200")
+    custom_box.attributes('-topmost', 'true')
+    custom_box.grab_set()
+    custom_box.focus_force()
 
+    msg_label = tk.Label(custom_box, text=message, font=("Helvetica", 18), wraplength=550)
+    msg_label.pack(pady=40)
+
+    ok_button = tk.Button(custom_box, text="OK", font=("Helvetica", 18), width=12, height=3, command=custom_box.destroy)
+    ok_button.pack(pady=40)
+
+    custom_box.update()
+    custom_box.wait_window()
 
 
 
@@ -624,7 +639,7 @@ def on_pin_click(idx):
         # Check if the jump skips any pins in the current cycle
         for i in range(current_pin_index + 1, idx + 1):
             if left_panel_labels[i].cget("bg") != "#32CD32":  # Not green
-                response = custom_messagebox("Hoppa över", "Du hoppar över flera punkter, är du säker att du vill fortsätta?", "askyesno")
+                response = custom_info_popup("Hoppa över", "Du hoppar över flera punkter, är du säker att du vill fortsätta?", "askyesno")
                 if not response:
                     return
                 break
