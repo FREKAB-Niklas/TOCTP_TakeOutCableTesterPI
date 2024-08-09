@@ -30,6 +30,7 @@ def custom_messagebox(title, message, box_type="info"):
     custom_box.geometry("600x300")  # Increase the size of the message box
     custom_box.attributes('-topmost', 'true')  # Make the message box topmost
     custom_box.grab_set()
+    custom_box.focus_force()
 
     msg_label = tk.Label(custom_box, text=message, font=("Helvetica", 18), wraplength=550)
     msg_label.pack(pady=40)  # Increase padding for better touch response
