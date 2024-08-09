@@ -162,6 +162,7 @@ def show_keyboard(entry_widget):
     keyboard_window.geometry("1650x850+250+180")
     keyboard_window.resizable(False, False)
     keyboard_window.grab_set()
+    keyboard_window.after(100, lambda: root.attributes('-topmost', False))
 
 
     def insert_char(char):
