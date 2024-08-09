@@ -67,6 +67,9 @@ for _ in range(5):
 
 try:
     success_sound.play()
+    success_sound.play()
+    success_sound.play()
+    success_sound.play()
 except Exception as e:
     print(f"Error playing success sound: {e}")
 
