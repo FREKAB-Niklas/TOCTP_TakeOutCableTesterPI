@@ -30,49 +30,28 @@ script_dir = os.path.dirname(os.path.abspath(__file__))
 success_sound_path = os.path.join(script_dir, "success.mp3")
 reject_sound_path = os.path.join(script_dir, "reject.mp3")
 
-# Set environment variables for SDL to use the PulseAudio driver
-os.environ["SDL_AUDIODRIVER"] = "pulseaudio"
-os.environ["AUDIODEV"] = "hw:0,0"  # Replace "hw:0,0" with the correct device from aplay --list-pcms
-
-import pygame
-
-# Function to start PulseAudio if it's not running
-def start_pulseaudio():
-    try:
-        # Check if PulseAudio is running
-        subprocess.run(["pulseaudio", "--check"], check=True)
-        print(f"{datetime.now()}: PulseAudio is already running.")
-    except subprocess.CalledProcessError:
-        # Start PulseAudio if not running
-        subprocess.run(["pulseaudio", "--start"])
-        print(f"{datetime.now()}: PulseAudio started.")
+# Set the environment variables for the audio driver and device
+os.environ["SDL_AUDIODRIVER"] = "alsa"
+os.environ["AUDIODEV"] = "hw:CARD=vc4hdmi0,DEV=0"  # Adjust based on your setup
 
 # Attempt to initialize pygame for sound effects
 pygame_initialized = False
 
-# Start PulseAudio
-start_pulseaudio()
-
 for _ in range(5):
     try:
         pygame.mixer.init()
-        success_sound = pygame.mixer.Sound("success.mp3")
-        reject_sound = pygame.mixer.Sound("reject.mp3")
+        success_sound = pygame.mixer.Sound(success_sound_path)
+        reject_sound = pygame.mixer.Sound(reject_sound_path)
         success_sound.set_volume(1.0)
         reject_sound.set_volume(1.0)
         print(f"{datetime.now()}: Pygame initialized.")
         pygame_initialized = True
-        sound = pygame.mixer.Sound("success.mp3")
+        success_sound.play()
+        pygame.time.wait(3000)  # Wait for the sound to play
         break
     except pygame.error as e:
         print(f"{datetime.now()}: Pygame initialization failed: {e}. Retrying...")
         time.sleep(2)  # Wait for 2 seconds before retrying
-
-try:
-    success_sound.play()
-    pygame.time.wair(3000)
-except Exception as e:
-    print(f"Error playing success sound: {e}")
 
 if not pygame_initialized:
     print(f"{datetime.now()}: Pygame initialization failed after retries. Continuing without sound.")
