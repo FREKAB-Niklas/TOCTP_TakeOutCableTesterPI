@@ -235,6 +235,15 @@ def show_keyboard(entry_widget, on_submit=None, message="Enter input:"):
     # Set focus to the entry field
     entry_field.focus()
 
+def on_keyboard_submit(entry_value, win):
+    # Update the article_name_entry with the entered value
+    article_name_entry.delete(0, tk.END)
+    article_name_entry.insert(0, entry_value)
+    win.destroy()
+
+# Bind the show_keyboard function to the entry widget with the on_keyboard_submit callback
+article_name_entry.bind("<Button-1>", lambda e: show_keyboard(article_name_entry, on_keyboard_submit))
+
 
 
 
