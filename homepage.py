@@ -28,7 +28,7 @@ root.bind("<Escape>", lambda e: root.destroy())  # Allow exiting fullscreen with
 # Ensure the window is brought to the front
 root.lift()
 root.attributes('-topmost', True)
-root.after(10, lambda: root.attributes('-topmost', False))
+root.after(100, lambda: root.attributes('-topmost', False, '-fullscreen', True))
 
 # Custom Fonts
 header_font = font.Font(family="Helvetica", size=24, weight="bold")
