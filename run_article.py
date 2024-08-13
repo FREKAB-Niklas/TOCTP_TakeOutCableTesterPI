@@ -271,7 +271,6 @@ filename = config['DEFAULT']['filename']
 pins = config['DEFAULT']['pins'].split(',')
 
 # Get the cable drum and other parameters
-cable_drum = int(config['DEFAULT']['Cable Drum'])
 width = float(config['DEFAULT']['Width'])
 inner_diameter = float(config['DEFAULT']['Inner Diameter'])
 spacing = float(config['DEFAULT']['Spacing'])
