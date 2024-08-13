@@ -273,32 +273,9 @@ def load_article_file():
         lines = file.readlines()
     
     filename = os.path.basename(file_path).split('.')[0]
+    pins = [line.strip() for line in lines]
     
-    # Dictionary to store settings
-    settings = {}
-    pins = []
-    
-    for line in lines:
-        if ':' in line:
-            key, value = line.split(':', 1)
-            key = key.strip()
-            value = value.strip()
-            if key in ["Width", "Inner Diameter", "Takeouts", "Spacing", "Length"]:
-                settings[key] = value
-            else:
-                pins.append(line.strip())
-    
-    # Write the settings and pins to article_config.txt
-    with open("article_config.txt", "w") as config_file:
-        config_file.write("[DEFAULT]\n")
-        config_file.write(f"filename={filename}\n")
-        config_file.write(f"pins=" + ",".join(pins) + "\n")
-        for key, value in settings.items():
-            config_file.write(f"{key}={value}\n")
-    
-    # Run the run_article.py script
-    run_article(filename, pins, settings)
-
+    run_article(filename, pins)
 
 def show_keyboard(entry_widget, on_submit, message="Enter password to delete file:"):
     keyboard_window = tk.Toplevel(root, bg="#0A60C5")

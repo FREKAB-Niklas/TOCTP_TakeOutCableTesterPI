@@ -20,19 +20,9 @@ from adafruit_mcp230xx.mcp23017 import MCP23017
 import board
 import busio
 from digitalio import Direction, Pull
-import math
-import paho.mqtt.client as mqtt
+
 
 print(f"{datetime.now()}: run_article.py is starting...")
-
-# MQTT setup
-mqtt_broker_ip = "192.168.10.9"  # Replace with your actual broker IP
-client = mqtt.Client()
-client.connect(mqtt_broker_ip, 1883, 60)
-
-# Initialize parameters and calculated rotations
-rotation_list = []
-current_segment = 0
 
 # Get the directory where the script is located
 script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -269,13 +259,6 @@ config.read('article_config.txt')
 
 filename = config['DEFAULT']['filename']
 pins = config['DEFAULT']['pins'].split(',')
-
-# Get the cable drum and other parameters
-cable_drum = int(config['DEFAULT']['Cable Drum'])
-width = float(config['DEFAULT']['Width'])
-inner_diameter = float(config['DEFAULT']['Inner Diameter'])
-spacing = float(config['DEFAULT']['Spacing'])
-length = float(config['DEFAULT']['Length'])
 
 print(f"{datetime.now()}: Config read successfully. Filename: {filename}, Pins: {pins}")
 
@@ -885,41 +868,7 @@ def finish_batch():
     completed_label.config(text=f"Färdiga: {amount_of_cycles_done}st")
     skipped_label.config(text=f"Antal Avvikande: {skipped_tests}st")
 
-# Function to calculate rotations based on the parameters
-def calculate_rotations():
-    global rotation_list, current_segment
-    rotation_list = []  # Reset the list
-    current_segment = 0  # Reset the segment counter
 
-    D = inner_diameter  # Inner diameter in mm
-    d = 8.0  # Cable diameter is static 8mm
-    L = length * 1000  # Total cable length in mm
-    stops = len(pins)  # Number of stops is the number of pins
-
-    # Calculate the number of meters per stop
-    length_per_stop = L / stops
-
-    current_diameter = D
-
-    for i in range(stops):
-        current_circumference = math.pi * current_diameter
-        rotations = length_per_stop / current_circumference
-        rotation_list.append(rotations)
-        current_diameter += 2 * d
-
-# Function to run the motor for the current segment
-def run_motor():
-    global current_segment
-    if current_segment < len(rotation_list):
-        rotations = rotation_list[current_segment]
-        client.publish("motor/control", str(rotations))  # Publish the number of rotations
-        current_segment += 1
-        rotation_display.config(text=f"Running segment {current_segment}/{len(rotation_list)}")
-    else:
-        rotation_display.config(text="All segments completed.")
-
-# Calculate the rotations when the script starts
-calculate_rotations()
 
 
 # Header Section
