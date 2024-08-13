@@ -412,22 +412,46 @@ color_mapping = {
     "31: h": ("Green", "Blue"),
     "32: j": ("Yellow", "Blue  "),
 }
+def color_to_rgb(color):
+    # Complete color map including all possible color names used in color_mapping
+    color_map = {
+        "White": (255, 255, 255),
+        "Brown": (165, 42, 42),
+        "Green": (0, 128, 0),
+        "Yellow": (255, 255, 0),
+        "Grey": (128, 128, 128),
+        "Pink": (255, 192, 203),
+        "Blue": (0, 0, 255),
+        "Red": (255, 0, 0),
+        "Black": (0, 0, 0),
+        "Violet": (238, 130, 238)
+    }
+    return color_map.get(color, (0, 0, 0))  # Default to black if color not found
 
 
-# Add this function to set the central label's color
-def set_dual_color(label, color1, color2):
-    # Create a gradient image with the two colors
+def set_dual_color(label, color1, color2=None):
+    # Convert the color names to RGB tuples
+    color1 = color_to_rgb(color1)
+    if color2 is not None:
+        color2 = color_to_rgb(color2)
+    else:
+        color2 = color1  # Use the same color if only one color is provided
+
+    # Create a new image for the gradient
     width, height = label.winfo_width(), label.winfo_height()
-    gradient_image = Image.new('RGB', (width, height), color1)
+    gradient_image = Image.new("RGB", (width, height))
+
     for y in range(height):
         for x in range(width):
-            if x > width * 0.66:  # First color occupies 66% of the width
+            if x < width * 0.66:
+                gradient_image.putpixel((x, y), color1)
+            else:
                 gradient_image.putpixel((x, y), color2)
 
-    # Convert the image to PhotoImage and set it as the label's background
+    # Convert the image to a PhotoImage and set it as the label's background
     gradient_photo = ImageTk.PhotoImage(gradient_image)
     label.config(image=gradient_photo)
-    label.image = gradient_photo  # Keep a reference to prevent garbage collection
+    label.image = gradient_photo  # Keep a reference to avoid garbage collection
 
 # Modify the on_pin_probe and complete_probe functions
 def on_pin_probe(gui_pin_label):
