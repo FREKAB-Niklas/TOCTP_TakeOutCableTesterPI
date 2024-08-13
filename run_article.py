@@ -432,23 +432,24 @@ def set_dual_color(label, color1, color2):
 # Modify the on_pin_probe and complete_probe functions
 def on_pin_probe(gui_pin_label):
     global current_pin_index, expecting_probe, success_sound, reject_sound
+    print(f"on_pin_probe called with gui_pin_label={gui_pin_label}, expecting_probe={expecting_probe}")
+
     if not expecting_probe:
+        print("Probe not expected, ignoring...")
         return
 
     expected_pin_label = left_panel_labels[current_pin_index].cget("text")
 
-    print(f"on_pin_probe called with gui_pin_label={gui_pin_label}, current_pin_index={current_pin_index}, expected_pin_label={expected_pin_label}")
-
     if gui_pin_label == expected_pin_label:
+        print("Probe matches expected pin")
+        expecting_probe = False  # Disable further probing until the next pin
+        
         if success_sound:
             success_sound.play()
-        else:
-            print(f"{datetime.now()}: success_sound is not initialized.")
         
         left_panel_labels[current_pin_index].config(bg="#32CD32")
         deactivate_relay(expected_pin_label)  # Deactivate previous relay
         current_pin_index += 1
-        expecting_probe = False  # Disable further probing until the next pin
 
         if current_pin_index < len(left_panel_labels):
             next_pin_label = left_panel_labels[current_pin_index].cget("text")
@@ -459,23 +460,21 @@ def on_pin_probe(gui_pin_label):
                 current_wire_label.config(text=next_pin_label, bg=color_mapping[next_pin_label])
 
             left_panel_labels[current_pin_index].config(bg="yellow")
-            print(f"Next pin to probe: {next_pin_label}")
             root.after(1000, lambda: activate_relay_and_wait(next_pin_label))  # Add 1-second delay before enabling next probe
         else:
             print("All pins probed successfully.")
             check_all_probed()
     else:
+        print(f"Pin mismatch: expected {expected_pin_label}, but got {gui_pin_label}")
         if reject_sound:
             reject_sound.play()
-        else:
-            print(f"{datetime.now()}: reject_sound is not initialized.")
-        
-        print(f"Pin mismatch: expected {expected_pin_label}, but got {gui_pin_label}")
 
 
 def activate_relay_and_wait(pin_label):
+    print(f"Activating relay for {pin_label}")
     activate_relay(pin_label)
     root.after(2000, lambda: start_probing(pin_label))  # Wait 2 seconds before probing
+
 
 # Function to calculate rotations for each segment
 def calculate_rotations():
@@ -755,8 +754,9 @@ def start_probing(pin_label):
     global expecting_probe
     deactivate_relay(pin_label)  # Deactivate relay after 2 seconds
     print(f"Relay deactivated for {pin_label}, now waiting for probe.")
-    root.after(1000, enable_probing)  # Wait 1 second after deactivating relay before allowing probing
     expecting_probe = True
+    root.after(1000, enable_probing)  # Wait 1 second after deactivating relay before allowing probing
+
 
 
 
