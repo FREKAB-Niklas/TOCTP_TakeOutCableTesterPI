@@ -748,25 +748,33 @@ def reset_test():
     if response:
         print("Resetting labels and pins...")
         global current_pin_index, elapsed_time_current_cycle, total_elapsed_time, downtime, is_running, expecting_probe
-        total_elapsed_time += elapsed_time_current_cycle
-        elapsed_time_current_cycle = 0
+        
+        # Resetting the label colors and text
+        for label in left_panel_labels:
+            label.config(bg="light gray")
+        
+        current_wire_label.config(image='', text="Starta", bg="#32CD32")  # Reset image and text for the central label
+        current_wire_label.image = None  # Ensure there's no reference to any image
+        
+        # Reset other variables and pins
         current_pin_index = 0
+        elapsed_time_current_cycle = 0
+        total_elapsed_time = 0
         downtime = 0
         is_running = False
         expecting_probe = False
         
-        print("Resetting labels and pins...")
-        for label in left_panel_labels:
-            label.config(bg="light gray")
-        
+        # Reset the initial label to be highlighted
         left_panel_labels[current_pin_index].config(bg="yellow")
-        current_wire_label.config(text="Starta", bg="#32CD32")  # Ensure the start button appears
-        
+
         # Reset all MCP23017 pins
         for mcp, pin in mcp_pins:
             mcp_pin = mcp.get_pin(pin)
             mcp_pin.direction = Direction.INPUT
             mcp_pin.pull = Pull.UP
+        
+        print("Reset complete and MCP23017 pins reset")
+
         
         time_info_label.config(text=f"Tid\nNu: {format_time(elapsed_time_current_cycle)}\nFörra: {format_time(elapsed_time_previous_cycle)}\nTotal: {format_time(total_elapsed_time)}\nStälltid: {format_time(downtime)}")
         print("Reset complete. All pins and labels should be back to the initial state.")
