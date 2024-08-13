@@ -424,11 +424,17 @@ def activate_relay_and_wait(pin_label):
 
 # Function to calculate rotations for each segment
 def calculate_rotations():
-    current_diameter = inner_diameter
+    # Calculate the length wound before the motor-controlled segments start
+    length_wound = (length - spacing * (takeouts - 1)) / 2
+    layers_wound = length_wound / (width * CABLE_DIAMETER)
+    diameter_increase = 2 * CABLE_DIAMETER * layers_wound
+    current_diameter = inner_diameter + diameter_increase
+    
     segment_length = spacing  # Length of cable per segment
     rotation_list = []
 
-    for i in range(stops):
+    # Loop for 7 stops (since the first portion was manually wound)
+    for i in range(takeouts - 1):
         # Calculate the current circumference
         current_circumference = math.pi * current_diameter
 
@@ -448,6 +454,7 @@ def calculate_rotations():
         current_diameter += 2 * CABLE_DIAMETER * layers
 
     return rotation_list
+
 
 # Function to simulate motor control based on calculated rotations
 def run_motor(rotation_list):
