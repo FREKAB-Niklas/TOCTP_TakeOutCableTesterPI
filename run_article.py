@@ -430,13 +430,10 @@ def color_to_rgb(color):
 
     
 
-def set_dual_color(label, color1, color2=None, width=600, height=600):
+def set_dual_color(label, color1, color2=None, pin_text="", width=600, height=500):
     # Convert the color names to RGB tuples
     color1_rgb = color_to_rgb(color1)
-    if color2 is not None:
-        color2_rgb = color_to_rgb(color2)
-    else:
-        color2_rgb = color1_rgb  # Use the same color if only one color is provided
+    color2_rgb = color_to_rgb(color2) if color2 else color1_rgb
 
     # Log the colors being used for debugging
     print(f"Setting dual color for center label:")
@@ -444,6 +441,7 @@ def set_dual_color(label, color1, color2=None, width=600, height=600):
     print(f"  Secondary Color: {color2} -> RGB: {color2_rgb}")
 
     # Create a new image for the gradient
+    width, height = 600, 400  # Adjust dimensions as needed
     gradient_image = Image.new("RGB", (width, height))
 
     for y in range(height):
@@ -455,14 +453,12 @@ def set_dual_color(label, color1, color2=None, width=600, height=600):
 
     # Convert the image to a PhotoImage and set it as the label's background
     gradient_photo = ImageTk.PhotoImage(gradient_image)
-
-    # Set the image and ensure the label text updates correctly
-    label.config(image=gradient_photo, width=width, height=height, compound='center')
+    label.config(image=gradient_photo, text=pin_text, compound='center', width=width, height=height)
     label.image = gradient_photo  # Keep a reference to avoid garbage collection
-    label.config(text=label.cget("text"))
 
     # Force the UI to update immediately
     label.update_idletasks()
+
 
 
 
