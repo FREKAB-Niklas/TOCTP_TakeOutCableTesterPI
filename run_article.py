@@ -378,8 +378,58 @@ def read_mcp_probes():
     return None, None, False
 
 
+color_mapping = {
+    "1: A": "White",
+    "2: B": "Brown",
+    "3: C": "Green",
+    "4: D": "Yellow",
+    "5: E": "Grey",
+    "6: F": "Pink",
+    "7: G": "Blue",
+    "8: H": "Red",
+    "9: J": "Black",
+    "10: K": "Violet",
+    "11: L": ("Grey", "Pink"),
+    "12: M": ("Red", "Blue"),
+    "13: N": ("White", "Green"),
+    "14: P": ("Brown", "Green"),
+    "15: R": ("White", "Yellow"),
+    "16: S": ("Yellow", "Brown"),
+    "17: T": ("White", "Grey"),
+    "18: U": ("Grey", "Brown"),
+    "19: V": ("White", "Pink"),
+    "20: W": ("Pink", "Brown"),
+    "21: X": ("White", "Blue"),
+    "22: Y": ("Brown", "Blue"),
+    "23: Z": ("White", "Red"),
+    "24: a": ("Brown", "Red"),
+    "25: b": ("White", "Black"),
+    "26: c": ("Brown", "Black"),
+    "27: d": ("Grey", "Green"),
+    "28: e": ("Yellow", "Grey"),
+    "29: f": ("Pink", "Green"),
+    "30: g": ("Yellow", "Pink"),
+    "31: h": ("Green", "Blue"),
+    "32: j": ("Yellow", "Blue  "),
+}
 
 
+# Add this function to set the central label's color
+def set_dual_color(label, color1, color2):
+    # Create a gradient image with the two colors
+    width, height = label.winfo_width(), label.winfo_height()
+    gradient_image = Image.new('RGB', (width, height), color1)
+    for y in range(height):
+        for x in range(width):
+            if x > width * 0.66:  # First color occupies 66% of the width
+                gradient_image.putpixel((x, y), color2)
+
+    # Convert the image to PhotoImage and set it as the label's background
+    gradient_photo = ImageTk.PhotoImage(gradient_image)
+    label.config(image=gradient_photo)
+    label.image = gradient_photo  # Keep a reference to prevent garbage collection
+
+# Modify the on_pin_probe and complete_probe functions
 def on_pin_probe(gui_pin_label):
     global current_pin_index, expecting_probe, success_sound, reject_sound
     if not expecting_probe:
@@ -402,7 +452,12 @@ def on_pin_probe(gui_pin_label):
 
         if current_pin_index < len(left_panel_labels):
             next_pin_label = left_panel_labels[current_pin_index].cget("text")
-            current_wire_label.config(text=next_pin_label, bg="yellow")
+            # Update the central label color
+            if isinstance(color_mapping[next_pin_label], tuple):
+                set_dual_color(current_wire_label, *color_mapping[next_pin_label])
+            else:
+                current_wire_label.config(text=next_pin_label, bg=color_mapping[next_pin_label])
+
             left_panel_labels[current_pin_index].config(bg="yellow")
             print(f"Next pin to probe: {next_pin_label}")
             root.after(1000, lambda: activate_relay_and_wait(next_pin_label))  # Add 1-second delay before enabling next probe
@@ -530,9 +585,16 @@ def complete_probe():
         left_panel_labels[current_pin_index].config(bg="#32CD32")
         print(f"Pin {pins[current_pin_index]} probed successfully, setting to green")
         current_pin_index += 1
-        current_wire_label.config(text=pins[current_pin_index], bg="yellow")
+
+        next_pin_label = pins[current_pin_index]
+        # Update the central label color
+        if isinstance(color_mapping[next_pin_label], tuple):
+            set_dual_color(current_wire_label, *color_mapping[next_pin_label])
+        else:
+            current_wire_label.config(text=next_pin_label, bg=color_mapping[next_pin_label])
+
         left_panel_labels[current_pin_index].config(bg="yellow")
-        print(f"Next pin to probe: {pins[current_pin_index]}")
+        print(f"Next pin to probe: {next_pin_label}")
     else:
         left_panel_labels[current_pin_index].config(bg="#32CD32")
         print(f"Last pin probed: {pins[current_pin_index]}. Confirming last probe in 500ms")
