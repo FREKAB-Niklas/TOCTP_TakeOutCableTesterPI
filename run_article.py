@@ -439,6 +439,7 @@ def set_dual_color(label, color1, color2=None, pin_text=""):
     print(f"Setting dual color for center label:")
     print(f"  Primary Color: {color1} -> RGB: {color1_rgb}")
     print(f"  Secondary Color: {color2} -> RGB: {color2_rgb}")
+    print(f"Pin Text being set: {pin_text}")
 
     # Create a new image for the gradient
     width, height = 600, 400  # Adjust dimensions as needed
@@ -460,7 +461,7 @@ def set_dual_color(label, color1, color2=None, pin_text=""):
 
     # Force the UI to update immediately
     label.update_idletasks()
-    print(f"Pin Text being set: {pin_text}")
+
 
 
 
@@ -496,7 +497,7 @@ def on_pin_probe(gui_pin_label):
             # Update the central label color and add debugging output
             if isinstance(color_mapping[next_pin_label], tuple):
                 print(f"Next pin uses dual color: {color_mapping[next_pin_label]}")
-                set_dual_color(current_wire_label, *color_mapping[next_pin_label])
+                set_dual_color(current_wire_label, *color_mapping[next_pin_label], pin_text=next_pin_label)
             else:
                 print(f"Next pin uses single color: {color_mapping[next_pin_label]}")
                 current_wire_label.config(text=next_pin_label, bg=color_mapping[next_pin_label])
@@ -510,7 +511,6 @@ def on_pin_probe(gui_pin_label):
         print(f"Pin mismatch: expected {expected_pin_label}, but got {gui_pin_label}")
         if reject_sound:
             reject_sound.play()
-
 
 
 def activate_relay_and_wait(pin_label):
