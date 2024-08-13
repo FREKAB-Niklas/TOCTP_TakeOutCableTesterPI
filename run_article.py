@@ -106,20 +106,15 @@ def custom_messagebox(title, message, box_type="info"):
     msg_label = tk.Label(custom_box, text=message, font=("Helvetica", 18), wraplength=550)
     msg_label.pack(pady=40)
 
-    # Force update of the window to make sure everything is displayed
-    custom_box.update()
+    response_var = tk.BooleanVar()  # Use a BooleanVar to store the response
 
-    if box_type == "error":
+    if box_type == "error" or box_type == "info":
         button_text = "OK"
-        button_command = custom_box.destroy
-    elif box_type == "info":
-        button_text = "OK"
-        button_command = custom_box.destroy
+        button_command = lambda: (response_var.set(True), custom_box.destroy())
+        ok_button = tk.Button(custom_box, text=button_text, font=("Helvetica", 18), width=12, height=3, command=button_command)
+        ok_button.pack(pady=40)
+
     elif box_type == "askyesno":
-        button_frame = tk.Frame(custom_box)
-        button_frame.pack(pady=40)
-        response_var = tk.BooleanVar()  # Use a BooleanVar to store the response
-
         def on_yes():
             response_var.set(True)
             custom_box.destroy()
@@ -128,19 +123,14 @@ def custom_messagebox(title, message, box_type="info"):
             response_var.set(False)
             custom_box.destroy()
 
-        yes_button = tk.Button(button_frame, text="Yes", font=("Helvetica", 18), width=12, height=3, command=on_yes)
+        yes_button = tk.Button(custom_box, text="Yes", font=("Helvetica", 18), width=12, height=3, command=on_yes)
         yes_button.pack(side=tk.LEFT, padx=20)
 
-        no_button = tk.Button(button_frame, text="No", font=("Helvetica", 18), width=12, height=3, command=on_no)
+        no_button = tk.Button(custom_box, text="No", font=("Helvetica", 18), width=12, height=3, command=on_no)
         no_button.pack(side=tk.RIGHT, padx=20)
 
-        custom_box.wait_window()  # Wait for the user to respond
-        return response_var.get()
-
-    ok_button = tk.Button(custom_box, text=button_text, font=("Helvetica", 18), width=12, height=3, command=button_command)
-    ok_button.pack(pady=40)
-    
-    custom_box.update()  # Ensure the window displays properly
+    custom_box.wait_window()  # Wait for the user to respond
+    return response_var.get()  # Return the user’s response as True or False
 
 def custom_info_popup(title, message):
     custom_box = tk.Toplevel(root)
