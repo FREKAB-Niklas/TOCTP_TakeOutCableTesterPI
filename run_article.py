@@ -264,6 +264,8 @@ config.read('article_config.txt')
 
 filename = config['DEFAULT']['filename']
 pins = config['DEFAULT']['pins'].split(',')
+if pins[0].startswith("pins="):
+    pins[0] = pins[0][5:]
 takeouts = int(config['DEFAULT']['takeouts'])
 spacing = float(config['DEFAULT']['spacing']) * 1000  # Convert to mm
 length = float(config['DEFAULT']['length']) * 1000  # Convert to mm
