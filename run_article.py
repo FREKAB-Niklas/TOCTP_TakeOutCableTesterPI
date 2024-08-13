@@ -273,15 +273,22 @@ def parse_config_file(filename):
                 config_data[key.strip()] = value.strip()
     return config_data
 
-# Load configuration
+# Assuming the custom parsing function 'parse_config_file' is used
 config = parse_config_file('article_config.txt')
 
-# Fetch the necessary parameters from the config file
-width = float(config.get('Width'))
-inner_diameter = float(config.get('Inner Diameter'))
-spacing = int(config.get('Spacing'))
-takeouts = int(config.get('Takeouts'))
-length = int(config.get('Length'))
+# Check for required keys and handle missing ones
+try:
+    width = float(config.get('Width', '0'))
+    inner_diameter = float(config.get('Inner Diameter', '0'))
+    spacing = float(config.get('Spacing', '0'))
+    takeouts = int(config.get('Takeouts', '0'))
+    length = float(config.get('Length', '0'))
+except ValueError as e:
+    print(f"Error parsing configuration values: {e}")
+    sys.exit(1)
+
+# Now `width`, `inner_diameter`, `spacing`, `takeouts`, and `length` have valid values or defaults
+
 
 # Handle pins
 pins = []
