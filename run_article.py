@@ -742,38 +742,32 @@ def update_timer():
     root.after(1000, update_timer)  # Update every second (1000 milliseconds)
 
 def reset_test():
-    print("Reset button clicked")
     response = custom_messagebox("Reset", "Är du säker att du vill reseta?")
-    print(f"Response from custom_messagebox: {response}")
     if response:
-        print("Resetting labels and pins...")
         global current_pin_index, elapsed_time_current_cycle, total_elapsed_time, downtime, is_running, expecting_probe
-        
-        # Resetting the label colors and text
-        for label in left_panel_labels:
-            label.config(bg="light gray")
-        
-        current_wire_label.config(image='', text="Starta", bg="#32CD32")  # Reset image and text for the central label
-        current_wire_label.image = None  # Ensure there's no reference to any image
-        
-        # Reset other variables and pins
-        current_pin_index = 0
+        total_elapsed_time += elapsed_time_current_cycle
         elapsed_time_current_cycle = 0
-        total_elapsed_time = 0
+        current_pin_index = 0
         downtime = 0
         is_running = False
         expecting_probe = False
-        
-        # Reset the initial label to be highlighted
+        for label in left_panel_labels:
+            label.config(bg="light gray")
         left_panel_labels[current_pin_index].config(bg="yellow")
+
+        # Reset the central label size and appearance
+        current_wire_label.config(text="Starta", bg="#32CD32", font=center_font)
+        current_wire_label.config(width=6, height=3, image='')  # Clear the image and reset the size
+
+        time_info_label.config(text=f"Tid\nNu: {format_time(elapsed_time_current_cycle)}\nFörra: {format_time(elapsed_time_previous_cycle)}\nTotal: {format_time(total_elapsed_time)}\nStälltid: {format_time(downtime)}")
 
         # Reset all MCP23017 pins
         for mcp, pin in mcp_pins:
             mcp_pin = mcp.get_pin(pin)
             mcp_pin.direction = Direction.INPUT
             mcp_pin.pull = Pull.UP
-        
-        print("Reset complete and MCP23017 pins reset")
+
+        print("Reset complete and MCP23017 pins reset")  # Add logging for debugging
 
         
         time_info_label.config(text=f"Tid\nNu: {format_time(elapsed_time_current_cycle)}\nFörra: {format_time(elapsed_time_previous_cycle)}\nTotal: {format_time(total_elapsed_time)}\nStälltid: {format_time(downtime)}")
