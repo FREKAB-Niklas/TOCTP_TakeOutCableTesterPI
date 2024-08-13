@@ -455,14 +455,14 @@ def set_dual_color(label, color1, color2=None, width=600, height=400):
 
     # Convert the image to a PhotoImage and set it as the label's background
     gradient_photo = ImageTk.PhotoImage(gradient_image)
-    label.config(image=gradient_photo, width=width, height=height)  
+
+    # Set the image and ensure the label text updates correctly
+    label.config(image=gradient_photo, width=width, height=height, compound='center')
     label.image = gradient_photo  # Keep a reference to avoid garbage collection
+    label.config(text=label.cget("text"))
 
-    # Re-add the text over the gradient
-    label.config(compound='center', text=label.cget("text"))
-
-    # Force the UI to update
-    root.update_idletasks()
+    # Force the UI to update immediately
+    label.update_idletasks()
 
 
 
