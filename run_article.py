@@ -263,20 +263,35 @@ def start_probing(pin_label):
     expecting_probe = True
 
 
+# Function to manually parse the configuration file
+def parse_config_file(filename):
+    config_data = {}
+    with open(filename, 'r') as file:
+        for line in file:
+            if ":" in line:
+                key, value = line.split(":", 1)
+                config_data[key.strip()] = value.strip()
+    return config_data
 
-config = configparser.ConfigParser()
-config.read('article_config.txt')
+# Load configuration
+config = parse_config_file('article_config.txt')
 
-filename = config['DEFAULT']['filename']
-pins = config['DEFAULT']['pins'].split(',')
+# Fetch the necessary parameters from the config file
+width = float(config.get('Width'))
+inner_diameter = float(config.get('Inner Diameter'))
+spacing = int(config.get('Spacing'))
+takeouts = int(config.get('Takeouts'))
+length = int(config.get('Length'))
 
-# Get the cable drum and other parameters
-width = float(config['DEFAULT']['Width'])
-inner_diameter = float(config['DEFAULT']['Inner Diameter'])
-spacing = float(config['DEFAULT']['Spacing'])
-length = float(config['DEFAULT']['Length'])
+# Handle pins
+pins = []
+for i in range(1, takeouts + 1):
+    pin_key = f"{i}"
+    if pin_key in config:
+        pins.append(config[pin_key])
 
-print(f"{datetime.now()}: Config read successfully. Filename: {filename}, Pins: {pins}")
+print(f"Width: {width}, Inner Diameter: {inner_diameter}, Spacing: {spacing}, Takeouts: {takeouts}, Length: {length}")
+print(f"Pins: {pins}")
 
 # Get the directory where the script is located
 script_dir = os.path.dirname(os.path.abspath(__file__))
