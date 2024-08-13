@@ -752,6 +752,7 @@ def update_timer():
     root.after(1000, update_timer)  # Update every second (1000 milliseconds)
 
 def reset_test():
+    print("Reset button clicked")
     response = custom_messagebox("Reset", "Är du säker att du vill reseta?")
     if response:
         global current_pin_index, elapsed_time_current_cycle, total_elapsed_time, downtime, is_running, expecting_probe
