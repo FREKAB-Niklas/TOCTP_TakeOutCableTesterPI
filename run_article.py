@@ -443,8 +443,13 @@ def set_dual_color(label, color1, color2=None):
     print(f"  Primary Color: {color1} -> RGB: {color1_rgb}")
     print(f"  Secondary Color: {color2} -> RGB: {color2_rgb}")
 
+    # Ensure the label is fully updated and sized
+    label.update_idletasks()
+    width = label.winfo_width() or 300  # Set to default width if zero
+    height = label.winfo_height() or 200  # Set to default height if zero
+
     # Create a new image for the gradient
-    gradient_image = Image.new("RGB")
+    gradient_image = Image.new("RGB", (width, height))  # Pass the width and height here
 
     for y in range(height):
         for x in range(width):
@@ -455,7 +460,7 @@ def set_dual_color(label, color1, color2=None):
 
     # Convert the image to a PhotoImage and set it as the label's background
     gradient_photo = ImageTk.PhotoImage(gradient_image)
-    label.config(image=gradient_photo, width=300, height=200)  # Clear text if using an image
+    label.config(image=gradient_photo)  # Clear text if using an image
     label.image = gradient_photo  # Keep a reference to avoid garbage collection
 
     # Force the UI to update
