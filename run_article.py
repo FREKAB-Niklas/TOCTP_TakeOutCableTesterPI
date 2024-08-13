@@ -263,42 +263,27 @@ def start_probing(pin_label):
     expecting_probe = True
 
 
-# Function to manually parse the configuration file
-def parse_config_file(filename):
-    config_data = {}
-    with open(filename, 'r') as file:
-        for line in file:
-            if ":" in line:
-                key, value = line.split(":", 1)
-                config_data[key.strip()] = value.strip()
-    return config_data
+# Load the configuration file
+config = configparser.ConfigParser()
+config.read('article_config.txt')
 
-# Assuming the custom parsing function 'parse_config_file' is used
-config = parse_config_file('article_config.txt')
-
-# Check for required keys and handle missing ones
+# Parse the settings section
 try:
-    width = float(config.get('Width', '0'))
-    inner_diameter = float(config.get('Inner Diameter', '0'))
-    spacing = float(config.get('Spacing', '0'))
-    takeouts = int(config.get('Takeouts', '0'))
-    length = float(config.get('Length', '0'))
-except ValueError as e:
-    print(f"Error parsing configuration values: {e}")
+    width = float(config['Settings']['Width'])
+    inner_diameter = float(config['Settings']['Inner Diameter'])
+    spacing = float(config['Settings']['Spacing'])
+    takeouts = int(config['Settings']['Takeouts'])
+    length = float(config['Settings']['Length'])
+except KeyError as e:
+    print(f"Missing configuration key: {e}")
     sys.exit(1)
 
-# Now `width`, `inner_diameter`, `spacing`, `takeouts`, and `length` have valid values or defaults
-
-
-# Handle pins
+# Parse the pins section
 pins = []
-for i in range(1, takeouts + 1):
-    pin_key = f"{i}"
-    if pin_key in config:
-        pins.append(config[pin_key])
+for key in sorted(config['Pins'].keys(), key=int):
+    pins.append(f"{key}: {config['Pins'][key]}")
 
-print(f"Width: {width}, Inner Diameter: {inner_diameter}, Spacing: {spacing}, Takeouts: {takeouts}, Length: {length}")
-print(f"Pins: {pins}")
+print("Parsed settings and pins successfully.")
 
 # Get the directory where the script is located
 script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -391,13 +376,6 @@ def read_mcp_probes():
             return mcp_address, pin, True
     return None, None, False
 
-# Initialize the motor button, but keep it hidden until a pin is probed
-motor_button = tk.Button(root, text="Run Motor", font=("Helvetica", 24), bg="#0A60C5", fg="black", command=run_motor, width=20, height=50)
-motor_button.pack_forget()  # Initially hidden
-
-# Add a label to display rotation progress
-rotation_display = tk.Label(root, text="", font=("Helvetica", 18))
-rotation_display.pack(pady=10)
 
 # Color mapping dictionary with pin labels
 color_mapping = {
@@ -1101,6 +1079,23 @@ button_frame.pack(side=tk.BOTTOM, fill=tk.X, pady=20)
 button_frame = tk.Frame(root)
 button_frame.pack(side=tk.BOTTOM, fill=tk.X, pady=10)
 
+# Assuming pins are now parsed correctly from the 'Pins' section
+for i, pin in enumerate(pins):
+    label = tk.Label(left_panel, text=pin, font=body_font, justify=tk.LEFT, width=8, height=2)
+    label.bind("<Button-1>", lambda e, idx=i: on_pin_click(idx))
+    left_panel_labels.append(label)
+    row = i % 16
+    col = i // 16
+    label.grid(row=row, column=col, sticky='w')
+
+# Motor button initialization remains unchanged
+motor_button = tk.Button(root, text="Run Motor", font=("Helvetica", 24), bg="#0A60C5", fg="black", command=run_motor, width=20, height=50)
+motor_button.pack_forget()  # Initially hidden
+
+
+# Add a label to display rotation progress
+rotation_display = tk.Label(root, text="", font=("Helvetica", 18))
+rotation_display.pack(pady=10)
 
 
 # Update the diagnose button to finish batch
