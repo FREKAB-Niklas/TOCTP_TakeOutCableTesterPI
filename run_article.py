@@ -53,36 +53,7 @@ def start_pulseaudio():
 # Attempt to initialize pygame for sound effects
 pygame_initialized = False
 
-# Start PulseAudio
-start_pulseaudio()
 
-for _ in range(5):
-    try:
-        pygame.mixer.init()
-        success_sound = pygame.mixer.Sound("success.mp3")
-        reject_sound = pygame.mixer.Sound("reject.mp3")
-        success_sound.set_volume(1.0)
-        reject_sound.set_volume(1.0)
-        print(f"{datetime.now()}: Pygame initialized.")
-        pygame_initialized = True
-        sound = pygame.mixer.Sound("success.mp3")
-        break
-    except pygame.error as e:
-        print(f"{datetime.now()}: Pygame initialization failed: {e}. Retrying...")
-        time.sleep(2)  # Wait for 2 seconds before retrying
-
-try:
-    success_sound.play()
-    pygame.time.wait(3000)
-except Exception as e:
-    print(f"Error playing success sound: {e}")
-
-if not pygame_initialized:
-    print(f"{datetime.now()}: Pygame initialization failed after retries. Continuing without sound.")
-    success_sound = None
-    reject_sound = None
-else:
-    print(f"{datetime.now()}: Pygame initialized successfully with audio support.")
 
 # Initialize main window
 root = tk.Tk()
