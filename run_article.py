@@ -267,6 +267,7 @@ pins = config['DEFAULT']['pins'].split(',')
 if pins[0].startswith("pins="):
     pins[0] = pins[0][5:]
 takeouts = int(config['DEFAULT']['takeouts'])
+stops = takeouts - 1  # Adjusting the number of stops to account for manual winding to the first takeout
 spacing = float(config['DEFAULT']['spacing']) * 1000  # Convert to mm
 length = float(config['DEFAULT']['length']) * 1000  # Convert to mm
 inner_diameter = float(config['DEFAULT']['inner_diameter'])
@@ -427,7 +428,7 @@ def calculate_rotations():
     segment_length = spacing  # Length of cable per segment
     rotation_list = []
 
-    for i in range(takeouts):
+    for i in range(stops):
         # Calculate the current circumference
         current_circumference = math.pi * current_diameter
 
