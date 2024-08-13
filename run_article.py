@@ -754,7 +754,9 @@ def update_timer():
 def reset_test():
     print("Reset button clicked")
     response = custom_messagebox("Reset", "Är du säker att du vill reseta?")
+    print(f"Response from custom_messagebox: {response}")
     if response:
+        print("Resetting labels and pins...")
         global current_pin_index, elapsed_time_current_cycle, total_elapsed_time, downtime, is_running, expecting_probe
         total_elapsed_time += elapsed_time_current_cycle
         elapsed_time_current_cycle = 0
