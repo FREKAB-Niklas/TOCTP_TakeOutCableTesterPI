@@ -443,13 +443,8 @@ def set_dual_color(label, color1, color2=None):
     print(f"  Primary Color: {color1} -> RGB: {color1_rgb}")
     print(f"  Secondary Color: {color2} -> RGB: {color2_rgb}")
 
-    # Ensure the label is fully updated and sized
-    label.update_idletasks()
-    width = label.winfo_width() or 300  # Set to default width if zero
-    height = label.winfo_height() or 200  # Set to default height if zero
-
     # Create a new image for the gradient
-    gradient_image = Image.new("RGB", (width, height))
+    gradient_image = Image.new("RGB", width=300, height=200)
 
     for y in range(height):
         for x in range(width):
