@@ -258,7 +258,11 @@ config = configparser.ConfigParser()
 config.read('article_config.txt')
 
 filename = config['DEFAULT']['filename']
-pins = config['DEFAULT']['pins'].split(',')
+pins = config['DEFAULT']['pins']
+if pins.startswith("pins="):
+    pins = pins[len("pins="):]
+pins = pins.split(',')
+
 
 print(f"{datetime.now()}: Config read successfully. Filename: {filename}, Pins: {pins}")
 
