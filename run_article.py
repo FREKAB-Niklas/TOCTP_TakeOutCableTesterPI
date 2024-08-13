@@ -428,6 +428,7 @@ def color_to_rgb(color):
     }
     return color_map.get(color, (0, 0, 0))  # Default to black if color not found
 
+    
 
 def set_dual_color(label, color1, color2=None):
     # Convert the color names to RGB tuples
@@ -444,7 +445,8 @@ def set_dual_color(label, color1, color2=None):
 
     # Ensure the label is fully updated and sized
     label.update_idletasks()
-    width, height = label.winfo_width(), label.winfo_height()
+    width = label.winfo_width() or 300  # Set to default width if zero
+    height = label.winfo_height() or 200  # Set to default height if zero
 
     # Create a new image for the gradient
     gradient_image = Image.new("RGB", (width, height))
@@ -463,6 +465,7 @@ def set_dual_color(label, color1, color2=None):
 
     # Force the UI to update
     root.update_idletasks()
+
 
 
 
