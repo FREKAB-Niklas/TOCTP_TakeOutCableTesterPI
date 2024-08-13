@@ -263,27 +263,21 @@ def start_probing(pin_label):
     expecting_probe = True
 
 
-# Load the configuration file
+
 config = configparser.ConfigParser()
 config.read('article_config.txt')
 
-# Parse the settings section
-try:
-    width = float(config['Settings']['Width'])
-    inner_diameter = float(config['Settings']['Inner Diameter'])
-    spacing = float(config['Settings']['Spacing'])
-    takeouts = int(config['Settings']['Takeouts'])
-    length = float(config['Settings']['Length'])
-except KeyError as e:
-    print(f"Missing configuration key: {e}")
-    sys.exit(1)
+filename = config['DEFAULT']['filename']
+pins = config['DEFAULT']['pins'].split(',')
 
-# Parse the pins section
-pins = []
-for key in sorted(config['Pins'].keys(), key=int):
-    pins.append(f"{key}: {config['Pins'][key]}")
+# Get the cable drum and other parameters
+cable_drum = int(config['DEFAULT']['Cable Drum'])
+width = float(config['DEFAULT']['Width'])
+inner_diameter = float(config['DEFAULT']['Inner Diameter'])
+spacing = float(config['DEFAULT']['Spacing'])
+length = float(config['DEFAULT']['Length'])
 
-print("Parsed settings and pins successfully.")
+print(f"{datetime.now()}: Config read successfully. Filename: {filename}, Pins: {pins}")
 
 # Get the directory where the script is located
 script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -377,86 +371,6 @@ def read_mcp_probes():
     return None, None, False
 
 
-# Color mapping dictionary with pin labels
-color_mapping = {
-    "1: A": "White",
-    "2: B": "Brown",
-    "3: C": "Green",
-    "4: D": "Yellow",
-    "5: E": "Grey",
-    "6: F": "Pink",
-    "7: G": "Blue",
-    "8: H": "Red",
-    "9: J": "Black",
-    "10: K": "Violet",
-    "11: L": ("Grey", "Pink"),
-    "12: M": ("Red", "Blue"),
-    "13: N": ("White", "Green"),
-    "14: P": ("Brown", "Green"),
-    "15: R": ("White", "Yellow"),
-    "16: S": ("Yellow", "Brown"),
-    "17: T": ("White", "Grey"),
-    "18: U": ("Grey", "Brown"),
-    "19: V": ("White", "Pink"),
-    "20: W": ("Pink", "Brown"),
-    "21: X": ("White", "Blue"),
-    "22: Y": ("Brown", "Blue"),
-    "23: Z": ("White", "Red"),
-    "24: a": ("Brown", "Red"),
-    "25: b": ("White", "Black"),
-    "26: c": ("Brown", "Black"),
-    "27: d": ("Grey", "Green"),
-    "28: e": ("Yellow", "Grey"),
-    "29: f": ("Pink", "Green"),
-    "30: g": ("Yellow", "Pink"),
-    "31: h": ("Green", "Blue"),
-    "32: j": ("Yellow", "Blue"),
-    # Continue for all necessary pins
-}
-def set_wire_color(pin_label):
-    color_name = color_mapping.get(pin_label)
-    if color_name:
-        if isinstance(color_name, tuple):
-            # Mixed color case, handle both colors
-            create_diagonal_color_label(color_name[0], color_name[1])
-        else:
-            # Single color case
-            current_wire_label.config(bg=color_name_to_code(color_name))
-
-def color_name_to_code(color_name):
-    # Convert color name to hexadecimal color code
-    color_codes = {
-        "White": "#FFFFFF",
-        "Brown": "#A52A2A",
-        "Green": "#008000",
-        "Yellow": "#FFFF00",
-        "Grey": "#808080",
-        "Blue": "#0000FF",
-        "Black": "#000000",
-        "Pink": "#FFC0CB",
-        "Red": "#FF0000",
-        "Violet": "#EE82EE",
-        # Add other color codes as necessary
-    }
-    return color_codes.get(color_name, "#FFFFFF")  # Default to white if color not found
-
-def create_diagonal_color_label(color1_name, color2_name):
-    color1 = color_name_to_code(color1_name)
-    color2 = color_name_to_code(color2_name)
-    
-    width, height = 300, 100  # Dimensions for the label background
-    canvas = tk.Canvas(central_frame, width=width, height=height)
-    canvas.pack()
-
-    # Create two triangles to form a diagonal split
-    canvas.create_polygon(0, 0, width, 0, 0, height, fill=color1, outline="")
-    canvas.create_polygon(width, height, 0, height, width, 0, fill=color2, outline="")
-
-    # Set the canvas as the background for the label
-    canvas_image = tk.PhotoImage(width=width, height=height)
-    canvas.postscript(file="temp_canvas.ps", colormode='color')
-    current_wire_label.config(image=canvas_image)
-
 
 
 def on_pin_probe(gui_pin_label):
@@ -479,24 +393,15 @@ def on_pin_probe(gui_pin_label):
         current_pin_index += 1
         expecting_probe = False  # Disable further probing until the next pin
 
-        # Set the wire color based on the current pin
-        set_wire_color(gui_pin_label)
-
         if current_pin_index < len(left_panel_labels):
             next_pin_label = left_panel_labels[current_pin_index].cget("text")
             current_wire_label.config(text=next_pin_label, bg="yellow")
             left_panel_labels[current_pin_index].config(bg="yellow")
             print(f"Next pin to probe: {next_pin_label}")
             root.after(1000, lambda: activate_relay_and_wait(next_pin_label))  # Add 1-second delay before enabling next probe
-
-            # Show the motor control button after a pin is successfully probed
-            motor_button.pack(side=tk.RIGHT, padx=20, pady=10)
         else:
             print("All pins probed successfully.")
             check_all_probed()
-
-            # Hide the motor button when all pins are probed
-            motor_button.pack_forget()
     else:
         if reject_sound:
             reject_sound.play()
@@ -509,6 +414,10 @@ def on_pin_probe(gui_pin_label):
 def activate_relay_and_wait(pin_label):
     activate_relay(pin_label)
     root.after(2000, lambda: start_probing(pin_label))  # Wait 2 seconds before probing
+
+
+
+
 
 
 def monitor_pins():
@@ -1079,23 +988,6 @@ button_frame.pack(side=tk.BOTTOM, fill=tk.X, pady=20)
 button_frame = tk.Frame(root)
 button_frame.pack(side=tk.BOTTOM, fill=tk.X, pady=10)
 
-# Assuming pins are now parsed correctly from the 'Pins' section
-for i, pin in enumerate(pins):
-    label = tk.Label(left_panel, text=pin, font=body_font, justify=tk.LEFT, width=8, height=2)
-    label.bind("<Button-1>", lambda e, idx=i: on_pin_click(idx))
-    left_panel_labels.append(label)
-    row = i % 16
-    col = i // 16
-    label.grid(row=row, column=col, sticky='w')
-
-# Motor button initialization remains unchanged
-motor_button = tk.Button(root, text="Run Motor", font=("Helvetica", 24), bg="#0A60C5", fg="black", command=run_motor, width=20, height=50)
-motor_button.pack_forget()  # Initially hidden
-
-
-# Add a label to display rotation progress
-rotation_display = tk.Label(root, text="", font=("Helvetica", 18))
-rotation_display.pack(pady=10)
 
 
 # Update the diagnose button to finish batch
