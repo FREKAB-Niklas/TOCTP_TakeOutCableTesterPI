@@ -1,0 +1,14 @@
+Cable Drum: 1
+Width: 142
+Inner Diameter: 178
+Spacing: 5
+Takeouts: 8
+Length: 50
+1: A
+2: B
+3: C
+4: D
+5: E
+6: F
+7: G
+8: H

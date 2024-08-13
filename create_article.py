@@ -1,10 +1,14 @@
 import tkinter as tk
-from tkinter import font
-from tkinter import messagebox
+from tkinter import font, messagebox, ttk
 from PIL import Image, ImageTk
 import os
 
 
+cable_drum_properties = {
+    "1": {"width": 142, "inner_diameter": 178},
+    "2": {"width": 160, "inner_diameter": 200},
+    "3": {"width": 180, "inner_diameter": 220},
+}
 
 # Get the directory where the script is located
 script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -52,12 +56,31 @@ def custom_messagebox(title, message, box_type="info"):
     ok_button = tk.Button(custom_box, text=button_text, font=("Helvetica", 18), width=12, height=3, command=button_command)
     ok_button.pack(pady=40)  # Increase padding for better touch response
 
+# Dictionary to map cable drum choices to their properties
+cable_drum_properties = {
+    "1": {"width": 142, "inner_diameter": 178},
+    "2": {"width": 160, "inner_diameter": 200},
+    "3": {"width": 180, "inner_diameter": 220},
+}
+
 def save_pins():
     selected_pins = [button['text'] for button in buttons if button.cget("bg") == "#32CD32"]
     article_name = article_name_entry.get()
+    cable_drum = cable_drum_var.get()
+    spacing = spacing_var.get()
+    length = length_entry.get()
+
+    # The number of takeouts is the same as the number of selected pins
+    takeouts = len(selected_pins)
+
     if not article_name:
         custom_messagebox("Fel", "Vänligen ange ett artikelnummer.", "error")
         return
+
+    # Retrieve the properties for the selected cable drum
+    drum_properties = cable_drum_properties.get(cable_drum, {})
+    width = drum_properties.get("width", "")
+    inner_diameter = drum_properties.get("inner_diameter", "")
 
     script_dir = os.path.dirname(os.path.abspath(__file__))
     folder_path = os.path.join(script_dir, "Artiklar")
@@ -72,6 +95,12 @@ def save_pins():
             return
 
     with open(file_path, "w") as file:
+        file.write(f"Cable Drum: {cable_drum}\n")
+        file.write(f"Width: {width}\n")
+        file.write(f"Inner Diameter: {inner_diameter}\n")
+        file.write(f"Spacing: {spacing}\n")
+        file.write(f"Takeouts: {takeouts}\n")
+        file.write(f"Length: {length}\n")
         for pin in selected_pins:
             file.write(pin + "\n")
 
@@ -122,11 +151,16 @@ article_name_label = tk.Label(header_frame, text="Artikelnummer:", font=body_fon
 article_name_label.pack(side=tk.LEFT, padx=10)
 article_name_entry = tk.Entry(header_frame, font=body_font)
 article_name_entry.pack(side=tk.LEFT, padx=10)
-article_name_entry.bind("<Button-1>", lambda e: show_keyboard(article_name_entry))
 
 # Pin Selection Section
-pins_frame = tk.Frame(root)
-pins_frame.pack(pady=20)
+main_frame = tk.Frame(root)
+main_frame.pack(pady=20, fill=tk.X)
+
+pins_frame = tk.Frame(main_frame)
+pins_frame.pack(side=tk.LEFT, padx=300)
+
+options_frame = tk.Frame(main_frame)
+options_frame.pack(side=tk.LEFT, padx=0)
 
 pins = [
     "1: A", "2: B", "3: C", "4: D", "5: E", "6: F", "7: G", "8: H", "9: J",
@@ -134,9 +168,6 @@ pins = [
     "18: U", "19: V", "20: W", "21: X", "22: Y", "23: Z", "24: a", "25: b",
     "26: c", "27: d", "28: e", "29: f", "30: g", "31: h", "32: j"
 ]
-
-
-
 
 buttons = []
 for col in range(4):
@@ -150,6 +181,28 @@ for col in range(4):
                            command=lambda b=idx: toggle_button(buttons[b]), bg="light gray")
         button.pack(pady=5)
         buttons.append(button)
+
+# Options Section (to the right of the pins)
+# Cable Drum Selection
+cable_drum_label = tk.Label(options_frame, text="Cable Drum:", font=body_font)
+cable_drum_label.pack(anchor="w", pady=5)
+cable_drum_var = tk.StringVar(value="1")
+cable_drum_menu = ttk.Combobox(options_frame, textvariable=cable_drum_var, values=["1", "2", "3"], font=body_font)
+cable_drum_menu.pack(anchor="w", pady=5)
+
+# Spacing Selection
+spacing_label = tk.Label(options_frame, text="Spacing (m):", font=body_font)
+spacing_label.pack(anchor="w", pady=5)
+spacing_var = tk.StringVar(value="1")
+spacing_menu = ttk.Combobox(options_frame, textvariable=spacing_var, values=["1", "2", "5", "10", "20"], font=body_font)
+spacing_menu.pack(anchor="w", pady=5)
+
+
+# Length Entry
+length_label = tk.Label(options_frame, text="Length (m):", font=body_font)
+length_label.pack(anchor="w", pady=5)
+length_entry = tk.Entry(options_frame, font=body_font)
+length_entry.pack(anchor="w", pady=5)
 
 # Save Button
 save_button = tk.Button(root, text="Spara", font=body_font, bg="#32CD32", fg="black", command=save_pins, width=10, height=6)
