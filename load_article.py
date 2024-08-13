@@ -29,19 +29,27 @@ script_dir = os.path.dirname(os.path.abspath(__file__))
 # Construct the full path to the image file inside the PI folder
 logo_path = os.path.join(script_dir, "logo.png")
 
-def run_article(filename, pins):
+def run_article(filename, pins, spacing, length, width, inner_diameter, takeouts):
     # Get the directory where the script is located
     script_dir = os.path.dirname(os.path.abspath(__file__))
     
     # Construct the full path to the 'run_article.py' script inside the PI folder
     run_article_script_path = os.path.join(script_dir, "run_article.py")
     
+    # Write all necessary parameters to the config file
     with open("article_config.txt", "w") as config_file:
         config_file.write("[DEFAULT]\n")
         config_file.write(f"filename={filename}\n")
-        config_file.write("pins=" + ",".join(pins))
+        config_file.write(f"pins=" + ",".join(pins) + "\n")
+        config_file.write(f"spacing={spacing}\n")
+        config_file.write(f"length={length}\n")
+        config_file.write(f"width={width}\n")
+        config_file.write(f"inner_diameter={inner_diameter}\n")
+        config_file.write(f"takeouts={takeouts}\n")
     
+    # Run the article script
     subprocess.run([sys.executable, run_article_script_path])
+
 
 def custom_messagebox(title, message, box_type="info"): 
     custom_box = tk.Toplevel(root)
@@ -272,10 +280,18 @@ def load_article_file():
     with open(file_path, 'r') as file:
         lines = file.readlines()
     
+    # Parse configuration values
     filename = os.path.basename(file_path).split('.')[0]
-    pins = [line.strip() for line in lines]
+    pins = [line.strip() for line in lines if line.startswith("pins")]
+    spacing = [line.strip().split('=')[1] for line in lines if line.startswith("spacing")][0]
+    length = [line.strip().split('=')[1] for line in lines if line.startswith("length")][0]
+    width = [line.strip().split('=')[1] for line in lines if line.startswith("width")][0]
+    inner_diameter = [line.strip().split('=')[1] for line in lines if line.startswith("inner_diameter")][0]
+    takeouts = [line.strip().split('=')[1] for line in lines if line.startswith("takeouts")][0]
     
-    run_article(filename, pins)
+    # Run the article with all the parameters
+    run_article(filename, pins, spacing, length, width, inner_diameter, takeouts)
+
 
 def show_keyboard(entry_widget, on_submit, message="Enter password to delete file:"):
     keyboard_window = tk.Toplevel(root, bg="#0A60C5")

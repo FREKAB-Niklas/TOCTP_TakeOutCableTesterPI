@@ -95,16 +95,18 @@ def save_pins():
             return
 
     with open(file_path, "w") as file:
-        file.write(f"Cable Drum: {cable_drum}\n")
-        file.write(f"Width: {width}\n")
-        file.write(f"Inner Diameter: {inner_diameter}\n")
-        file.write(f"Spacing: {spacing}\n")
-        file.write(f"Takeouts: {takeouts}\n")
-        file.write(f"Length: {length}\n")
-        for pin in selected_pins:
-            file.write(pin + "\n")
+        file.write(f"[DEFAULT]\n")
+        file.write(f"filename={article_name}\n")
+        file.write(f"spacing={spacing}\n")
+        file.write(f"length={length}\n")
+        file.write(f"takeouts={takeouts}\n")
+        file.write(f"width={width}\n")
+        file.write(f"inner_diameter={inner_diameter}\n")
+        file.write("pins=" + ",".join(selected_pins) + "\n")
 
     custom_messagebox("Färdig", "Artikel Sparad.", "info")
+
+
 
 
 
