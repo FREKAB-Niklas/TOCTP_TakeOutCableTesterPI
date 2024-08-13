@@ -431,11 +431,16 @@ def color_to_rgb(color):
 
 def set_dual_color(label, color1, color2=None):
     # Convert the color names to RGB tuples
-    color1 = color_to_rgb(color1)
+    color1_rgb = color_to_rgb(color1)
     if color2 is not None:
-        color2 = color_to_rgb(color2)
+        color2_rgb = color_to_rgb(color2)
     else:
-        color2 = color1  # Use the same color if only one color is provided
+        color2_rgb = color1_rgb  # Use the same color if only one color is provided
+
+    # Log the colors being used for debugging
+    print(f"Setting dual color for center label:")
+    print(f"  Primary Color: {color1} -> RGB: {color1_rgb}")
+    print(f"  Secondary Color: {color2} -> RGB: {color2_rgb}")
 
     # Create a new image for the gradient
     width, height = label.winfo_width(), label.winfo_height()
@@ -444,14 +449,16 @@ def set_dual_color(label, color1, color2=None):
     for y in range(height):
         for x in range(width):
             if x < width * 0.66:
-                gradient_image.putpixel((x, y), color1)
+                gradient_image.putpixel((x, y), color1_rgb)
             else:
-                gradient_image.putpixel((x, y), color2)
+                gradient_image.putpixel((x, y), color2_rgb)
 
     # Convert the image to a PhotoImage and set it as the label's background
     gradient_photo = ImageTk.PhotoImage(gradient_image)
     label.config(image=gradient_photo)
     label.image = gradient_photo  # Keep a reference to avoid garbage collection
+
+
 
 # Modify the on_pin_probe and complete_probe functions
 def on_pin_probe(gui_pin_label):
@@ -477,10 +484,12 @@ def on_pin_probe(gui_pin_label):
 
         if current_pin_index < len(left_panel_labels):
             next_pin_label = left_panel_labels[current_pin_index].cget("text")
-            # Update the central label color
+            # Update the central label color and add debugging output
             if isinstance(color_mapping[next_pin_label], tuple):
+                print(f"Next pin uses dual color: {color_mapping[next_pin_label]}")
                 set_dual_color(current_wire_label, *color_mapping[next_pin_label])
             else:
+                print(f"Next pin uses single color: {color_mapping[next_pin_label]}")
                 current_wire_label.config(text=next_pin_label, bg=color_mapping[next_pin_label])
 
             left_panel_labels[current_pin_index].config(bg="yellow")
@@ -492,6 +501,7 @@ def on_pin_probe(gui_pin_label):
         print(f"Pin mismatch: expected {expected_pin_label}, but got {gui_pin_label}")
         if reject_sound:
             reject_sound.play()
+
 
 
 def activate_relay_and_wait(pin_label):
