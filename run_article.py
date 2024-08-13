@@ -430,7 +430,7 @@ def color_to_rgb(color):
 
     
 
-def set_dual_color(label, color1, color2=None):
+def set_dual_color(label, color1, color2=None, width=600, height=400):
     # Convert the color names to RGB tuples
     color1_rgb = color_to_rgb(color1)
     if color2 is not None:
@@ -443,28 +443,27 @@ def set_dual_color(label, color1, color2=None):
     print(f"  Primary Color: {color1} -> RGB: {color1_rgb}")
     print(f"  Secondary Color: {color2} -> RGB: {color2_rgb}")
 
-    # Set the desired width and height for the label
-    desired_width = 600  # Adjust this value as needed
-    desired_height = 300  # Adjust this value as needed
-    label.config(width=desired_width, height=desired_height)
-
     # Create a new image for the gradient
-    gradient_image = Image.new("RGB", (desired_width, desired_height))
+    gradient_image = Image.new("RGB", (width, height))
 
-    for y in range(desired_height):
-        for x in range(desired_width):
-            if x < desired_width * 0.66:
+    for y in range(height):
+        for x in range(width):
+            if x < width * 0.66:
                 gradient_image.putpixel((x, y), color1_rgb)
             else:
                 gradient_image.putpixel((x, y), color2_rgb)
 
     # Convert the image to a PhotoImage and set it as the label's background
     gradient_photo = ImageTk.PhotoImage(gradient_image)
-    label.config(image=gradient_photo)
+    label.config(image=gradient_photo, width=width, height=height)  
     label.image = gradient_photo  # Keep a reference to avoid garbage collection
+
+    # Re-add the text over the gradient
+    label.config(compound='center', text=label.cget("text"))
 
     # Force the UI to update
     root.update_idletasks()
+
 
 
 
