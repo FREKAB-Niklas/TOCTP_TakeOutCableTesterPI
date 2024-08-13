@@ -430,7 +430,7 @@ def color_to_rgb(color):
 
     
 
-def set_dual_color(label, color1, color2=None, pintext=current_pin_index, width=600, height=500):
+def set_dual_color(label, color1, color2=None, pin_text=""):
     # Convert the color names to RGB tuples
     color1_rgb = color_to_rgb(color1)
     color2_rgb = color_to_rgb(color2) if color2 else color1_rgb
@@ -453,11 +453,14 @@ def set_dual_color(label, color1, color2=None, pintext=current_pin_index, width=
 
     # Convert the image to a PhotoImage and set it as the label's background
     gradient_photo = ImageTk.PhotoImage(gradient_image)
+
+    # Set the image and text on the label
     label.config(image=gradient_photo, text=pin_text, compound='center', width=width, height=height)
     label.image = gradient_photo  # Keep a reference to avoid garbage collection
 
     # Force the UI to update immediately
     label.update_idletasks()
+    print(f"Pin Text being set: {pin_text}")
 
 
 
