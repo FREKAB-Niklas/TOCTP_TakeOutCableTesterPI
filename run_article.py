@@ -761,11 +761,13 @@ def reset_test():
         downtime = 0
         is_running = False
         expecting_probe = False
+        
+        print("Resetting labels and pins...")
         for label in left_panel_labels:
             label.config(bg="light gray")
+        
         left_panel_labels[current_pin_index].config(bg="yellow")
         current_wire_label.config(text="Starta", bg="#32CD32")  # Ensure the start button appears
-        time_info_label.config(text=f"Tid\nNu: {format_time(elapsed_time_current_cycle)}\nFörra: {format_time(elapsed_time_previous_cycle)}\nTotal: {format_time(total_elapsed_time)}\nStälltid: {format_time(downtime)}")
         
         # Reset all MCP23017 pins
         for mcp, pin in mcp_pins:
@@ -773,8 +775,8 @@ def reset_test():
             mcp_pin.direction = Direction.INPUT
             mcp_pin.pull = Pull.UP
         
-        
-        print("Reset complete and MCP23017 pins reset")  # Add logging for debugging
+        time_info_label.config(text=f"Tid\nNu: {format_time(elapsed_time_current_cycle)}\nFörra: {format_time(elapsed_time_previous_cycle)}\nTotal: {format_time(total_elapsed_time)}\nStälltid: {format_time(downtime)}")
+        print("Reset complete. All pins and labels should be back to the initial state.")
 
 
 
