@@ -20,9 +20,13 @@ from adafruit_mcp230xx.mcp23017 import MCP23017
 import board
 import busio
 from digitalio import Direction, Pull
+import math
 
 
 print(f"{datetime.now()}: run_article.py is starting...")
+
+# Static cable diameter
+CABLE_DIAMETER = 8.0  # in mm
 
 # Get the directory where the script is located
 script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -254,14 +258,27 @@ def start_probing(pin_label):
 
 
 
+# Read the configuration file
 config = configparser.ConfigParser()
 config.read('article_config.txt')
 
 filename = config['DEFAULT']['filename']
-pins = config['DEFAULT']['pins']
-if pins.startswith("pins="):
-    pins = pins[len("pins="):]
-pins = pins.split(',')
+pins = config['DEFAULT']['pins'].split(',')
+takeouts = int(config['DEFAULT']['takeouts'])
+spacing = float(config['DEFAULT']['spacing']) * 1000  # Convert to mm
+length = float(config['DEFAULT']['length']) * 1000  # Convert to mm
+inner_diameter = float(config['DEFAULT']['inner_diameter'])
+width = float(config['DEFAULT']['width'])
+
+# Display the parameters
+print(f"{datetime.now()}: Config read successfully.")
+print(f"Filename: {filename}")
+print(f"Pins: {pins}")
+print(f"Takeouts: {takeouts}")
+print(f"Spacing: {spacing} mm")
+print(f"Total Length: {length} mm")
+print(f"Inner Diameter: {inner_diameter} mm")
+print(f"Drum Width: {width} mm")
 
 
 print(f"{datetime.now()}: Config read successfully. Filename: {filename}, Pins: {pins}")
@@ -402,9 +419,48 @@ def activate_relay_and_wait(pin_label):
     activate_relay(pin_label)
     root.after(2000, lambda: start_probing(pin_label))  # Wait 2 seconds before probing
 
+# Function to calculate rotations for each segment
+def calculate_rotations():
+    current_diameter = inner_diameter
+    segment_length = spacing  # Length of cable per segment
+    rotation_list = []
 
+    for i in range(takeouts):
+        # Calculate the current circumference
+        current_circumference = math.pi * current_diameter
 
+        # Calculate the number of rotations for this segment
+        rotations = segment_length / current_circumference
+        rotation_list.append(rotations)
 
+        # Print details for verification
+        print(f"Segment {i + 1}:")
+        print(f"  Current Diameter: {current_diameter:.2f} mm")
+        print(f"  Current Circumference: {current_circumference:.2f} mm")
+        print(f"  Segment Length: {segment_length:.2f} mm")
+        print(f"  Rotations Needed: {rotations:.2f}")
+
+        # Increase the diameter for the next layer
+        layers = math.floor(width / CABLE_DIAMETER)
+        current_diameter += 2 * CABLE_DIAMETER * layers
+
+    return rotation_list
+
+# Function to simulate motor control based on calculated rotations
+def run_motor(rotation_list):
+    for segment_index, rotations in enumerate(rotation_list):
+        print(f"Running Motor for Segment {segment_index + 1}:")
+        print(f"  Rotations to perform: {rotations:.2f}")
+        # Simulate motor control by waiting for a period
+        time.sleep(1)  # Simulate motor running (adjust as needed)
+        print(f"  Segment {segment_index + 1} completed.\n")
+
+# Calculate rotations based on the config parameters
+rotation_list = calculate_rotations()
+
+# Print the rotation list to verify the calculations
+print("Calculated rotations for each segment:")
+print(rotation_list)
 
 
 def monitor_pins():
