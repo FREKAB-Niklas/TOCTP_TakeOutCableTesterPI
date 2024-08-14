@@ -1112,6 +1112,11 @@ button_frame.pack(side=tk.BOTTOM, fill=tk.X, pady=10)
 reset_button = tk.Button(button_frame, text="Reset", font=("Helvetica", 24), bg="#9900AB", fg="black", command=reset_test, width=20, height=50)
 reset_button.pack(side=tk.LEFT, padx=20, pady=10)
 
+# Create a temporary button for starting the probing manually
+manual_probe_button = tk.Button(button_frame, text="Start Probing", font=("Helvetica", 24), bg="#FFA500", fg="black", command=lambda: start_probing(pins[current_pin_index]), width=20, height=50)
+manual_probe_button.pack(side=tk.BOTTOM, padx=20, pady=10)
+
+
 finish_batch_button = tk.Button(button_frame, text="Finish Batch", font=("Helvetica", 24), bg="#0A60C5", fg="black", command=finish_batch, width=20, height=50)
 finish_batch_button.pack(side=tk.RIGHT, padx=5, pady=10)
 
