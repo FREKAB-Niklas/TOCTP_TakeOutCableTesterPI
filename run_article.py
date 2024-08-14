@@ -423,7 +423,7 @@ def color_to_rgb(color):
 
     
 
-def set_dual_color(canvas, color1, color2=None, text="", font_size=124, width=600, height=500):
+def set_dual_color(canvas, color1, color2=None, text="", font_size=124, width=600, height=300):
     # Convert the color names to RGB tuples
     color1_rgb = color_to_rgb(color1)
     color2_rgb = color_to_rgb(color2) if color2 else color1_rgb
@@ -432,7 +432,7 @@ def set_dual_color(canvas, color1, color2=None, text="", font_size=124, width=60
     print(f"Setting dual color for canvas:")
     print(f"  Primary Color: {color1} -> RGB: {color1_rgb}")
     print(f"  Secondary Color: {color2} -> RGB: {color2_rgb}")
-    print(f"Pin Text being set: {text}")
+    print(f"Text being set: {text}")
 
     # Create a new image for the gradient
     gradient_image = Image.new("RGB", (width, height))
@@ -444,23 +444,20 @@ def set_dual_color(canvas, color1, color2=None, text="", font_size=124, width=60
             else:
                 gradient_image.putpixel((x, y), color2_rgb)
 
-    # Convert the image to a PhotoImage
+    # Convert the image to a PhotoImage and keep it persistent
     gradient_photo = ImageTk.PhotoImage(gradient_image)
+    canvas.image = gradient_photo  # Store the reference to avoid garbage collection
 
-    # Clear the canvas
+    # Clear the canvas and draw the gradient
     canvas.delete("all")
-
-    # Draw the gradient image on the canvas
     canvas.create_image(0, 0, image=gradient_photo, anchor='nw')
-
-    # Keep a reference to avoid garbage collection
-    canvas.image = gradient_photo
 
     # Draw the outlined text on top of the gradient
     create_outlined_text(canvas, text, width // 2, height // 2, ("Helvetica", font_size, "bold"))
 
     # Force the UI to update immediately
     canvas.update_idletasks()
+
 
 
 
@@ -1203,6 +1200,11 @@ central_frame.pack(expand=True, padx=0)
 current_wire_canvas = tk.Canvas(central_frame, width=600, height=300, highlightthickness=0)
 current_wire_canvas.pack(pady=20)
 current_wire_canvas.bind("<Button-1>", lambda e: toggle_timer())
+
+# Example of dynamically updating the canvas during the program execution
+set_dual_color(current_wire_canvas, "Red", "Blue", text="Next Wire", font_size=124)
+
+
 # Buttons
 button_frame = tk.Frame(root)
 button_frame.pack(side=tk.BOTTOM, fill=tk.X, pady=20)
