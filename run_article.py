@@ -21,12 +21,22 @@ import board
 import busio
 from digitalio import Direction, Pull
 import math
-
+import paho.mqtt.client as mqtt
 
 print(f"{datetime.now()}: run_article.py is starting...")
 
 # Static cable diameter
 CABLE_DIAMETER = 8.0  # in mm
+
+# MQTT setup
+mqtt_broker_ip = "192.168.10.9"  # Replace with your actual broker IP
+client = mqtt.Client()
+client.connect(mqtt_broker_ip, 1883, 60)
+
+# Initialize the current segment index
+current_segment = 0
+rotation_list = []
+
 
 # Get the directory where the script is located
 script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -505,6 +515,7 @@ def activate_relay_and_wait(pin_label):
 
 # Function to calculate rotations for each segment
 def calculate_rotations():
+    global rotation_list  # Ensure we are modifying the global variable
     # Calculate the length wound before the motor-controlled segments start
     length_wound = (length - spacing * (takeouts - 1)) / 2
     layers_wound = length_wound / (width * CABLE_DIAMETER)
@@ -512,7 +523,7 @@ def calculate_rotations():
     current_diameter = inner_diameter + diameter_increase
     
     segment_length = spacing  # Length of cable per segment
-    rotation_list = []
+    rotation_list = []  # Reset the list
 
     # Loop for 7 stops (since the first portion was manually wound)
     for i in range(takeouts - 1):
@@ -538,20 +549,37 @@ def calculate_rotations():
 
 
 # Function to simulate motor control based on calculated rotations
-def run_motor(rotation_list):
-    for segment_index, rotations in enumerate(rotation_list):
-        print(f"Running Motor for Segment {segment_index + 1}:")
+def run_motor():
+    global current_segment, rotation_list  # Ensure we are using the global variable
+    if current_segment < len(rotation_list):
+        rotations = rotation_list[current_segment]
+        print(f"Running Motor for Segment {current_segment + 1}:")
         print(f"  Rotations to perform: {rotations:.2f}")
-        # Simulate motor control by waiting for a period
-        time.sleep(1)  # Simulate motor running (adjust as needed)
-        print(f"  Segment {segment_index + 1} completed.\n")
+        
+        # Publish the number of rotations to the MQTT broker
+        client.publish("motor/control", str(rotations))  
+        
+        current_segment += 1
+        rotation_display.config(text=f"Running segment {current_segment}/{len(rotation_list)}")
+    else:
+        rotation_display.config(text="All segments completed.")
+        print("All segments have been completed.")
 
-# Calculate rotations based on the config parameters
-rotation_list = calculate_rotations()
+def show_motor_control_popup():
+    motor_popup = tk.Toplevel(root)
+    motor_popup.title("Motor Control")
+    motor_popup.geometry("400x300")
+    motor_popup.attributes('-topmost', 'true')  # Bring the popup to the front
+    motor_popup.grab_set()  # Prevent interaction with the main window
 
-# Print the rotation list to verify the calculations
-print("Calculated rotations for each segment:")
-print(rotation_list)
+    tk.Label(motor_popup, text=f"Current Segment: {current_segment + 1}/{len(rotation_list)}", font=("Helvetica", 16)).pack(pady=20)
+
+    run_button = tk.Button(motor_popup, text="Run Motor", command=run_motor, height=2, width=20)
+    run_button.pack(pady=20)
+
+    close_button = tk.Button(motor_popup, text="Close", command=motor_popup.destroy, height=2, width=20)
+    close_button.pack(pady=20)
+
 
 
 def monitor_pins():
@@ -1133,14 +1161,17 @@ button_frame.pack(side=tk.BOTTOM, fill=tk.X, pady=10)
 reset_button = tk.Button(button_frame, text="Reset", font=("Helvetica", 24), bg="#9900AB", fg="black", command=reset_test, width=20, height=50)
 reset_button.pack(side=tk.LEFT, padx=20, pady=10)
 
+# Motor Control Button in the main UI
+motor_control_button = tk.Button(root, text="Motor Control", font=("Helvetica", 24), command=show_motor_control_popup, bg="#0A60C5", fg="black")
+motor_control_button.pack(side=tk.LEFT, padx=5, pady=20)
+
+finish_batch_button = tk.Button(button_frame, text="Finish Batch", font=("Helvetica", 24), bg="#0A60C5", fg="black", command=finish_batch, width=20, height=50)
+finish_batch_button.pack(side=tk.LEFT, padx=5, pady=10)
+
+
 # Button for manually controlling the relay
 manual_probe_button = tk.Button(button_frame, text="Control Relay", font=("Helvetica", 24), bg="#FFA500", fg="black", command=manual_relay_control, width=20, height=50)
 manual_probe_button.pack(side=tk.BOTTOM, padx=20, pady=10)
-
-finish_batch_button = tk.Button(button_frame, text="Finish Batch", font=("Helvetica", 24), bg="#0A60C5", fg="black", command=finish_batch, width=20, height=50)
-finish_batch_button.pack(side=tk.RIGHT, padx=5, pady=10)
-
-
 
 
 # Start the timer
