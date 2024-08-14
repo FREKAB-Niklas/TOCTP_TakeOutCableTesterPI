@@ -789,18 +789,27 @@ def toggle_timer():
         current_wire_label.config(bg="orange", text="Pausad")
 
 def manual_relay_control():
-    global relay_active
+    global relay_active, expecting_probe
+    
     if relay_active:
-        # If the relay is currently active, deactivate it
+        # If the relay is currently active, deactivate it and then activate probing
         deactivate_relay(pins[current_pin_index])
         relay_active = False
         print(f"Relay manually deactivated for {pins[current_pin_index]}")
-        start_probing(pins[current_pin_index])  # Start probing after deactivation
+        
+        # Activate probing after the relay is deactivated
+        expecting_probe = True
+        print("Probing is now active.")
+        
     else:
-        # If the relay is not active, activate it
+        # If the relay is not active, activate it and deactivate probing
         activate_relay(pins[current_pin_index])
         relay_active = True
         print(f"Relay manually activated for {pins[current_pin_index]}")
+        
+        # Deactivate probing while the relay is active
+        expecting_probe = False
+        print("Probing is now deactivated.")
 
 def start_probing(pin_label):
     global expecting_probe
