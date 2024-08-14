@@ -456,6 +456,25 @@ def set_dual_color(label, color1, color2=None, pin_text="", width=600, height=50
     label.update_idletasks()
 
 
+def create_outlined_text(canvas, text, x, y, font, text_color="white", outline_color="black", outline_thickness=2):
+    # Draw the outline by creating text in the outline color at multiple offsets
+    for dx in range(-outline_thickness, outline_thickness + 1):
+        for dy in range(-outline_thickness, outline_thickness + 1):
+            if dx != 0 or dy != 0:
+                canvas.create_text(x + dx, y + dy, text=text, font=font, fill=outline_color)
+    
+    # Draw the main text on top
+    canvas.create_text(x, y, text=text, font=font, fill=text_color)
+
+def update_center_label_with_outline(text):
+    # Clear the canvas before drawing new text
+    center_canvas.delete("all")
+    
+    # Define the font
+    font = ("Helvetica", 124, "bold")
+    
+    # Create the outlined text at the center of the canvas
+    create_outlined_text(center_canvas, text, center_canvas.winfo_width() // 2, center_canvas.winfo_height() // 2, font)
 
 
 
@@ -509,7 +528,6 @@ def on_pin_probe(gui_pin_label):
     if current_pin_index % (len(left_panel_labels) // takeouts) == 0:
         print("Probing for the current segment is complete. Updating motor button.")
         update_motor_button()  # Update the motor button state to reflect readiness
-
 
 
 def activate_relay_and_wait(pin_label):
@@ -1171,6 +1189,10 @@ central_frame.pack(expand=True, padx=0)
 current_wire_label = tk.Label(central_frame, text="Starta", font=center_font, bg="#32CD32", width=6, height=3)
 current_wire_label.pack(pady=20)
 current_wire_label.bind("<Button-1>", lambda e: toggle_timer())
+
+# Create a canvas widget to draw the outlined text
+center_canvas = tk.Canvas(central_frame, width=800, height=400, bg="#32CD32", highlightthickness=0)
+center_canvas.pack(expand=True)
 
 # Buttons
 button_frame = tk.Frame(root)
