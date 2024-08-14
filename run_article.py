@@ -374,13 +374,13 @@ def read_mcp_probes():
 color_mapping = {
     "1: A": "White",
     "2: B": "#9c451e",
-    "3: C": "Green",
+    "3: C": "#32CD32",
     "4: D": "Yellow",
-    "5: E": "Grey",
+    "5: E": "#b1afb3",
     "6: F": "Pink",
-    "7: G": "Blue",
+    "7: G": "#0A60C5",
     "8: H": "Red",
-    "9: J": "#353436",
+    "9: J": "#9900AB",
     "10: K": "#c934eb",
     "11: L": ("Grey", "Pink"),
     "12: M": ("Red", "Blue"),
@@ -403,7 +403,7 @@ color_mapping = {
     "29: f": ("Pink", "Green"),
     "30: g": ("Yellow", "Pink"),
     "31: h": ("Green", "Blue"),
-    "32: j": ("Yellow", "Blue  "),
+    "32: j": ("Yellow", "Blue"),
 }
 def color_to_rgb(color):
     # Complete color map including all possible color names used in color_mapping
