@@ -423,7 +423,7 @@ def color_to_rgb(color):
 
     
 
-def set_dual_color(label, color1, color2=None, pin_text="", width=600, height=500, outline_thickness=2, text_color="white", outline_color="black"):
+def set_dual_color(label, color1, color2=None, pin_text="", width=600, height=500):
     # Convert the color names to RGB tuples
     color1_rgb = color_to_rgb(color1)
     color2_rgb = color_to_rgb(color2) if color2 else color1_rgb
@@ -448,33 +448,12 @@ def set_dual_color(label, color1, color2=None, pin_text="", width=600, height=50
     # Convert the image to a PhotoImage and set it as the label's background
     gradient_photo = ImageTk.PhotoImage(gradient_image)
 
-    # Set the image on the label
-    label.config(image=gradient_photo, compound='center', width=width, height=height)
+    # Set the image and text on the label
+    label.config(image=gradient_photo, text=pin_text, compound='center', width=width, height=height)
     label.image = gradient_photo  # Keep a reference to avoid garbage collection
-
-    # Create a canvas overlay for the text with an outline
-    canvas = tk.Canvas(label, width=width, height=height, highlightthickness=0)
-    canvas.place(relx=0.5, rely=0.5, anchor="center")
-
-    # Calculate the text position (centered)
-    text_x = width // 2
-    text_y = height // 2
-
-    # Font settings
-    font = ("Helvetica", 124, "bold")
-
-    # Draw the outlined text
-    for dx in range(-outline_thickness, outline_thickness + 1):
-        for dy in range(-outline_thickness, outline_thickness + 1):
-            if dx != 0 or dy != 0:
-                canvas.create_text(text_x + dx, text_y + dy, text=pin_text, font=font, fill=outline_color)
-
-    # Draw the main text
-    canvas.create_text(text_x, text_y, text=pin_text, font=font, fill=text_color)
 
     # Force the UI to update immediately
     label.update_idletasks()
-
 
 
 
@@ -1214,7 +1193,7 @@ manual_probe_button.pack(side=tk.LEFT, padx=5, pady=10)
 finish_batch_button = tk.Button(button_frame, text="Finish Batch", font=("Helvetica", 24), bg="#0A60C5", fg="black", command=finish_batch, width=15, height=50)
 finish_batch_button.pack(side=tk.RIGHT, padx=5, pady=10)
 # Create the motor control button in your UI setup
-motor_button = tk.Button(button_frame, text="Motor", font=("Helvetica", 16), command=run_motor, bg="gray", width=40, height=50)
+motor_button = tk.Button(button_frame, text="Motor", font=("Helvetica", 16), command=run_motor, bg="gray", width=30, height=50)
 motor_button.pack(side=tk.RIGHT, padx=5, pady=10)
 
 
