@@ -444,13 +444,13 @@ def set_dual_color(canvas, color1, color2=None, text="", font_size=124, width=60
             else:
                 gradient_image.putpixel((x, y), color2_rgb)
 
-    # Convert the image to a PhotoImage and draw it on the canvas
+    # Convert the image to a PhotoImage
     gradient_photo = ImageTk.PhotoImage(gradient_image)
 
-    # Clear any previous items on the canvas
+    # Clear the canvas
     canvas.delete("all")
 
-    # Draw the gradient image
+    # Draw the gradient image on the canvas
     canvas.create_image(0, 0, image=gradient_photo, anchor='nw')
 
     # Keep a reference to avoid garbage collection
@@ -461,6 +461,7 @@ def set_dual_color(canvas, color1, color2=None, text="", font_size=124, width=60
 
     # Force the UI to update immediately
     canvas.update_idletasks()
+
 
 
 def create_outlined_text(canvas, text, x, y, font, text_color="white", outline_color="black", outline_thickness=2):
@@ -1199,7 +1200,7 @@ central_frame.pack(expand=True, padx=0)
 
 
 # Replace the label with a canvas for drawing outlined text
-current_wire_canvas = tk.Canvas(central_frame, width=600, height=300, bg="#32CD32", highlightthickness=0)
+current_wire_canvas = tk.Canvas(central_frame, width=600, height=300, highlightthickness=0)
 current_wire_canvas.pack(pady=20)
 current_wire_canvas.bind("<Button-1>", lambda e: toggle_timer())
 # Buttons
