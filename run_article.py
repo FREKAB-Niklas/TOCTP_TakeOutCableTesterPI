@@ -1191,7 +1191,7 @@ central_frame.pack(expand=True, padx=0)
 
 
 # Replace the label with a canvas for drawing outlined text
-current_wire_canvas = tk.Canvas(central_frame, text="Starta", width=600, height=300, bg="#32CD32", highlightthickness=0)
+current_wire_canvas = tk.Canvas(central_frame, width=600, height=300, bg="#32CD32", highlightthickness=0)
 current_wire_canvas.pack(pady=20)
 current_wire_canvas.bind("<Button-1>", lambda e: toggle_timer())
 # Buttons
