@@ -241,10 +241,9 @@ for mcp, pin in relay_mappings.values():
 
 def start_probing(pin_label):
     global expecting_probe
-    deactivate_relay(pin_label)  # Deactivate relay after 2 seconds
-    print(f"Relay deactivated for {pin_label}, now waiting for probe.")
-    root.after(1000, enable_probing)  # Wait 1 second after deactivating relay before allowing probing
     expecting_probe = True
+    print(f"Probing started for {pin_label}")
+
 
 
 
@@ -493,7 +492,7 @@ def on_pin_probe(gui_pin_label):
                 current_wire_label.config(text=next_pin_label, bg=color_mapping[next_pin_label])
 
             left_panel_labels[current_pin_index].config(bg="yellow")
-            root.after(1000, lambda: activate_relay_and_wait(next_pin_label))  # Add 1-second delay before enabling next probe
+            # No longer handling relay activation directly here
         else:
             print("All pins probed successfully.")
             check_all_probed()
@@ -501,6 +500,7 @@ def on_pin_probe(gui_pin_label):
         print(f"Pin mismatch: expected {expected_pin_label}, but got {gui_pin_label}")
         if reject_sound:
             reject_sound.play()
+
 
 
 def activate_relay_and_wait(pin_label):
@@ -782,18 +782,17 @@ def reset_test():
 
 def toggle_timer():
     global is_running, expecting_probe
-
-    if not is_running:  # If currently paused
-        current_wire_label.config(bg="yellow", text=pins[current_pin_index])
-        activate_relay(pins[current_pin_index])  # Activate the relay when resuming
-        print("Resumed and relay activated, probing will start manually.")
-    else:  # If currently running
-        current_wire_label.config(bg="orange", text="Pausad")
-        deactivate_relay(pins[current_pin_index])  # Deactivate the relay when pausing
-        expecting_probe = False  # Ensure probing is not expected when paused
-        print("Paused, relay deactivated and probing halted.")
-
     is_running = not is_running
+    if is_running:
+        activate_relay(pins[current_pin_index])  # Activate relay
+        current_wire_label.config(bg="yellow", text=pins[current_pin_index])
+        print(f"Relay activated for {pins[current_pin_index]}")
+    else:
+        deactivate_relay(pins[current_pin_index])  # Deactivate relay
+        print(f"Relay deactivated for {pins[current_pin_index]}")
+        root.after(1000, lambda: start_probing(pins[current_pin_index]))  # Wait 1 second after deactivating relay before allowing probing
+        current_wire_label.config(bg="orange", text="Pausad")
+
 
 
 
