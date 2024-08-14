@@ -575,7 +575,7 @@ def update_motor_button():
         print("Motor button updated to READY state.")
     else:
         # Update button to indicate motor is not ready
-        motor_button.config(text="Motor", bg="gray", width=20, height=50)
+        motor_button.config(text="Motor", bg="gray")
         motor_button.config(state=tk.DISABLED)  # Disable the button
         print("Motor button updated to NOT READY state.")
 
@@ -594,7 +594,7 @@ def run_motor():
         update_motor_button()  # Update the button after running the motor
 
         # Turn the button gray after use
-        motor_button.config(text="Motor", bg="gray", width=20, height=50)
+        motor_button.config(text="Motor", bg="gray")
         motor_button.config(state=tk.DISABLED)  # Disable the button
 
         # Enable probing for the next pin
@@ -1183,18 +1183,17 @@ button_frame.pack(side=tk.BOTTOM, fill=tk.X, pady=10)
 
 
 # Update the diagnose button to finish batch
-reset_button = tk.Button(button_frame, text="Reset", font=("Helvetica", 24), bg="#9900AB", fg="black", command=reset_test, width=20, height=50)
+reset_button = tk.Button(button_frame, text="Reset", font=("Helvetica", 24), bg="#9900AB", fg="black", command=reset_test, width=15, height=50)
 reset_button.pack(side=tk.LEFT, padx=5, pady=10)
 
 # Button for manually controlling the relay
-manual_probe_button = tk.Button(button_frame, text="Control Relay", font=("Helvetica", 24), bg="#FFA500", fg="black", command=manual_relay_control, width=20, height=50)
+manual_probe_button = tk.Button(button_frame, text="Control Relay", font=("Helvetica", 24), bg="#FFA500", fg="black", command=manual_relay_control, width=15, height=50)
 manual_probe_button.pack(side=tk.LEFT, padx=5, pady=10)
 
-finish_batch_button = tk.Button(button_frame, text="Finish Batch", font=("Helvetica", 24), bg="#0A60C5", fg="black", command=finish_batch, width=20, height=50)
+finish_batch_button = tk.Button(button_frame, text="Finish Batch", font=("Helvetica", 24), bg="#0A60C5", fg="black", command=finish_batch, width=15, height=50)
 finish_batch_button.pack(side=tk.RIGHT, padx=5, pady=10)
-
 # Create the motor control button in your UI setup
-motor_button = tk.Button(button_frame, text="Motor", font=("Helvetica", 16), command=run_motor, bg="gray", width=20, height=50)
+motor_button = tk.Button(button_frame, text="Motor", font=("Helvetica", 16), command=run_motor, bg="gray", width=15, height=50)
 motor_button.pack(side=tk.RIGHT, padx=5, pady=10)
 
 
