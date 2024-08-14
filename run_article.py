@@ -513,7 +513,8 @@ def on_pin_probe(gui_pin_label):
                 set_dual_color(current_wire_label, *color_mapping[next_pin_label], pin_text=next_pin_label)
             else:
                 print(f"Next pin uses single color: {color_mapping[next_pin_label]}")
-                current_wire_label.config(text=next_pin_label, bg=color_mapping[next_pin_label])
+                # Instead of directly updating current_wire_label, update the canvas
+                update_center_label_with_outline(next_pin_label)
 
             left_panel_labels[current_pin_index].config(bg="yellow")
         else:
@@ -528,6 +529,7 @@ def on_pin_probe(gui_pin_label):
     if current_pin_index % (len(left_panel_labels) // takeouts) == 0:
         print("Probing for the current segment is complete. Updating motor button.")
         update_motor_button()  # Update the motor button state to reflect readiness
+
 
 
 def activate_relay_and_wait(pin_label):
