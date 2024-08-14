@@ -1201,8 +1201,14 @@ current_wire_canvas = tk.Canvas(central_frame, width=600, height=300, highlightt
 current_wire_canvas.pack(pady=20)
 current_wire_canvas.bind("<Button-1>", lambda e: toggle_timer())
 
-# Example of dynamically updating the canvas during the program execution
-set_dual_color(current_wire_canvas, "Red", "Blue", text="Next Wire", font_size=124)
+# Function to clear the canvas and apply the new background and text
+def update_wire_canvas(text, color1, color2=None):
+    # Clear the canvas
+    current_wire_canvas.delete("all")
+    
+    # Set the new background color
+    set_dual_color(current_wire_canvas, color1, color2=color2, text=text)
+
 
 
 # Buttons
