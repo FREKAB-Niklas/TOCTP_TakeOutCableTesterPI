@@ -423,7 +423,7 @@ def color_to_rgb(color):
 
     
 
-def set_dual_color(canvas, color1, color2=None, text="", font_size=124, width=600, height=300):
+def set_dual_color(canvas, color1, color2=None, text="", font_size=124, width=600, height=300, text_color="white", outline_color="black", outline_thickness=2):
     # Convert the color names to RGB tuples
     color1_rgb = color_to_rgb(color1)
     color2_rgb = color_to_rgb(color2) if color2 else color1_rgb
@@ -434,7 +434,7 @@ def set_dual_color(canvas, color1, color2=None, text="", font_size=124, width=60
     print(f"  Secondary Color: {color2} -> RGB: {color2_rgb}")
     print(f"Text being set: {text}")
 
-    # Create a new image for the gradient
+    # Create a new image for the gradient or solid background
     gradient_image = Image.new("RGB", (width, height))
 
     for y in range(height):
@@ -448,40 +448,23 @@ def set_dual_color(canvas, color1, color2=None, text="", font_size=124, width=60
     gradient_photo = ImageTk.PhotoImage(gradient_image)
     canvas.image = gradient_photo  # Store the reference to avoid garbage collection
 
-    # Clear the canvas and draw the gradient
+    # Clear the canvas and draw the gradient or solid background
     canvas.delete("all")
     canvas.create_image(0, 0, image=gradient_photo, anchor='nw')
 
-    # Draw the outlined text on top of the gradient
-    create_outlined_text(canvas, text, width // 2, height // 2, ("Helvetica", font_size, "bold"))
+    # Calculate the coordinates for centering the text
+    text_x = width // 2
+    text_y = height // 2
+
+    # Draw the outlined text directly within this function
+    for dx in range(-outline_thickness, outline_thickness + 1):
+        for dy in range(-outline_thickness, outline_thickness + 1):
+            if dx != 0 or dy != 0:
+                canvas.create_text(text_x + dx, text_y + dy, text=text, font=("Helvetica", font_size, "bold"), fill=outline_color)
+    canvas.create_text(text_x, text_y, text=text, font=("Helvetica", font_size, "bold"), fill=text_color)
 
     # Force the UI to update immediately
     canvas.update_idletasks()
-
-
-
-
-def create_outlined_text(canvas, text, x, y, font, text_color="white", outline_color="black", outline_thickness=2):
-    # Draw the outline by creating text in the outline color at multiple offsets
-    for dx in range(-outline_thickness, outline_thickness + 1):
-        for dy in range(-outline_thickness, outline_thickness + 1):
-            if dx != 0 or dy != 0:
-                canvas.create_text(x + dx, y + dy, text=text, font=font, fill=outline_color)
-    # Draw the main text on top
-    canvas.create_text(x, y, text=text, font=font, fill=text_color)
-
-
-
-
-
-def create_outlined_text(canvas, text, x, y, font, text_color="white", outline_color="black", outline_thickness=2):
-    # Draw the outline by creating text in the outline color at multiple offsets
-    for dx in range(-outline_thickness, outline_thickness + 1):
-        for dy in range(-outline_thickness, outline_thickness + 1):
-            if dx != 0 or dy != 0:
-                canvas.create_text(x + dx, y + dy, text=text, font=font, fill=outline_color)
-    # Draw the main text on top
-    canvas.create_text(x, y, text=text, font=font, fill=text_color)
 
 
 
@@ -512,7 +495,7 @@ def on_pin_probe(gui_pin_label):
 
             # Clear the canvas and update the central text with an outline
             current_wire_canvas.delete("all")
-            create_outlined_text(current_wire_canvas, next_pin_label, 300, 150, ("Helvetica", 124, "bold"))
+            set_dual_color(current_wire_canvas, next_pin_label, 300, 150, ("Helvetica", 124, "bold"))
 
             left_panel_labels[current_pin_index].config(bg="yellow")
         else:
@@ -724,7 +707,7 @@ def complete_cycle():
 
     # Clear the canvas and reset the text
     current_wire_canvas.delete("all")
-    create_outlined_text(current_wire_canvas, "Starta", 300, 150, ("Helvetica", 124, "bold"), text_color="#32CD32")
+    set_dual_color(current_wire_canvas, "Starta", 300, 150, ("Helvetica", 124, "bold"), text_color="#32CD32")
 
     is_running = False
     print(f"Cycle completed successfully. Pins reset for next cycle.")
@@ -829,7 +812,7 @@ def reset_test():
 
         # Clear the canvas and reset the text
         current_wire_canvas.delete("all")
-        create_outlined_text(current_wire_canvas, "Starta", 300, 150, ("Helvetica", 124, "bold"), text_color="#32CD32")
+        set_dual_color(current_wire_canvas, "Starta", 300, 150, ("Helvetica", 124, "bold"), text_color="#32CD32")
 
         time_info_label.config(text=f"Tid\nNu: {format_time(elapsed_time_current_cycle)}\nFörra: {format_time(elapsed_time_previous_cycle)}\nTotal: {format_time(total_elapsed_time)}\nStälltid: {format_time(downtime)}")
 
@@ -858,14 +841,14 @@ def toggle_timer():
     if is_running:
         # Clear the canvas and update the text
         current_wire_canvas.delete("all")
-        create_outlined_text(current_wire_canvas, pins[current_pin_index], 300, 150, ("Helvetica", 124, "bold"), text_color="yellow")
+        set_dual_color(current_wire_canvas, pins[current_pin_index], 300, 150, ("Helvetica", 124, "bold"), text_color="yellow")
         print("System unpaused. Ready to probe.")
         root.after(1000, lambda: start_probing(pins[current_pin_index]))  # Allow probing after unpausing
     else:
         print(f"System paused at pin {pins[current_pin_index]}")
         # Update the text to show paused state
         current_wire_canvas.delete("all")
-        create_outlined_text(current_wire_canvas, "Pausad", 300, 150, ("Helvetica", 124, "bold"), text_color="orange")
+        set_dual_color(current_wire_canvas, "Pausad", 300, 150, ("Helvetica", 124, "bold"), text_color="orange")
 
 
 def manual_relay_control():
