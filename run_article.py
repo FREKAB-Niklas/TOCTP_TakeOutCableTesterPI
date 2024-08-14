@@ -467,7 +467,6 @@ def set_dual_color(label, color1, color2=None, pin_text="", width=600, height=50
 allow_motor_run = True
 
 # Modify the on_pin_probe function
-# Modify the on_pin_probe function to update motor segments based on current pin
 def on_pin_probe(gui_pin_label):
     global current_pin_index, expecting_probe, success_sound, reject_sound, current_segment, allow_motor_run
 
@@ -501,18 +500,18 @@ def on_pin_probe(gui_pin_label):
                 current_wire_label.config(text=next_pin_label, bg=color_mapping[next_pin_label])
 
             left_panel_labels[current_pin_index].config(bg="yellow")
-
-            # Check if we are at the end of a segment
-            if (current_pin_index + 1) % (len(left_panel_labels) // takeouts) == 0:
-                print("Probing for the current segment is complete. Updating motor button.")
-                allow_motor_run = True
-                update_motor_button()  # Update the motor button state to reflect readiness
-            else:
-                allow_motor_run = False
-
         else:
             print("All pins probed successfully.")
             check_all_probed()
+
+        # Check if the segment is complete and update motor button
+        if current_pin_index % (len(left_panel_labels) // takeouts) == 0:
+            print("Probing for the current segment is complete. Updating motor button.")
+            allow_motor_run = True
+            update_motor_button()  # Update the motor button state to reflect readiness
+        else:
+            # If not at the end of a segment, allow continuation of probing
+            allow_motor_run = False
 
     else:
         print(f"Pin mismatch: expected {expected_pin_label}, but got {gui_pin_label}")
@@ -576,10 +575,10 @@ rotation_list = calculate_rotations()
 print(f"Debug: rotation_list = {rotation_list}")
 
 def update_motor_button():
-    global motor_button, current_segment, rotation_list, allow_motor_run, current_pin_index
+    global motor_button, current_segment, rotation_list
 
-    # Determine if the current pin index indicates the end of a segment
-    if allow_motor_run and current_segment < len(rotation_list):
+    # Check if there are remaining segments
+    if current_segment < len(rotation_list):
         # Update button to indicate motor is ready to run
         motor_button.config(
             text=f"Motor\n{current_segment + 1}st/{len(rotation_list)} segment\n{rotation_list[current_segment]:.2f} rotations",
@@ -595,8 +594,7 @@ def update_motor_button():
 
 
 def run_motor():
-    global current_segment, current_pin_index
-
+    global current_segment
     if current_segment < len(rotation_list):
         rotations = rotation_list[current_segment]
         print(f"Running Motor for Segment {current_segment + 1}:")
@@ -606,7 +604,6 @@ def run_motor():
         client.publish("motor/control", str(rotations))
 
         current_segment += 1  # Move to the next segment
-        current_pin_index += len(left_panel_labels) // takeouts  # Move the pin index to the start of the next segment
         update_motor_button()  # Update the button after running the motor
 
         # Turn the button gray after use
@@ -617,7 +614,6 @@ def run_motor():
         enable_probing()
     else:
         print("No more segments left to run.")
-
 
 
 
