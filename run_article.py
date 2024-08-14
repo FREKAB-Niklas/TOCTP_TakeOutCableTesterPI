@@ -553,8 +553,30 @@ def calculate_rotations():
 
 
 # Function to simulate motor control based on calculated rotations
+def show_motor_control_popup():
+    global current_segment, rotation_display
+
+    if current_segment < len(rotation_list):
+        motor_popup = tk.Toplevel(root)
+        motor_popup.title("Motor Control")
+        motor_popup.geometry("400x300")
+        motor_popup.attributes('-topmost', 'true')  # Bring the popup to the front
+        motor_popup.grab_set()  # Prevent interaction with the main window
+
+        # Display the current segment and its rotation information
+        rotation_display = tk.Label(motor_popup, text=f"Current Segment: {current_segment + 1}/{len(rotation_list)}\nRotations: {rotation_list[current_segment]:.2f}", font=("Helvetica", 16))
+        rotation_display.pack(pady=20)
+
+        run_button = tk.Button(motor_popup, text="Run Motor", command=run_motor, height=2, width=20)
+        run_button.pack(pady=20)
+
+        close_button = tk.Button(motor_popup, text="Close", command=motor_popup.destroy, height=2, width=20)
+        close_button.pack(pady=20)
+    else:
+        print("No more segments left to run.")
+
 def run_motor():
-    global current_segment, rotation_display  # Ensure rotation_display is accessible
+    global current_segment, rotation_display
     if current_segment < len(rotation_list):
         rotations = rotation_list[current_segment]
         print(f"Running Motor for Segment {current_segment + 1}:")
@@ -568,28 +590,9 @@ def run_motor():
         
         current_segment += 1
     else:
-        rotation_display.config(text="All segments completed.")
+        if rotation_display:
+            rotation_display.config(text="All segments completed.")
         print("All segments have been completed.")
-
-
-def show_motor_control_popup():
-    global current_segment, rotation_display
-
-    motor_popup = tk.Toplevel(root)
-    motor_popup.title("Motor Control")
-    motor_popup.geometry("400x300")
-    motor_popup.attributes('-topmost', 'true')  # Bring the popup to the front
-    motor_popup.grab_set()  # Prevent interaction with the main window
-
-    # Display the current segment and its rotation information
-    rotation_display = tk.Label(motor_popup, text=f"Current Segment: {current_segment + 1}/{len(rotation_list)}\nRotations: {rotation_list[current_segment]:.2f}", font=("Helvetica", 16))
-    rotation_display.pack(pady=20)
-
-    run_button = tk.Button(motor_popup, text="Run Motor", command=run_motor, height=2, width=20)
-    run_button.pack(pady=20)
-
-    close_button = tk.Button(motor_popup, text="Close", command=motor_popup.destroy, height=2, width=20)
-    close_button.pack(pady=20)
 
 
 def monitor_pins():
