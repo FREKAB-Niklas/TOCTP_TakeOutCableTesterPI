@@ -455,18 +455,19 @@ def set_dual_color(canvas, color1, color2=None, text="", font_size=124, width=60
     text_x = width // 2
     text_y = height // 2
 
-    # Font tuple should be passed correctly
-    font_tuple = ("Helvetica", font_size, "bold")
+    # Font string should be passed correctly
+    font_str = f"Helvetica {font_size} bold"
 
     # Draw the outlined text directly within this function
     for dx in range(-outline_thickness, outline_thickness + 1):
         for dy in range(-outline_thickness, outline_thickness + 1):
             if dx != 0 or dy != 0:
-                canvas.create_text(text_x + dx, text_y + dy, text=text, font=font_tuple, fill=outline_color)
-    canvas.create_text(text_x, text_y, text=text, font=font_tuple, fill=text_color)
+                canvas.create_text(text_x + dx, text_y + dy, text=text, font=font_str, fill=outline_color)
+    canvas.create_text(text_x, text_y, text=text, font=font_str, fill=text_color)
 
     # Force the UI to update immediately
     canvas.update_idletasks()
+
 
 
 
