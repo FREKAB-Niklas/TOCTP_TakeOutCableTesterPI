@@ -446,14 +446,22 @@ def set_dual_color(canvas, color1, color2=None, text="", font_size=124, width=60
 
     # Convert the image to a PhotoImage and draw it on the canvas
     gradient_photo = ImageTk.PhotoImage(gradient_image)
+
+    # Clear any previous items on the canvas
+    canvas.delete("all")
+
+    # Draw the gradient image
     canvas.create_image(0, 0, image=gradient_photo, anchor='nw')
-    canvas.image = gradient_photo  # Keep a reference to avoid garbage collection
+
+    # Keep a reference to avoid garbage collection
+    canvas.image = gradient_photo
 
     # Draw the outlined text on top of the gradient
     create_outlined_text(canvas, text, width // 2, height // 2, ("Helvetica", font_size, "bold"))
 
     # Force the UI to update immediately
     canvas.update_idletasks()
+
 
 def create_outlined_text(canvas, text, x, y, font, text_color="white", outline_color="black", outline_thickness=2):
     # Draw the outline by creating text in the outline color at multiple offsets
