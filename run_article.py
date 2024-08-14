@@ -409,15 +409,15 @@ def color_to_rgb(color):
     # Complete color map including all possible color names used in color_mapping
     color_map = {
         "White": (255, 255, 255),
-        "Brown": (165, 42, 42),
-        "Green": (0, 128, 0),
+        "Brown": (156, 69, 30),
+        "Green": (85, 235, 52),
         "Yellow": (255, 255, 0),
         "Grey": (128, 128, 128),
         "Pink": (255, 192, 203),
         "Blue": (0, 0, 255),
         "Red": (255, 0, 0),
         "Black": (0, 0, 0),
-        "Violet": (238, 130, 238)
+        "Violet": (201, 52, 235)
     }
     return color_map.get(color, (0, 0, 0))  # Default to black if color not found
 
