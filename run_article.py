@@ -506,7 +506,6 @@ def on_pin_probe(gui_pin_label):
             reject_sound.play()
 
     # After probing is complete, update the motor button state
-    # This will indicate that the motor is ready to run if the current segment is complete
     if current_pin_index % (len(left_panel_labels) // takeouts) == 0:
         print("Probing for the current segment is complete. Updating motor button.")
         update_motor_button()  # Update the motor button state to reflect readiness
@@ -556,12 +555,16 @@ def calculate_rotations():
 
     return rotation_list
 
+# Ensure rotation_list is populated
+rotation_list = calculate_rotations()
+
+# Debug log to verify rotation_list is populated
+print(f"Debug: rotation_list = {rotation_list}")
+
 def update_motor_button():
     global motor_button, current_segment, rotation_list
-    
-    # Debugging prints to verify the state before updating the button
-    print(f"Debug: current_segment = {current_segment}, len(rotation_list) = {len(rotation_list)}")
-    
+
+    # Check if there are remaining segments
     if current_segment < len(rotation_list):
         # Update button to indicate motor is ready to run
         motor_button.config(
