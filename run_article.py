@@ -497,18 +497,18 @@ def on_pin_probe(gui_pin_label):
                 current_wire_label.config(text=next_pin_label, bg=color_mapping[next_pin_label])
 
             left_panel_labels[current_pin_index].config(bg="yellow")
-            # No longer handling relay activation directly here
         else:
             print("All pins probed successfully.")
             check_all_probed()
-
-            # Automatically show the motor control popup after probing
-            show_motor_control_popup()
-
     else:
         print(f"Pin mismatch: expected {expected_pin_label}, but got {gui_pin_label}")
         if reject_sound:
             reject_sound.play()
+
+    # Automatically show the motor control popup after probing the last pin of the current segment
+    if current_pin_index % (len(left_panel_labels) // takeouts) == 0:
+        print("Probing for the current segment is complete. Showing motor control popup.")
+        show_motor_control_popup()
 
 
 def activate_relay_and_wait(pin_label):
@@ -585,7 +585,6 @@ def show_motor_control_popup():
 
     close_button = tk.Button(motor_popup, text="Close", command=motor_popup.destroy, height=2, width=20)
     close_button.pack(pady=20)
-
 
 
 def monitor_pins():
