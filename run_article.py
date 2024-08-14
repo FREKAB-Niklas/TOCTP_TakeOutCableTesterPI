@@ -557,7 +557,11 @@ def calculate_rotations():
     return rotation_list
 
 def update_motor_button():
-    global motor_button
+    global motor_button, current_segment, rotation_list
+    
+    # Debugging prints to verify the state before updating the button
+    print(f"Debug: current_segment = {current_segment}, len(rotation_list) = {len(rotation_list)}")
+    
     if current_segment < len(rotation_list):
         # Update button to indicate motor is ready to run
         motor_button.config(
@@ -565,10 +569,13 @@ def update_motor_button():
             bg="green"
         )
         motor_button.config(state=tk.NORMAL)  # Enable the button
+        print("Motor button updated to READY state.")
     else:
         # Update button to indicate motor is not ready
         motor_button.config(text="Motor", bg="gray")
         motor_button.config(state=tk.DISABLED)  # Disable the button
+        print("Motor button updated to NOT READY state.")
+
 
 def run_motor():
     global current_segment
@@ -1173,7 +1180,7 @@ manual_probe_button = tk.Button(button_frame, text="Control Relay", font=("Helve
 manual_probe_button.pack(side=tk.LEFT, padx=5, pady=10)
 
 # Create the motor control button in your UI setup
-motor_button = tk.Button(button_frame, text="Motor", font=("Helvetica", 16), command=run_motor, bg="gray", state=tk.DISABLED)
+motor_button = tk.Button(button_frame, text="Motor", font=("Helvetica", 16), command=run_motor, bg="gray", width=20, height=50)
 motor_button.pack(side=tk.LEFT, padx=5, pady=10)
 
 finish_batch_button = tk.Button(button_frame, text="Finish Batch", font=("Helvetica", 24), bg="#0A60C5", fg="black", command=finish_batch, width=20, height=50)
