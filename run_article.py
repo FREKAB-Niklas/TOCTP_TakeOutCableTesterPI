@@ -771,6 +771,8 @@ def reset_test():
 
 
 
+# Global variable to track relay state
+relay_active = False
 
 
 
