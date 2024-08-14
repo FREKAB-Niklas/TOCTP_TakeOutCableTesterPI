@@ -782,23 +782,18 @@ def reset_test():
 
 def toggle_timer():
     global is_running, expecting_probe
-    is_running = not is_running
-    if is_running:
+
+    if not is_running:  # If currently paused
         current_wire_label.config(bg="yellow", text=pins[current_pin_index])
-        activate_relay(pins[current_pin_index])  # Activate relay
-        root.after(2000, lambda: start_probing(pins[current_pin_index]))  # Wait 2 seconds before probing
-    else:
+        activate_relay(pins[current_pin_index])  # Activate the relay when resuming
+        print("Resumed and relay activated, probing will start manually.")
+    else:  # If currently running
         current_wire_label.config(bg="orange", text="Pausad")
+        deactivate_relay(pins[current_pin_index])  # Deactivate the relay when pausing
         expecting_probe = False  # Ensure probing is not expected when paused
+        print("Paused, relay deactivated and probing halted.")
 
-
-def start_probing(pin_label):
-    global expecting_probe
-    deactivate_relay(pin_label)  # Deactivate relay after 2 seconds
-    print(f"Relay deactivated for {pin_label}, now waiting for probe.")
-    expecting_probe = True
-    root.after(1000, enable_probing)  # Wait 1 second after deactivating relay before allowing probing
-
+    is_running = not is_running
 
 
 
