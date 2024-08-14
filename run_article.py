@@ -854,7 +854,7 @@ def toggle_timer():
     if is_running:
         # Clear the canvas and update the text
         current_wire_canvas.delete("all")
-        set_dual_color(current_wire_canvas, pins[current_pin_index], 300, 150, ("Helvetica", 124, "bold"), text_color="yellow")
+        set_dual_color(current_wire_canvas, color1=pins[current_pin_index], color2="300", text="150", font_size=124, text_color="yellow")
         print("System unpaused. Ready to probe.")
         root.after(1000, lambda: start_probing(pins[current_pin_index]))  # Allow probing after unpausing
     else:
