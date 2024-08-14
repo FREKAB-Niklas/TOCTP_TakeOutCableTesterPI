@@ -554,7 +554,7 @@ def calculate_rotations():
 
 # Function to simulate motor control based on calculated rotations
 def run_motor():
-    global current_segment, rotation_list  # Ensure we are using the global variable
+    global current_segment, rotation_display  # Ensure rotation_display is accessible
     if current_segment < len(rotation_list):
         rotations = rotation_list[current_segment]
         print(f"Running Motor for Segment {current_segment + 1}:")
@@ -563,14 +563,17 @@ def run_motor():
         # Publish the number of rotations to the MQTT broker
         client.publish("motor/control", str(rotations))  
         
+        # Update the display in the popup with the current rotation details
+        rotation_display.config(text=f"Running segment {current_segment + 1}/{len(rotation_list)}\nRotations: {rotations:.2f}")
+        
         current_segment += 1
-        rotation_display.config(text=f"Running segment {current_segment}/{len(rotation_list)}")
     else:
         rotation_display.config(text="All segments completed.")
         print("All segments have been completed.")
 
+
 def show_motor_control_popup():
-    global current_segment
+    global current_segment, rotation_display
 
     motor_popup = tk.Toplevel(root)
     motor_popup.title("Motor Control")
@@ -578,7 +581,9 @@ def show_motor_control_popup():
     motor_popup.attributes('-topmost', 'true')  # Bring the popup to the front
     motor_popup.grab_set()  # Prevent interaction with the main window
 
-    tk.Label(motor_popup, text=f"Current Segment: {current_segment + 1}/{len(rotation_list)}", font=("Helvetica", 16)).pack(pady=20)
+    # Display the current segment and its rotation information
+    rotation_display = tk.Label(motor_popup, text=f"Current Segment: {current_segment + 1}/{len(rotation_list)}\nRotations: {rotation_list[current_segment]:.2f}", font=("Helvetica", 16))
+    rotation_display.pack(pady=20)
 
     run_button = tk.Button(motor_popup, text="Run Motor", command=run_motor, height=2, width=20)
     run_button.pack(pady=20)
