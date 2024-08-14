@@ -495,7 +495,12 @@ def on_pin_probe(gui_pin_label):
 
             # Clear the canvas and update the central text with an outline
             current_wire_canvas.delete("all")
-            set_dual_color(current_wire_canvas, next_pin_label, 300, 150, ("Helvetica", 124, "bold"))
+            next_pin_label = left_panel_labels[current_pin_index].cget("text")
+            if isinstance(color_mapping[next_pin_label], tuple):
+                set_dual_color(current_wire_canvas, color1=color_mapping[next_pin_label][0], color2=color_mapping[next_pin_label][1], text=next_pin_label)
+            else:
+                set_dual_color(current_wire_canvas, color1=color_mapping[next_pin_label], text=next_pin_label)
+
 
             left_panel_labels[current_pin_index].config(bg="yellow")
         else:
@@ -672,9 +677,10 @@ def complete_probe():
         next_pin_label = pins[current_pin_index]
         # Update the central canvas with dual colors and text
         if isinstance(color_mapping[next_pin_label], tuple):
-            set_dual_color(current_wire_canvas, *color_mapping[next_pin_label], text=next_pin_label)
+            color1, color2 = color_mapping[next_pin_label]
+            set_dual_color(current_wire_canvas, color1=color1, color2=color2, text=next_pin_label)
         else:
-            set_dual_color(current_wire_canvas, color_mapping[next_pin_label], text=next_pin_label)
+            set_dual_color(current_wire_canvas, color1=color_mapping[next_pin_label], text=next_pin_label)
 
         left_panel_labels[current_pin_index].config(bg="yellow")
         print(f"Next pin to probe: {next_pin_label}")
@@ -682,6 +688,7 @@ def complete_probe():
         left_panel_labels[current_pin_index].config(bg="#32CD32")
         print(f"Last pin probed: {pins[current_pin_index]}. Confirming last probe in 500ms")
         root.after(500, confirm_last_probe)
+
 
 
 def complete_cycle():
@@ -707,10 +714,11 @@ def complete_cycle():
 
     # Clear the canvas and reset the text
     current_wire_canvas.delete("all")
-    set_dual_color(current_wire_canvas, "Starta", 300, 150, ("Helvetica", 124, "bold"), text_color="#32CD32")
+    set_dual_color(current_wire_canvas, color1="white", text="Starta", text_color="#32CD32")
 
     is_running = False
     print(f"Cycle completed successfully. Pins reset for next cycle.")
+
 
 
 def confirm_complete_cycle():
@@ -812,7 +820,7 @@ def reset_test():
 
         # Clear the canvas and reset the text
         current_wire_canvas.delete("all")
-        set_dual_color(current_wire_canvas, "Starta", 300, 150, ("Helvetica", 124, "bold"), text_color="#32CD32")
+        set_dual_color(current_wire_canvas, color1="black", text="Starta", text_color="#32CD32")
 
         time_info_label.config(text=f"Tid\nNu: {format_time(elapsed_time_current_cycle)}\nFörra: {format_time(elapsed_time_previous_cycle)}\nTotal: {format_time(total_elapsed_time)}\nStälltid: {format_time(downtime)}")
 
