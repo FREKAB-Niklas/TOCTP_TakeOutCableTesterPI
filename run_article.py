@@ -575,7 +575,7 @@ def update_motor_button():
         print("Motor button updated to READY state.")
     else:
         # Update button to indicate motor is not ready
-        motor_button.config(text="Motor", bg="gray")
+        motor_button.config(text="Motor", bg="gray", width=20, height=50)
         motor_button.config(state=tk.DISABLED)  # Disable the button
         print("Motor button updated to NOT READY state.")
 
