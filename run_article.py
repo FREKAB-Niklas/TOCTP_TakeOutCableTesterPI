@@ -778,19 +778,21 @@ def toggle_timer():
     global is_running
     is_running = not is_running
     if is_running:
-        activate_relay(pins[current_pin_index])  # Activate relay
         current_wire_label.config(bg="yellow", text=pins[current_pin_index])
-        print(f"Relay activated for {pins[current_pin_index]}")
+        print("System unpaused. Ready to probe.")
+        # No automatic relay activation on start
+        root.after(1000, lambda: start_probing(pins[current_pin_index]))  # Allow probing after unpausing
     else:
-        deactivate_relay(pins[current_pin_index])  # Deactivate relay
-        print(f"Relay deactivated for {pins[current_pin_index]}")
-        root.after(1000, lambda: start_probing(pins[current_pin_index]))  # Wait 1 second after deactivating relay to start probing
+        print(f"System paused at pin {pins[current_pin_index]}")
         current_wire_label.config(bg="orange", text="Pausad")
 
 def manual_relay_control():
+    global is_running
+    # Check if the relay is active
     if is_running:
         deactivate_relay(pins[current_pin_index])
         print(f"Relay manually deactivated for {pins[current_pin_index]}")
+        start_probing(pins[current_pin_index])  # Start probing immediately after deactivation
     else:
         activate_relay(pins[current_pin_index])
         print(f"Relay manually activated for {pins[current_pin_index]}")
@@ -799,7 +801,6 @@ def start_probing(pin_label):
     global expecting_probe
     expecting_probe = True
     print(f"Probing started for {pin_label}")
-    root.after(1000, enable_probing)  # Allow probing after a delay
 
 
 
