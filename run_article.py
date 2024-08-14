@@ -701,14 +701,15 @@ def complete_cycle():
     # Reset pins for the next cycle
     current_pin_index = 0
     for label in left_panel_labels:
-        label.config(bg="light gray")  # Reset to default background color
+        label.config(bg="light gray")
 
-    # Reset the central label to its original state
-    current_wire_label.config(text="Starta", bg="#32CD32", font=center_font)
-    current_wire_label.config(width=6, height=3, image='')  # Clear any image and reset size
+    # Clear the canvas and reset the text
+    current_wire_canvas.delete("all")
+    create_outlined_text(current_wire_canvas, "Starta", 300, 150, ("Helvetica", 124, "bold"), text_color="#32CD32")
 
     is_running = False
     print(f"Cycle completed successfully. Pins reset for next cycle.")
+
 
 def confirm_complete_cycle():
     print("Opening confirmation window for incomplete cycle.")
@@ -807,9 +808,9 @@ def reset_test():
             label.config(bg="light gray")
         left_panel_labels[current_pin_index].config(bg="yellow")
 
-        # Reset the central label size and appearance
-        current_wire_label.config(text="Starta", bg="#32CD32", font=center_font)
-        current_wire_label.config(width=6, height=3, image='')  # Clear the image and reset the size
+        # Clear the canvas and reset the text
+        current_wire_canvas.delete("all")
+        create_outlined_text(current_wire_canvas, "Starta", 300, 150, ("Helvetica", 124, "bold"), text_color="#32CD32")
 
         time_info_label.config(text=f"Tid\nNu: {format_time(elapsed_time_current_cycle)}\nFörra: {format_time(elapsed_time_previous_cycle)}\nTotal: {format_time(total_elapsed_time)}\nStälltid: {format_time(downtime)}")
 
@@ -819,7 +820,8 @@ def reset_test():
             mcp_pin.direction = Direction.INPUT
             mcp_pin.pull = Pull.UP
 
-        print("Reset complete and MCP23017 pins reset")  # Add logging for debugging
+        print("Reset complete and MCP23017 pins reset")
+
 
         
         time_info_label.config(text=f"Tid\nNu: {format_time(elapsed_time_current_cycle)}\nFörra: {format_time(elapsed_time_previous_cycle)}\nTotal: {format_time(total_elapsed_time)}\nStälltid: {format_time(downtime)}")
@@ -831,18 +833,21 @@ def reset_test():
 relay_active = False
 
 
-
 def toggle_timer():
     global is_running
     is_running = not is_running
     if is_running:
-        current_wire_label.config(bg="yellow", text=pins[current_pin_index])
+        # Clear the canvas and update the text
+        current_wire_canvas.delete("all")
+        create_outlined_text(current_wire_canvas, pins[current_pin_index], 300, 150, ("Helvetica", 124, "bold"), text_color="yellow")
         print("System unpaused. Ready to probe.")
-        # No automatic relay activation on start
         root.after(1000, lambda: start_probing(pins[current_pin_index]))  # Allow probing after unpausing
     else:
         print(f"System paused at pin {pins[current_pin_index]}")
-        current_wire_label.config(bg="orange", text="Pausad")
+        # Update the text to show paused state
+        current_wire_canvas.delete("all")
+        create_outlined_text(current_wire_canvas, "Pausad", 300, 150, ("Helvetica", 124, "bold"), text_color="orange")
+
 
 def manual_relay_control():
     global relay_active, expecting_probe
