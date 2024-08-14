@@ -556,6 +556,9 @@ def calculate_rotations():
 def show_motor_control_popup():
     global current_segment, rotation_display
 
+    # Debug print to show the current segment and rotation list length
+    print(f"Debug: current_segment = {current_segment}, len(rotation_list) = {len(rotation_list)}")
+
     if current_segment < len(rotation_list):
         motor_popup = tk.Toplevel(root)
         motor_popup.title("Motor Control")
@@ -588,11 +591,12 @@ def run_motor():
         # Update the display in the popup with the current rotation details
         rotation_display.config(text=f"Running segment {current_segment + 1}/{len(rotation_list)}\nRotations: {rotations:.2f}")
         
-        current_segment += 1
+        current_segment += 1  # Increment the segment counter after running
     else:
         if rotation_display:
             rotation_display.config(text="All segments completed.")
         print("All segments have been completed.")
+
 
 
 def monitor_pins():
