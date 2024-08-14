@@ -594,7 +594,7 @@ def run_motor():
         update_motor_button()  # Update the button after running the motor
 
         # Turn the button gray after use
-        motor_button.config(text="Motor", bg="gray")
+        motor_button.config(text="Motor", bg="gray", width=20, height=50)
         motor_button.config(state=tk.DISABLED)  # Disable the button
 
         # Enable probing for the next pin
