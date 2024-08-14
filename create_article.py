@@ -186,24 +186,33 @@ for col in range(4):
 
 # Options Section (to the right of the pins)
 # Cable Drum Selection
+# Options Section (to the right of the pins)
+# Cable Drum Selection
 cable_drum_label = tk.Label(options_frame, text="Cable Drum:", font=body_font)
 cable_drum_label.pack(anchor="w", pady=5)
+
 cable_drum_var = tk.StringVar(value="1")
-cable_drum_menu = ttk.Combobox(options_frame, textvariable=cable_drum_var, values=["1", "2", "3"], font=body_font)
+
+# Increase font size and set the width of the dropdown
+cable_drum_menu = ttk.Combobox(options_frame, textvariable=cable_drum_var, values=["1", "2", "3"], font=("Helvetica", 20), width=8)
 cable_drum_menu.pack(anchor="w", pady=5)
 
 # Spacing Selection
 spacing_label = tk.Label(options_frame, text="Spacing (m):", font=body_font)
 spacing_label.pack(anchor="w", pady=5)
+
 spacing_var = tk.StringVar(value="1")
-spacing_menu = ttk.Combobox(options_frame, textvariable=spacing_var, values=["1", "2", "5", "10", "20"], font=body_font)
+
+# Increase font size and set the width of the dropdown
+spacing_menu = ttk.Combobox(options_frame, textvariable=spacing_var, values=["1", "2", "5", "10", "20"], font=("Helvetica", 20), width=8)
 spacing_menu.pack(anchor="w", pady=5)
+
 
 
 # Length Entry
 length_label = tk.Label(options_frame, text="Length (m):", font=body_font)
 length_label.pack(anchor="w", pady=5)
-length_entry = tk.Entry(options_frame, font=body_font)
+length_entry = tk.Entry(options_frame, font=body_font, width=8)
 length_entry.pack(anchor="w", pady=5)
 
 # Save Button
