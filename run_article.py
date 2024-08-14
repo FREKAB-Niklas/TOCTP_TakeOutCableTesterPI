@@ -239,12 +239,6 @@ for mcp, pin in relay_mappings.values():
     relay_pin.value = False  # Assuming relay is off when low
 
 
-def start_probing(pin_label):
-    global expecting_probe
-    expecting_probe = True
-    print(f"Probing started for {pin_label}")
-
-
 
 
 # Read the configuration file
@@ -781,7 +775,7 @@ def reset_test():
 
 
 def toggle_timer():
-    global is_running, expecting_probe
+    global is_running
     is_running = not is_running
     if is_running:
         activate_relay(pins[current_pin_index])  # Activate relay
@@ -790,9 +784,22 @@ def toggle_timer():
     else:
         deactivate_relay(pins[current_pin_index])  # Deactivate relay
         print(f"Relay deactivated for {pins[current_pin_index]}")
-        root.after(1000, lambda: start_probing(pins[current_pin_index]))  # Wait 1 second after deactivating relay before allowing probing
+        root.after(1000, lambda: start_probing(pins[current_pin_index]))  # Wait 1 second after deactivating relay to start probing
         current_wire_label.config(bg="orange", text="Pausad")
 
+def manual_relay_control():
+    if is_running:
+        deactivate_relay(pins[current_pin_index])
+        print(f"Relay manually deactivated for {pins[current_pin_index]}")
+    else:
+        activate_relay(pins[current_pin_index])
+        print(f"Relay manually activated for {pins[current_pin_index]}")
+
+def start_probing(pin_label):
+    global expecting_probe
+    expecting_probe = True
+    print(f"Probing started for {pin_label}")
+    root.after(1000, enable_probing)  # Allow probing after a delay
 
 
 
@@ -1111,10 +1118,9 @@ button_frame.pack(side=tk.BOTTOM, fill=tk.X, pady=10)
 reset_button = tk.Button(button_frame, text="Reset", font=("Helvetica", 24), bg="#9900AB", fg="black", command=reset_test, width=20, height=50)
 reset_button.pack(side=tk.LEFT, padx=20, pady=10)
 
-# Create a temporary button for starting the probing manually
-manual_probe_button = tk.Button(button_frame, text="Start Probing", font=("Helvetica", 24), bg="#FFA500", fg="black", command=lambda: start_probing(pins[current_pin_index]), width=20, height=50)
+# Bind this function to your manual probe button
+manual_probe_button = tk.Button(button_frame, text="Control Relay", font=("Helvetica", 24), bg="#FFA500", fg="black", command=manual_relay_control, width=20, height=50)
 manual_probe_button.pack(side=tk.BOTTOM, padx=20, pady=10)
-
 
 finish_batch_button = tk.Button(button_frame, text="Finish Batch", font=("Helvetica", 24), bg="#0A60C5", fg="black", command=finish_batch, width=20, height=50)
 finish_batch_button.pack(side=tk.RIGHT, padx=5, pady=10)
