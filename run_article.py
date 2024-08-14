@@ -420,7 +420,7 @@ def color_to_rgb(color):
 
     
 
-def set_dual_color(label, color1, color2=None, pin_text="", width=600, height=550):
+def set_dual_color(label, color1, color2=None, pin_text="", width=600, height=500):
     # Convert the color names to RGB tuples
     color1_rgb = color_to_rgb(color1)
     color2_rgb = color_to_rgb(color2) if color2 else color1_rgb
@@ -432,7 +432,7 @@ def set_dual_color(label, color1, color2=None, pin_text="", width=600, height=55
     print(f"Pin Text being set: {pin_text}")
 
     # Create a new image for the gradient
-    width, height = 600, 400  # Adjust dimensions as needed
+    width, height = 600, 500  # Adjust dimensions as needed
     gradient_image = Image.new("RGB", (width, height))
 
     for y in range(height):
