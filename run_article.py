@@ -465,7 +465,8 @@ def set_dual_color(label, color1, color2=None, pin_text="", width=600, height=50
 
 # Modify the on_pin_probe and complete_probe functions
 def on_pin_probe(gui_pin_label):
-    global current_pin_index, expecting_probe, success_sound, reject_sound
+    global current_pin_index, expecting_probe, success_sound, reject_sound, current_segment
+
     print(f"on_pin_probe called with gui_pin_label={gui_pin_label}, expecting_probe={expecting_probe}")
 
     if not expecting_probe:
@@ -477,10 +478,10 @@ def on_pin_probe(gui_pin_label):
     if gui_pin_label == expected_pin_label:
         print("Probe matches expected pin")
         expecting_probe = False  # Disable further probing until the next pin
-        
+
         if success_sound:
             success_sound.play()
-        
+
         left_panel_labels[current_pin_index].config(bg="#32CD32")
         deactivate_relay(expected_pin_label)  # Deactivate previous relay
         current_pin_index += 1
@@ -500,11 +501,14 @@ def on_pin_probe(gui_pin_label):
         else:
             print("All pins probed successfully.")
             check_all_probed()
+
+            # Automatically show the motor control popup after probing
+            show_motor_control_popup()
+
     else:
         print(f"Pin mismatch: expected {expected_pin_label}, but got {gui_pin_label}")
         if reject_sound:
             reject_sound.play()
-
 
 
 def activate_relay_and_wait(pin_label):
@@ -566,6 +570,8 @@ def run_motor():
         print("All segments have been completed.")
 
 def show_motor_control_popup():
+    global current_segment
+
     motor_popup = tk.Toplevel(root)
     motor_popup.title("Motor Control")
     motor_popup.geometry("400x300")
@@ -1161,9 +1167,6 @@ button_frame.pack(side=tk.BOTTOM, fill=tk.X, pady=10)
 reset_button = tk.Button(button_frame, text="Reset", font=("Helvetica", 24), bg="#9900AB", fg="black", command=reset_test, width=20, height=50)
 reset_button.pack(side=tk.LEFT, padx=50, pady=10)
 
-# Motor Control Button in the main UI
-motor_control_button = tk.Button(button_frame, text="Motor Control", font=("Helvetica", 24), command=show_motor_control_popup, bg="#0A60C5", fg="black")
-motor_control_button.pack(side=tk.LEFT, padx=5, pady=20)
 
 finish_batch_button = tk.Button(button_frame, text="Finish Batch", font=("Helvetica", 24), bg="#0A60C5", fg="black", command=finish_batch, width=20, height=50)
 finish_batch_button.pack(side=tk.LEFT, padx=5, pady=10)
