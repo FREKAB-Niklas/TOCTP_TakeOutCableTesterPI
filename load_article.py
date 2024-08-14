@@ -29,13 +29,30 @@ script_dir = os.path.dirname(os.path.abspath(__file__))
 # Construct the full path to the image file inside the PI folder
 logo_path = os.path.join(script_dir, "logo.png")
 
+def show_loading_screen():
+    loading_screen = tk.Toplevel(root)
+    loading_screen.title("Loading")
+    loading_screen.geometry("600x300+600+200")
+    loading_screen.attributes('-topmost', 'true')
+    loading_screen.grab_set()
+    loading_screen.focus_force()
+
+    loading_label = tk.Label(loading_screen, text="Loading, please wait...", font=("Helvetica", 24))
+    loading_label.pack(expand=True, pady=50)
+
+    return loading_screen
+
+
 def run_article(filename, pins, spacing, length, width, inner_diameter, takeouts):
+    # Show loading screen
+    loading_screen = show_loading_screen()
+
     # Get the directory where the script is located
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    
+
     # Construct the full path to the 'run_article.py' script inside the PI folder
     run_article_script_path = os.path.join(script_dir, "run_article.py")
-    
+
     # Write all necessary parameters to the config file
     with open("article_config.txt", "w") as config_file:
         config_file.write("[DEFAULT]\n")
@@ -46,9 +63,13 @@ def run_article(filename, pins, spacing, length, width, inner_diameter, takeouts
         config_file.write(f"width={width}\n")
         config_file.write(f"inner_diameter={inner_diameter}\n")
         config_file.write(f"takeouts={takeouts}\n")
-    
+
     # Run the article script
     subprocess.run([sys.executable, run_article_script_path])
+
+    # Close loading screen
+    loading_screen.destroy()
+
 
 
 def custom_messagebox(title, message, box_type="info"): 
@@ -291,6 +312,7 @@ def load_article_file():
     
     # Run the article with all the parameters
     run_article(filename, pins, spacing, length, width, inner_diameter, takeouts)
+
 
 
 def show_keyboard(entry_widget, on_submit, message="Enter password to delete file:"):
