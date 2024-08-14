@@ -519,7 +519,7 @@ def activate_relay_and_wait(pin_label):
 
 # Function to calculate rotations for each segment
 def calculate_rotations():
-    global rotation_list  # Ensure we are modifying the global variable
+    global rotation_list  # Ensure we're modifying the global rotation_list
     # Calculate the length wound before the motor-controlled segments start
     length_wound = (length - spacing * (takeouts - 1)) / 2
     layers_wound = length_wound / (width * CABLE_DIAMETER)
@@ -529,7 +529,7 @@ def calculate_rotations():
     segment_length = spacing  # Length of cable per segment
     rotation_list = []  # Reset the list
 
-    # Loop for 7 stops (since the first portion was manually wound)
+    # Loop for the calculated number of stops
     for i in range(takeouts - 1):
         # Calculate the current circumference
         current_circumference = math.pi * current_diameter
@@ -548,11 +548,12 @@ def calculate_rotations():
         # Increase the diameter for the next layer
         layers = math.floor(width / CABLE_DIAMETER)
         current_diameter += 2 * CABLE_DIAMETER * layers
+    
+    # Debug print to verify the rotation list
+    print(f"Debug: rotation_list = {rotation_list}")
 
     return rotation_list
 
-
-# Function to simulate motor control based on calculated rotations
 def show_motor_control_popup():
     global current_segment, rotation_display
 
@@ -577,6 +578,11 @@ def show_motor_control_popup():
         close_button.pack(pady=20)
     else:
         print("No more segments left to run.")
+
+# Somewhere in your code, before probing starts
+rotation_list = calculate_rotations()
+print(f"Rotation list calculated: {rotation_list}")  # Debugging
+
 
 def run_motor():
     global current_segment, rotation_display
