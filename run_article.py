@@ -505,10 +505,12 @@ def on_pin_probe(gui_pin_label):
         if reject_sound:
             reject_sound.play()
 
-    # Automatically show the motor control popup after probing the last pin of the current segment
+    # After probing is complete, update the motor button state
+    # This will indicate that the motor is ready to run if the current segment is complete
     if current_pin_index % (len(left_panel_labels) // takeouts) == 0:
-        print("Probing for the current segment is complete. Showing motor control popup.")
-        show_motor_control_popup()
+        print("Probing for the current segment is complete. Updating motor button.")
+        update_motor_button()  # Update the motor button state to reflect readiness
+
 
 
 def activate_relay_and_wait(pin_label):
@@ -554,54 +556,36 @@ def calculate_rotations():
 
     return rotation_list
 
-def show_motor_control_popup():
-    global current_segment, rotation_display
-
-    # Debug print to show the current segment and rotation list length
-    print(f"Debug: current_segment = {current_segment}, len(rotation_list) = {len(rotation_list)}")
-
+def update_motor_button():
+    global motor_button
     if current_segment < len(rotation_list):
-        motor_popup = tk.Toplevel(root)
-        motor_popup.title("Motor Control")
-        motor_popup.geometry("400x300")
-        motor_popup.attributes('-topmost', 'true')  # Bring the popup to the front
-        motor_popup.grab_set()  # Prevent interaction with the main window
-
-        # Display the current segment and its rotation information
-        rotation_display = tk.Label(motor_popup, text=f"Current Segment: {current_segment + 1}/{len(rotation_list)}\nRotations: {rotation_list[current_segment]:.2f}", font=("Helvetica", 16))
-        rotation_display.pack(pady=20)
-
-        run_button = tk.Button(motor_popup, text="Run Motor", command=run_motor, height=2, width=20)
-        run_button.pack(pady=20)
-
-        close_button = tk.Button(motor_popup, text="Close", command=motor_popup.destroy, height=2, width=20)
-        close_button.pack(pady=20)
+        # Update button to indicate motor is ready to run
+        motor_button.config(
+            text=f"Motor\n{current_segment + 1}st/{len(rotation_list)} segment\n{rotation_list[current_segment]:.2f} rotations",
+            bg="green"
+        )
+        motor_button.config(state=tk.NORMAL)  # Enable the button
     else:
-        print("No more segments left to run.")
-
-# Somewhere in your code, before probing starts
-rotation_list = calculate_rotations()
-print(f"Rotation list calculated: {rotation_list}")  # Debugging
-
+        # Update button to indicate motor is not ready
+        motor_button.config(text="Motor", bg="gray")
+        motor_button.config(state=tk.DISABLED)  # Disable the button
 
 def run_motor():
-    global current_segment, rotation_display
+    global current_segment
     if current_segment < len(rotation_list):
         rotations = rotation_list[current_segment]
         print(f"Running Motor for Segment {current_segment + 1}:")
         print(f"  Rotations to perform: {rotations:.2f}")
-        
+
         # Publish the number of rotations to the MQTT broker
-        client.publish("motor/control", str(rotations))  
-        
-        # Update the display in the popup with the current rotation details
-        rotation_display.config(text=f"Running segment {current_segment + 1}/{len(rotation_list)}\nRotations: {rotations:.2f}")
-        
-        current_segment += 1  # Increment the segment counter after running
+        client.publish("motor/control", str(rotations))
+
+        current_segment += 1  # Move to the next segment
+        update_motor_button()  # Update the button after running the motor
     else:
-        if rotation_display:
-            rotation_display.config(text="All segments completed.")
-        print("All segments have been completed.")
+        print("No more segments left to run.")
+
+
 
 
 
@@ -1184,14 +1168,16 @@ button_frame.pack(side=tk.BOTTOM, fill=tk.X, pady=10)
 reset_button = tk.Button(button_frame, text="Reset", font=("Helvetica", 24), bg="#9900AB", fg="black", command=reset_test, width=20, height=50)
 reset_button.pack(side=tk.LEFT, padx=50, pady=10)
 
+# Button for manually controlling the relay
+manual_probe_button = tk.Button(button_frame, text="Control Relay", font=("Helvetica", 24), bg="#FFA500", fg="black", command=manual_relay_control, width=20, height=50)
+manual_probe_button.pack(side=tk.LEFT, padx=5, pady=10)
+
+# Create the motor control button in your UI setup
+motor_button = tk.Button(root, text="Motor", font=("Helvetica", 16), command=run_motor, bg="gray", state=tk.DISABLED)
+motor_button.pack(side=tk.LEFT, padx=5, pady=10)
 
 finish_batch_button = tk.Button(button_frame, text="Finish Batch", font=("Helvetica", 24), bg="#0A60C5", fg="black", command=finish_batch, width=20, height=50)
 finish_batch_button.pack(side=tk.LEFT, padx=5, pady=10)
-
-
-# Button for manually controlling the relay
-manual_probe_button = tk.Button(button_frame, text="Control Relay", font=("Helvetica", 24), bg="#FFA500", fg="black", command=manual_relay_control, width=20, height=50)
-manual_probe_button.pack(side=tk.BOTTOM, padx=5, pady=10)
 
 
 # Start the timer
