@@ -422,18 +422,20 @@ def color_to_rgb(color):
     return color_map.get(color, (0, 0, 0))  # Default to black if color not found
 
     
-def set_dual_color(canvas, color1, color2=None, text="", font_size=124, width=600, height=300, text_color="white", outline_color="black", outline_thickness=2):
+
+def set_dual_color(label, color1, color2=None, pin_text="", width=600, height=500):
     # Convert the color names to RGB tuples
     color1_rgb = color_to_rgb(color1)
     color2_rgb = color_to_rgb(color2) if color2 else color1_rgb
 
     # Log the colors being used for debugging
-    print(f"Setting dual color for canvas:")
+    print(f"Setting dual color for center label:")
     print(f"  Primary Color: {color1} -> RGB: {color1_rgb}")
     print(f"  Secondary Color: {color2} -> RGB: {color2_rgb}")
-    print(f"Text being set: {text}")
+    print(f"Pin Text being set: {pin_text}")
 
-    # Create a new image for the gradient or solid background
+    # Create a new image for the gradient
+    width, height = 600, 500  # Adjust dimensions as needed
     gradient_image = Image.new("RGB", (width, height))
 
     for y in range(height):
@@ -443,36 +445,25 @@ def set_dual_color(canvas, color1, color2=None, text="", font_size=124, width=60
             else:
                 gradient_image.putpixel((x, y), color2_rgb)
 
-    # Convert the image to a PhotoImage and keep it persistent
+    # Convert the image to a PhotoImage and set it as the label's background
     gradient_photo = ImageTk.PhotoImage(gradient_image)
-    canvas.image = gradient_photo  # Store the reference to avoid garbage collection
 
-    # Clear the canvas and draw the gradient or solid background
-    canvas.delete("all")
-    canvas.create_image(0, 0, image=gradient_photo, anchor='nw')
-
-    # Calculate the coordinates for centering the text
-    text_x = width // 2
-    text_y = height // 2
-
-    # Font string should be passed correctly
-    font_str = f"Helvetica {font_size} bold"
-
-    # Draw the outlined text directly within this function
-    for dx in range(-outline_thickness, outline_thickness + 1):
-        for dy in range(-outline_thickness, outline_thickness + 1):
-            if dx != 0 or dy != 0:
-                canvas.create_text(text_x + dx, text_y + dy, text=text, font=font_str, fill=outline_color)
-    canvas.create_text(text_x, text_y, text=text, font=font_str, fill=text_color)
+    # Set the image and text on the label
+    label.config(image=gradient_photo, text=pin_text, compound='center', width=width, height=height)
+    label.image = gradient_photo  # Keep a reference to avoid garbage collection
 
     # Force the UI to update immediately
-    canvas.update_idletasks()
+    label.update_idletasks()
 
 
 
 
 
 
+
+
+
+# Modify the on_pin_probe and complete_probe functions
 def on_pin_probe(gui_pin_label):
     global current_pin_index, expecting_probe, success_sound, reject_sound, current_segment
 
@@ -497,15 +488,13 @@ def on_pin_probe(gui_pin_label):
 
         if current_pin_index < len(left_panel_labels):
             next_pin_label = left_panel_labels[current_pin_index].cget("text")
-
-            # Clear the canvas and update the central text with an outline
-            current_wire_canvas.delete("all")
-            next_pin_label = left_panel_labels[current_pin_index].cget("text")
+            # Update the central label color and add debugging output
             if isinstance(color_mapping[next_pin_label], tuple):
-                set_dual_color(current_wire_canvas, color1=color_mapping[next_pin_label][0], color2=color_mapping[next_pin_label][1], text=next_pin_label)
+                print(f"Next pin uses dual color: {color_mapping[next_pin_label]}")
+                set_dual_color(current_wire_label, *color_mapping[next_pin_label], pin_text=next_pin_label)
             else:
-                set_dual_color(current_wire_canvas, color1=color_mapping[next_pin_label], text=next_pin_label)
-
+                print(f"Next pin uses single color: {color_mapping[next_pin_label]}")
+                current_wire_label.config(text=next_pin_label, bg=color_mapping[next_pin_label])
 
             left_panel_labels[current_pin_index].config(bg="yellow")
         else:
@@ -520,8 +509,6 @@ def on_pin_probe(gui_pin_label):
     if current_pin_index % (len(left_panel_labels) // takeouts) == 0:
         print("Probing for the current segment is complete. Updating motor button.")
         update_motor_button()  # Update the motor button state to reflect readiness
-
-
 
 
 
@@ -671,7 +658,6 @@ def check_all_probed():
 
 
 
-# Example usage of the combined function
 def complete_probe():
     global current_pin_index
     if current_pin_index < len(pins) - 1:
@@ -680,12 +666,11 @@ def complete_probe():
         current_pin_index += 1
 
         next_pin_label = pins[current_pin_index]
-        # Update the central canvas with dual colors and text
+        # Update the central label color
         if isinstance(color_mapping[next_pin_label], tuple):
-            color1, color2 = color_mapping[next_pin_label]
-            set_dual_color(current_wire_canvas, color1=color1, color2=color2, text=next_pin_label)
+            set_dual_color(current_wire_label, *color_mapping[next_pin_label])
         else:
-            set_dual_color(current_wire_canvas, color1=color_mapping[next_pin_label], text=next_pin_label)
+            current_wire_label.config(text=next_pin_label, bg=color_mapping[next_pin_label])
 
         left_panel_labels[current_pin_index].config(bg="yellow")
         print(f"Next pin to probe: {next_pin_label}")
@@ -693,8 +678,6 @@ def complete_probe():
         left_panel_labels[current_pin_index].config(bg="#32CD32")
         print(f"Last pin probed: {pins[current_pin_index]}. Confirming last probe in 500ms")
         root.after(500, confirm_last_probe)
-
-
 
 def complete_cycle():
     global amount_of_cycles_done, elapsed_time_current_cycle, elapsed_time_previous_cycle, total_elapsed_time, current_pin_index, is_running, skipped_tests
@@ -715,16 +698,14 @@ def complete_cycle():
     # Reset pins for the next cycle
     current_pin_index = 0
     for label in left_panel_labels:
-        label.config(bg="light gray")
+        label.config(bg="light gray")  # Reset to default background color
 
-    # Clear the canvas and reset the text
-    current_wire_canvas.delete("all")
-    set_dual_color(current_wire_canvas, color1="white", text="Starta", text_color="#32CD32")
+    # Reset the central label to its original state
+    current_wire_label.config(text="Starta", bg="#32CD32", font=center_font)
+    current_wire_label.config(width=6, height=3, image='')  # Clear any image and reset size
 
     is_running = False
     print(f"Cycle completed successfully. Pins reset for next cycle.")
-
-
 
 def confirm_complete_cycle():
     print("Opening confirmation window for incomplete cycle.")
@@ -823,9 +804,9 @@ def reset_test():
             label.config(bg="light gray")
         left_panel_labels[current_pin_index].config(bg="yellow")
 
-        # Clear the canvas and reset the text
-        current_wire_canvas.delete("all")
-        set_dual_color(current_wire_canvas, color1="black", text="Starta", text_color="#32CD32")
+        # Reset the central label size and appearance
+        current_wire_label.config(text="Starta", bg="#32CD32", font=center_font)
+        current_wire_label.config(width=6, height=3, image='')  # Clear the image and reset the size
 
         time_info_label.config(text=f"Tid\nNu: {format_time(elapsed_time_current_cycle)}\nFörra: {format_time(elapsed_time_previous_cycle)}\nTotal: {format_time(total_elapsed_time)}\nStälltid: {format_time(downtime)}")
 
@@ -835,8 +816,7 @@ def reset_test():
             mcp_pin.direction = Direction.INPUT
             mcp_pin.pull = Pull.UP
 
-        print("Reset complete and MCP23017 pins reset")
-
+        print("Reset complete and MCP23017 pins reset")  # Add logging for debugging
 
         
         time_info_label.config(text=f"Tid\nNu: {format_time(elapsed_time_current_cycle)}\nFörra: {format_time(elapsed_time_previous_cycle)}\nTotal: {format_time(total_elapsed_time)}\nStälltid: {format_time(downtime)}")
@@ -848,21 +828,18 @@ def reset_test():
 relay_active = False
 
 
+
 def toggle_timer():
     global is_running
     is_running = not is_running
     if is_running:
-        # Clear the canvas and update the text
-        current_wire_canvas.delete("all")
-        set_dual_color(current_wire_canvas, color1=pins[current_pin_index], color2="300", text="150", font_size=124, text_color="yellow")
+        current_wire_label.config(bg="yellow", text=pins[current_pin_index])
         print("System unpaused. Ready to probe.")
+        # No automatic relay activation on start
         root.after(1000, lambda: start_probing(pins[current_pin_index]))  # Allow probing after unpausing
     else:
         print(f"System paused at pin {pins[current_pin_index]}")
-        # Update the text to show paused state
-        current_wire_canvas.delete("all")
-        set_dual_color(current_wire_canvas, "Pausad", 300, 150, ("Helvetica", 124, "bold"), text_color="orange")
-
+        current_wire_label.config(bg="orange", text="Pausad")
 
 def manual_relay_control():
     global relay_active, expecting_probe
@@ -1191,21 +1168,9 @@ time_info_label.pack()
 central_frame = tk.Frame(root)
 central_frame.pack(expand=True, padx=0)
 
-
-# Replace the label with a canvas for drawing outlined text
-current_wire_canvas = tk.Canvas(central_frame, width=600, height=300, highlightthickness=0)
-current_wire_canvas.pack(pady=20)
-current_wire_canvas.bind("<Button-1>", lambda e: toggle_timer())
-
-# Function to clear the canvas and apply the new background and text
-def update_wire_canvas(text, color1, color2=None):
-    # Clear the canvas
-    current_wire_canvas.delete("all")
-    
-    # Set the new background color
-    set_dual_color(current_wire_canvas, color1, color2=color2, text=text)
-
-
+current_wire_label = tk.Label(central_frame, text="Starta", font=center_font, bg="#32CD32", width=6, height=3)
+current_wire_label.pack(pady=20)
+current_wire_label.bind("<Button-1>", lambda e: toggle_timer())
 
 # Buttons
 button_frame = tk.Frame(root)
@@ -1228,7 +1193,7 @@ manual_probe_button.pack(side=tk.LEFT, padx=5, pady=10)
 finish_batch_button = tk.Button(button_frame, text="Finish Batch", font=("Helvetica", 24), bg="#0A60C5", fg="black", command=finish_batch, width=15, height=50)
 finish_batch_button.pack(side=tk.RIGHT, padx=5, pady=10)
 # Create the motor control button in your UI setup
-motor_button = tk.Button(button_frame, text="Motor", font=("Helvetica", 16), command=run_motor, bg="gray", width=25, height=50)
+motor_button = tk.Button(button_frame, text="Motor", font=("Helvetica", 16), command=run_motor, bg="gray", width=40, height=50)
 motor_button.pack(side=tk.RIGHT, padx=5, pady=10)
 
 
