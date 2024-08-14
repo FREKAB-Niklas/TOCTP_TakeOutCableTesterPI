@@ -422,7 +422,6 @@ def color_to_rgb(color):
     return color_map.get(color, (0, 0, 0))  # Default to black if color not found
 
     
-
 def set_dual_color(canvas, color1, color2=None, text="", font_size=124, width=600, height=300, text_color="white", outline_color="black", outline_thickness=2):
     # Convert the color names to RGB tuples
     color1_rgb = color_to_rgb(color1)
@@ -456,15 +455,20 @@ def set_dual_color(canvas, color1, color2=None, text="", font_size=124, width=60
     text_x = width // 2
     text_y = height // 2
 
+    # Font tuple should be passed correctly
+    font_tuple = ("Helvetica", font_size, "bold")
+
     # Draw the outlined text directly within this function
     for dx in range(-outline_thickness, outline_thickness + 1):
         for dy in range(-outline_thickness, outline_thickness + 1):
             if dx != 0 or dy != 0:
-                canvas.create_text(text_x + dx, text_y + dy, text=text, font=("Helvetica", font_size, "bold"), fill=outline_color)
-    canvas.create_text(text_x, text_y, text=text, font=("Helvetica", font_size, "bold"), fill=text_color)
+                canvas.create_text(text_x + dx, text_y + dy, text=text, font=font_tuple, fill=outline_color)
+    canvas.create_text(text_x, text_y, text=text, font=font_tuple, fill=text_color)
 
     # Force the UI to update immediately
     canvas.update_idletasks()
+
+
 
 
 
