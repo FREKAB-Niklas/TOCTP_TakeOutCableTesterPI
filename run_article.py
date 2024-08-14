@@ -423,19 +423,18 @@ def color_to_rgb(color):
 
     
 
-def set_dual_color(label, color1, color2=None, pin_text="", width=600, height=500):
+def set_dual_color(canvas, color1, color2=None, pin_text="", width=600, height=500):
     # Convert the color names to RGB tuples
     color1_rgb = color_to_rgb(color1)
     color2_rgb = color_to_rgb(color2) if color2 else color1_rgb
 
     # Log the colors being used for debugging
-    print(f"Setting dual color for center label:")
+    print(f"Setting dual color for canvas:")
     print(f"  Primary Color: {color1} -> RGB: {color1_rgb}")
     print(f"  Secondary Color: {color2} -> RGB: {color2_rgb}")
     print(f"Pin Text being set: {pin_text}")
 
     # Create a new image for the gradient
-    width, height = 600, 500  # Adjust dimensions as needed
     gradient_image = Image.new("RGB", (width, height))
 
     for y in range(height):
@@ -445,15 +444,17 @@ def set_dual_color(label, color1, color2=None, pin_text="", width=600, height=50
             else:
                 gradient_image.putpixel((x, y), color2_rgb)
 
-    # Convert the image to a PhotoImage and set it as the label's background
+    # Convert the image to a PhotoImage and draw it on the canvas
     gradient_photo = ImageTk.PhotoImage(gradient_image)
+    canvas.create_image(0, 0, image=gradient_photo, anchor='nw')
+    canvas.image = gradient_photo  # Keep a reference to avoid garbage collection
 
-    # Set the image and text on the label
-    label.config(image=gradient_photo, text=pin_text, compound='center', width=width, height=height)
-    label.image = gradient_photo  # Keep a reference to avoid garbage collection
-
+    # Draw the outlined text on top of the gradient
+    create_outlined_text(canvas, pin_text, width // 2, height // 2, ("Helvetica", 124, "bold"))
+    
     # Force the UI to update immediately
-    label.update_idletasks()
+    canvas.update_idletasks()
+
 
 
 
@@ -669,11 +670,11 @@ def complete_probe():
         current_pin_index += 1
 
         next_pin_label = pins[current_pin_index]
-        # Update the central label color
+        # Update the central canvas with dual colors
         if isinstance(color_mapping[next_pin_label], tuple):
-            set_dual_color(current_wire_label, *color_mapping[next_pin_label])
+            set_dual_color(current_wire_canvas, *color_mapping[next_pin_label], pin_text=next_pin_label)
         else:
-            current_wire_label.config(text=next_pin_label, bg=color_mapping[next_pin_label])
+            set_dual_color(current_wire_canvas, color_mapping[next_pin_label], pin_text=next_pin_label)
 
         left_panel_labels[current_pin_index].config(bg="yellow")
         print(f"Next pin to probe: {next_pin_label}")
