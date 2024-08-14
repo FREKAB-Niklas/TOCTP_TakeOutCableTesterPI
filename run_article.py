@@ -456,33 +456,18 @@ def set_dual_color(label, color1, color2=None, pin_text="", width=600, height=50
     label.update_idletasks()
 
 
+
 def create_outlined_text(canvas, text, x, y, font, text_color="white", outline_color="black", outline_thickness=2):
     # Draw the outline by creating text in the outline color at multiple offsets
     for dx in range(-outline_thickness, outline_thickness + 1):
         for dy in range(-outline_thickness, outline_thickness + 1):
             if dx != 0 or dy != 0:
                 canvas.create_text(x + dx, y + dy, text=text, font=font, fill=outline_color)
-    
     # Draw the main text on top
     canvas.create_text(x, y, text=text, font=font, fill=text_color)
 
-def update_center_label_with_outline(text):
-    # Clear the canvas before drawing new text
-    center_canvas.delete("all")
-    
-    # Define the font
-    font = ("Helvetica", 124, "bold")
-    
-    # Create the outlined text at the center of the canvas
-    create_outlined_text(center_canvas, text, center_canvas.winfo_width() // 2, center_canvas.winfo_height() // 2, font)
 
 
-
-
-
-
-
-# Modify the on_pin_probe and complete_probe functions
 def on_pin_probe(gui_pin_label):
     global current_pin_index, expecting_probe, success_sound, reject_sound, current_segment
 
@@ -507,14 +492,10 @@ def on_pin_probe(gui_pin_label):
 
         if current_pin_index < len(left_panel_labels):
             next_pin_label = left_panel_labels[current_pin_index].cget("text")
-            # Update the central label color and add debugging output
-            if isinstance(color_mapping[next_pin_label], tuple):
-                print(f"Next pin uses dual color: {color_mapping[next_pin_label]}")
-                set_dual_color(current_wire_label, *color_mapping[next_pin_label], pin_text=next_pin_label)
-            else:
-                print(f"Next pin uses single color: {color_mapping[next_pin_label]}")
-                # Instead of directly updating current_wire_label, update the canvas
-                update_center_label_with_outline(next_pin_label)
+
+            # Clear the canvas and update the central text with an outline
+            current_wire_canvas.delete("all")
+            create_outlined_text(current_wire_canvas, next_pin_label, 300, 150, ("Helvetica", 124, "bold"))
 
             left_panel_labels[current_pin_index].config(bg="yellow")
         else:
@@ -529,6 +510,8 @@ def on_pin_probe(gui_pin_label):
     if current_pin_index % (len(left_panel_labels) // takeouts) == 0:
         print("Probing for the current segment is complete. Updating motor button.")
         update_motor_button()  # Update the motor button state to reflect readiness
+
+
 
 
 
@@ -1188,14 +1171,11 @@ time_info_label.pack()
 central_frame = tk.Frame(root)
 central_frame.pack(expand=True, padx=0)
 
-current_wire_label = tk.Label(central_frame, text="Starta", font=center_font, bg="#32CD32", width=6, height=3)
-current_wire_label.pack(pady=20)
-current_wire_label.bind("<Button-1>", lambda e: toggle_timer())
 
-# Create a canvas widget to draw the outlined text
-center_canvas = tk.Canvas(central_frame, width=800, height=400, bg="#32CD32", highlightthickness=0)
-center_canvas.pack(expand=True)
-
+# Replace the label with a canvas for drawing outlined text
+current_wire_canvas = tk.Canvas(central_frame, width=600, height=300, bg="#32CD32", highlightthickness=0)
+current_wire_canvas.pack(pady=20)
+current_wire_canvas.bind("<Button-1>", lambda e: toggle_timer())
 # Buttons
 button_frame = tk.Frame(root)
 button_frame.pack(side=tk.BOTTOM, fill=tk.X, pady=20)
