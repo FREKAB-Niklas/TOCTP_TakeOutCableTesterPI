@@ -592,8 +592,16 @@ def run_motor():
 
         current_segment += 1  # Move to the next segment
         update_motor_button()  # Update the button after running the motor
+
+        # Turn the button gray after use
+        motor_button.config(text="Motor", bg="gray")
+        motor_button.config(state=tk.DISABLED)  # Disable the button
+
+        # Enable probing for the next pin
+        enable_probing()
     else:
         print("No more segments left to run.")
+
 
 
 
@@ -1176,7 +1184,7 @@ button_frame.pack(side=tk.BOTTOM, fill=tk.X, pady=10)
 
 # Update the diagnose button to finish batch
 reset_button = tk.Button(button_frame, text="Reset", font=("Helvetica", 24), bg="#9900AB", fg="black", command=reset_test, width=20, height=50)
-reset_button.pack(side=tk.LEFT, padx=50, pady=10)
+reset_button.pack(side=tk.LEFT, padx=5, pady=10)
 
 # Button for manually controlling the relay
 manual_probe_button = tk.Button(button_frame, text="Control Relay", font=("Helvetica", 24), bg="#FFA500", fg="black", command=manual_relay_control, width=20, height=50)
