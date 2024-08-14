@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import font, messagebox, ttk
+from tkinter import font, messagebox, ttk, Toplevel, Listbox
 from PIL import Image, ImageTk
 import os
 
@@ -107,7 +107,31 @@ def save_pins():
     custom_messagebox("Färdig", "Artikel Sparad.", "info")
 
 
+def create_dropdown(master, options, selected_var, label_text):
+    def show_listbox():
+        listbox_win = Toplevel(master)
+        listbox_win.geometry("300x200")
+        listbox_win.attributes('-topmost', 'true')
+        listbox = Listbox(listbox_win, font=("Helvetica", 20), selectmode=tk.SINGLE)
+        listbox.pack(expand=True, fill=tk.BOTH)
+        
+        # Populate Listbox with options
+        for option in options:
+            listbox.insert(tk.END, option)
+        
+        def on_select(event):
+            selected_index = listbox.curselection()
+            if selected_index:
+                selected_var.set(listbox.get(selected_index))
+            listbox_win.destroy()
+        
+        listbox.bind("<<ListboxSelect>>", on_select)
 
+    label = tk.Label(master, text=label_text, font=("Helvetica", 18))
+    label.pack(anchor="w", pady=5)
+    
+    button = tk.Button(master, textvariable=selected_var, font=("Helvetica", 20), width=8, command=show_listbox)
+    button.pack(anchor="w", pady=5)
 
 
 
@@ -188,31 +212,18 @@ for col in range(4):
 # Cable Drum Selection
 # Options Section (to the right of the pins)
 # Cable Drum Selection
-cable_drum_label = tk.Label(options_frame, text="Cable Drum:", font=body_font)
-cable_drum_label.pack(anchor="w", pady=5)
-
 cable_drum_var = tk.StringVar(value="1")
-
-# Increase font size and set the width of the dropdown
-cable_drum_menu = ttk.Combobox(options_frame, textvariable=cable_drum_var, values=["1", "2", "3"], font=("Helvetica", 20), width=8)
-cable_drum_menu.pack(anchor="w", pady=5)
-
-# Spacing Selection
-spacing_label = tk.Label(options_frame, text="Spacing (m):", font=body_font)
-spacing_label.pack(anchor="w", pady=5)
-
 spacing_var = tk.StringVar(value="1")
 
-# Increase font size and set the width of the dropdown
-spacing_menu = ttk.Combobox(options_frame, textvariable=spacing_var, values=["1", "2", "5", "10", "20"], font=("Helvetica", 20), width=8)
-spacing_menu.pack(anchor="w", pady=5)
+create_dropdown(options_frame, ["1", "2", "3"], cable_drum_var, "Cable Drum:")
+create_dropdown(options_frame, ["1", "2", "5", "10", "20"], spacing_var, "Spacing (m):")
 
 
 
 # Length Entry
 length_label = tk.Label(options_frame, text="Length (m):", font=body_font)
 length_label.pack(anchor="w", pady=5)
-length_entry = tk.Entry(options_frame, font=body_font, width=8)
+length_entry = tk.Entry(options_frame, font=body_font, width=11)
 length_entry.pack(anchor="w", pady=5)
 
 # Save Button
