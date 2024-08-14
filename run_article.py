@@ -464,8 +464,11 @@ def set_dual_color(label, color1, color2=None, pin_text="", width=600, height=50
 
 
 # Modify the on_pin_probe and complete_probe functions
+allow_motor_run = True
+
+# Modify the on_pin_probe function
 def on_pin_probe(gui_pin_label):
-    global current_pin_index, expecting_probe, success_sound, reject_sound, current_segment
+    global current_pin_index, expecting_probe, success_sound, reject_sound, current_segment, allow_motor_run
 
     print(f"on_pin_probe called with gui_pin_label={gui_pin_label}, expecting_probe={expecting_probe}")
 
@@ -500,6 +503,16 @@ def on_pin_probe(gui_pin_label):
         else:
             print("All pins probed successfully.")
             check_all_probed()
+
+        # Check if the segment is complete and update motor button
+        if current_pin_index % (len(left_panel_labels) // takeouts) == 0:
+            print("Probing for the current segment is complete. Updating motor button.")
+            allow_motor_run = True
+            update_motor_button()  # Update the motor button state to reflect readiness
+        else:
+            # If not at the end of a segment, allow continuation of probing
+            allow_motor_run = False
+
     else:
         print(f"Pin mismatch: expected {expected_pin_label}, but got {gui_pin_label}")
         if reject_sound:
@@ -562,10 +575,10 @@ rotation_list = calculate_rotations()
 print(f"Debug: rotation_list = {rotation_list}")
 
 def update_motor_button():
-    global motor_button, current_segment, rotation_list
+    global motor_button, current_segment, rotation_list, allow_motor_run
 
     # Check if there are remaining segments
-    if current_segment < len(rotation_list):
+    if current_segment < len(rotation_list) and allow_motor_run:
         # Update button to indicate motor is ready to run
         motor_button.config(
             text=f"Motor\n{current_segment + 1}st/{len(rotation_list)} segment\n{rotation_list[current_segment]:.2f} rotations",
@@ -842,7 +855,7 @@ def toggle_timer():
         current_wire_label.config(bg="orange", text="Pausad")
 
 def manual_relay_control():
-    global relay_active, expecting_probe
+    global relay_active, expecting_probe, allow_motor_run
     
     if relay_active:
         # If the relay is currently active, deactivate it and then activate probing
@@ -863,6 +876,9 @@ def manual_relay_control():
         # Deactivate probing while the relay is active
         expecting_probe = False
         print("Probing is now deactivated.")
+       # Allow the motor to run only if the segment is completed
+    if allow_motor_run:
+        update_motor_button()
 
 def start_probing(pin_label):
     global expecting_probe
