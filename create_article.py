@@ -16,15 +16,21 @@ script_dir = os.path.dirname(os.path.abspath(__file__))
 # Construct the full path to the image file inside the PI folder
 logo_path = os.path.join(script_dir, "logo.png")
 
-def toggle_button(button):
+def toggle_button_pins(button):
     current_color = button.cget("bg")
     new_color = "#32CD32" if current_color == "light gray" else "light gray"
     button.config(bg=new_color)
 
+def toggle_button_option(button):
+    current_color = button.cget("bg")
+    new_color = "#32CD32" if current_color == "light gray" else "light gray"
+    button.config(bg=new_color)
+
+
 def select_all_column(col_idx):
     for i in range(8):
         idx = col_idx * 8 + i
-        toggle_button(buttons[idx])
+        toggle_button_pins(buttons[idx])
 
 def custom_messagebox(title, message, box_type="info"): 
     custom_box = tk.Toplevel(root)
@@ -107,35 +113,6 @@ def save_pins():
     custom_messagebox("Färdig", "Artikel Sparad.", "info")
 
 
-def create_dropdown(master, options, selected_var, label_text):
-    def show_listbox():
-        listbox_win = Toplevel(master)
-        listbox_win.geometry("300x200")
-        listbox_win.attributes('-topmost', 'true')
-        listbox = Listbox(listbox_win, font=("Helvetica", 20), selectmode=tk.SINGLE)
-        listbox.pack(expand=True, fill=tk.BOTH)
-        
-        # Populate Listbox with options
-        for option in options:
-            listbox.insert(tk.END, option)
-        
-        def on_select(event):
-            selected_index = listbox.curselection()
-            if selected_index:
-                selected_var.set(listbox.get(selected_index))
-            listbox_win.destroy()
-        
-        listbox.bind("<<ListboxSelect>>", on_select)
-
-    label = tk.Label(master, text=label_text, font=("Helvetica", 18))
-    label.pack(anchor="w", pady=5)
-    
-    button = tk.Button(master, textvariable=selected_var, font=("Helvetica", 20), width=8, command=show_listbox)
-    button.pack(anchor="w", pady=5)
-
-
-
-
 
 # Initialize main window
 root = tk.Tk()
@@ -204,26 +181,40 @@ for col in range(4):
     for row in range(8):
         idx = row + col * 8
         button = tk.Button(col_frame, text=pins[idx], font=body_font, width=10, height=2,
-                           command=lambda b=idx: toggle_button(buttons[b]), bg="light gray")
+                           command=lambda b=idx: toggle_button_pins(buttons[b]), bg="light gray")
         button.pack(pady=5)
         buttons.append(button)
 
-# Options Section (to the right of the pins)
-# Cable Drum Selection
-# Options Section (to the right of the pins)
-# Cable Drum Selection
+# Options Section
 cable_drum_var = tk.StringVar(value="1")
 spacing_var = tk.StringVar(value="1")
 
-create_dropdown(options_frame, ["1", "2", "3"], cable_drum_var, "Cable Drum:")
-create_dropdown(options_frame, ["1", "2", "5", "10", "20"], spacing_var, "Spacing (m):")
+# Cable Drum Selection
+cable_drum_label = tk.Label(options_frame, text="Cable Drum:", font=body_font)
+cable_drum_label.pack(anchor="w", pady=5)
+cable_drum_buttons = []
+for option in ["1", "2", "3"]:
+    button = tk.Button(options_frame, text=option, font=body_font, width=8, height=2,
+                       command=lambda button=button: toggle_button_option(button), bg="light gray")
+    button.pack(pady=5)
+    cable_drum_buttons.append(button)
+
+# Spacing Selection
+spacing_label = tk.Label(options_frame, text="Spacing (m):", font=body_font)
+spacing_label.pack(anchor="w", pady=5)
+spacing_buttons = []
+for option in ["1", "2", "5", "10", "20"]:
+    button = tk.Button(options_frame, text=option, font=body_font, width=8, height=2,
+                       command=lambda button=button: toggle_button_option(button), bg="light gray")
+    button.pack(pady=5)
+    spacing_buttons.append(button)
 
 
 
 # Length Entry
 length_label = tk.Label(options_frame, text="Length (m):", font=body_font)
 length_label.pack(anchor="w", pady=5)
-length_entry = tk.Entry(options_frame, font=body_font, width=11)
+length_entry = tk.Entry(options_frame, font=body_font)
 length_entry.pack(anchor="w", pady=5)
 
 # Save Button
