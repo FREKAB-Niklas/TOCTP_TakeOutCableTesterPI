@@ -420,7 +420,7 @@ def color_to_rgb(color):
 
     
 
-def set_dual_color(label, color1, color2=None, pin_text="", width=600, height=500):
+def set_dual_color(label, color1, color2=None, pin_text="", width=600, height=550):
     # Convert the color names to RGB tuples
     color1_rgb = color_to_rgb(color1)
     color2_rgb = color_to_rgb(color2) if color2 else color1_rgb
