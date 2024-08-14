@@ -423,7 +423,7 @@ def color_to_rgb(color):
 
     
 
-def set_dual_color(canvas, color1, color2=None, pin_text="", width=600, height=500):
+def set_dual_color(canvas, color1, color2=None, text="", font_size=124, width=600, height=500):
     # Convert the color names to RGB tuples
     color1_rgb = color_to_rgb(color1)
     color2_rgb = color_to_rgb(color2) if color2 else color1_rgb
@@ -432,7 +432,7 @@ def set_dual_color(canvas, color1, color2=None, pin_text="", width=600, height=5
     print(f"Setting dual color for canvas:")
     print(f"  Primary Color: {color1} -> RGB: {color1_rgb}")
     print(f"  Secondary Color: {color2} -> RGB: {color2_rgb}")
-    print(f"Pin Text being set: {pin_text}")
+    print(f"Pin Text being set: {text}")
 
     # Create a new image for the gradient
     gradient_image = Image.new("RGB", (width, height))
@@ -450,10 +450,20 @@ def set_dual_color(canvas, color1, color2=None, pin_text="", width=600, height=5
     canvas.image = gradient_photo  # Keep a reference to avoid garbage collection
 
     # Draw the outlined text on top of the gradient
-    create_outlined_text(canvas, pin_text, width // 2, height // 2, ("Helvetica", 124, "bold"))
-    
+    create_outlined_text(canvas, text, width // 2, height // 2, ("Helvetica", font_size, "bold"))
+
     # Force the UI to update immediately
     canvas.update_idletasks()
+
+def create_outlined_text(canvas, text, x, y, font, text_color="white", outline_color="black", outline_thickness=2):
+    # Draw the outline by creating text in the outline color at multiple offsets
+    for dx in range(-outline_thickness, outline_thickness + 1):
+        for dy in range(-outline_thickness, outline_thickness + 1):
+            if dx != 0 or dy != 0:
+                canvas.create_text(x + dx, y + dy, text=text, font=font, fill=outline_color)
+    # Draw the main text on top
+    canvas.create_text(x, y, text=text, font=font, fill=text_color)
+
 
 
 
@@ -662,6 +672,7 @@ def check_all_probed():
 
 
 
+# Example usage of the combined function
 def complete_probe():
     global current_pin_index
     if current_pin_index < len(pins) - 1:
@@ -670,11 +681,11 @@ def complete_probe():
         current_pin_index += 1
 
         next_pin_label = pins[current_pin_index]
-        # Update the central canvas with dual colors
+        # Update the central canvas with dual colors and text
         if isinstance(color_mapping[next_pin_label], tuple):
-            set_dual_color(current_wire_canvas, *color_mapping[next_pin_label], pin_text=next_pin_label)
+            set_dual_color(current_wire_canvas, *color_mapping[next_pin_label], text=next_pin_label)
         else:
-            set_dual_color(current_wire_canvas, color_mapping[next_pin_label], pin_text=next_pin_label)
+            set_dual_color(current_wire_canvas, color_mapping[next_pin_label], text=next_pin_label)
 
         left_panel_labels[current_pin_index].config(bg="yellow")
         print(f"Next pin to probe: {next_pin_label}")
@@ -682,6 +693,7 @@ def complete_probe():
         left_panel_labels[current_pin_index].config(bg="#32CD32")
         print(f"Last pin probed: {pins[current_pin_index]}. Confirming last probe in 500ms")
         root.after(500, confirm_last_probe)
+
 
 def complete_cycle():
     global amount_of_cycles_done, elapsed_time_current_cycle, elapsed_time_previous_cycle, total_elapsed_time, current_pin_index, is_running, skipped_tests
@@ -1179,7 +1191,7 @@ central_frame.pack(expand=True, padx=0)
 
 
 # Replace the label with a canvas for drawing outlined text
-current_wire_canvas = tk.Canvas(central_frame, width=600, height=300, bg="#32CD32", highlightthickness=0)
+current_wire_canvas = tk.Canvas(central_frame, text="Starta", width=600, height=300, bg="#32CD32", highlightthickness=0)
 current_wire_canvas.pack(pady=20)
 current_wire_canvas.bind("<Button-1>", lambda e: toggle_timer())
 # Buttons
