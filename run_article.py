@@ -1173,7 +1173,7 @@ manual_probe_button = tk.Button(button_frame, text="Control Relay", font=("Helve
 manual_probe_button.pack(side=tk.LEFT, padx=5, pady=10)
 
 # Create the motor control button in your UI setup
-motor_button = tk.Button(root, text="Motor", font=("Helvetica", 16), command=run_motor, bg="gray", state=tk.DISABLED)
+motor_button = tk.Button(button_frame, text="Motor", font=("Helvetica", 16), command=run_motor, bg="gray", state=tk.DISABLED)
 motor_button.pack(side=tk.LEFT, padx=5, pady=10)
 
 finish_batch_button = tk.Button(button_frame, text="Finish Batch", font=("Helvetica", 24), bg="#0A60C5", fg="black", command=finish_batch, width=20, height=50)
