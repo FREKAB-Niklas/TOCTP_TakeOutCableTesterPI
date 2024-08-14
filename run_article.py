@@ -787,14 +787,17 @@ def toggle_timer():
         current_wire_label.config(bg="orange", text="Pausad")
 
 def manual_relay_control():
-    global is_running
-    # Check if the relay is active
-    if is_running:
+    global relay_active
+    if relay_active:
+        # If the relay is currently active, deactivate it
         deactivate_relay(pins[current_pin_index])
+        relay_active = False
         print(f"Relay manually deactivated for {pins[current_pin_index]}")
-        start_probing(pins[current_pin_index])  # Start probing immediately after deactivation
+        start_probing(pins[current_pin_index])  # Start probing after deactivation
     else:
+        # If the relay is not active, activate it
         activate_relay(pins[current_pin_index])
+        relay_active = True
         print(f"Relay manually activated for {pins[current_pin_index]}")
 
 def start_probing(pin_label):
@@ -1119,7 +1122,7 @@ button_frame.pack(side=tk.BOTTOM, fill=tk.X, pady=10)
 reset_button = tk.Button(button_frame, text="Reset", font=("Helvetica", 24), bg="#9900AB", fg="black", command=reset_test, width=20, height=50)
 reset_button.pack(side=tk.LEFT, padx=20, pady=10)
 
-# Bind this function to your manual probe button
+# Button for manually controlling the relay
 manual_probe_button = tk.Button(button_frame, text="Control Relay", font=("Helvetica", 24), bg="#FFA500", fg="black", command=manual_relay_control, width=20, height=50)
 manual_probe_button.pack(side=tk.BOTTOM, padx=20, pady=10)
 
