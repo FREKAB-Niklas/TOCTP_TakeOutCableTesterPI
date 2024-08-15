@@ -1,17 +1,17 @@
 import os
 
-# Define the ZPL template with placeholders
+# Adjusted ZPL template with improved positioning
 zpl_template = """
 ^XA
-^FO50,50^A0N,100,100^FD{PART_NUMBER}^FS
-^FO50,180^A0N,50,50^FD{DESCRIPTION_LINE_1}^FS
-^FO50,240^A0N,50,50^FD{DESCRIPTION_LINE_2}^FS
-^FO50,320^A0N,60,60^FDWeek^FS
-^FO200,320^A0N,60,60^FDREV^FS
-^FO400,320^A0N,60,60^FDSerial^FS
-^FO50,400^A0N,80,80^FD{WEEK}^FS
-^FO250,400^A0N,80,80^FD{REV}^FS
-^FO450,400^A0N,80,80^FD{SERIAL}^FS
+^FO50,50^A0N,120,120^FD{PART_NUMBER}^FS  ; Part Number, made larger
+^FO50,200^A0N,60,60^FD{DESCRIPTION_LINE_1}^FS  ; Description Line 1, adjusted position
+^FO50,270^A0N,60,60^FD{DESCRIPTION_LINE_2}^FS  ; Description Line 2, adjusted position
+^FO50,360^A0N,50,50^FDWeek^FS              ; "Week" label, adjusted position
+^FO250,360^A0N,50,50^FDREV^FS              ; "REV" label, adjusted position
+^FO450,360^A0N,50,50^FDSerial^FS           ; "Serial" label, adjusted position
+^FO50,420^A0N,70,70^FD{WEEK}^FS            ; Week number, adjusted position and size
+^FO250,420^A0N,70,70^FD{REV}^FS            ; Revision, adjusted position and size
+^FO450,420^A0N,70,70^FD{SERIAL}^FS         ; Serial number, adjusted position and size
 ^XZ
 """
 
