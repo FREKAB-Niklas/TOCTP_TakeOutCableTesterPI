@@ -34,8 +34,9 @@ zpl_code = zpl_template.format(
 )
 
 # Write the ZPL to a temporary file
-with open("/tmp/label.zpl", "w") as f:
+zpl_file_path = "/tmp/label.zpl"
+with open(zpl_file_path, "w") as f:
     f.write(zpl_code)
 
-# Send the ZPL file to the printer
-os.system("lp -d GK420d /tmp/label.zpl")
+# Send the ZPL file to the printer in raw mode
+os.system(f"lp -d GK420d -o raw {zpl_file_path}")
