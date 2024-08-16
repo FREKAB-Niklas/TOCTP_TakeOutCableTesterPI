@@ -5,7 +5,7 @@ zpl_template = """
 ^XA
 ^FO50,30^A0N,100,100^FD{PART_NUMBER}^FS  ; Part Number, made larger
 ^FO50,150^A0N,40,40^FD{DESCRIPTION_LINE_1}^FS  ; Description Line 1, adjusted position
-^FO50,180^A0N,60,60^FD{DESCRIPTION_LINE_2}^FS  ; Description Line 2, adjusted position
+^FO50,180^A0N,40,40^FD{DESCRIPTION_LINE_2}^FS  ; Description Line 2, adjusted position
 ^FO50,250^A0N,50,50^FDWeek^FS              ; "Week" label, adjusted position
 ^FO250,250^A0N,50,50^FDREV^FS              ; "REV" label, adjusted position
 ^FO450,250^A0N,50,50^FDSerial^FS           ; "Serial" label, adjusted position
