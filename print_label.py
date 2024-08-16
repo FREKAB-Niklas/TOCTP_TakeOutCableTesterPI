@@ -1,5 +1,22 @@
 import os
 
+# Function to split description text into two lines if it's too long
+def split_description(text, max_length):
+    if len(text) > max_length:
+        # Find the closest space to split the line
+        split_pos = text.rfind(' ', 0, max_length)
+        if split_pos == -1:  # No space found, force split
+            split_pos = max_length
+        line1 = text[:split_pos]
+        line2 = text[split_pos + 1:]  # Start from next char after the space
+        return line1, line2
+    else:
+        return text, ""  # Only one line needed
+
+# Example usage: max_length is the number of characters that can fit on one line
+description = "Imaging cable with 21 take - outs, 5m spacing"
+description_line_1, description_line_2 = split_description(description, 30)
+
 # Adjusted ZPL template with improved positioning
 zpl_template = """
 ^XA
@@ -17,8 +34,6 @@ zpl_template = """
 
 # Variables to be replaced
 part_number = "21 - 33001922"
-description_line_1 = "Imaging cable with"
-description_line_2 = "21 take - outs, 5m spacing"
 week = "2435"
 rev = "A"
 serial = "00001"
