@@ -20,7 +20,7 @@ description_line_1, description_line_2 = split_description(description, 30)
 # Adjusted ZPL template with improved positioning
 zpl_template = """
 ^XA
-^FO50,30^A0N,100,100^FD{PART_NUMBER}^FS  ; Part Number, made larger
+^FO65,30^A0N,100,100^FD{PART_NUMBER}^FS  ; Part Number, made larger
 ^FO50,130^A0N,40,40^FD{DESCRIPTION_LINE_1}^FS  ; Description Line 1, adjusted position
 ^FO50,180^A0N,40,40^FD{DESCRIPTION_LINE_2}^FS  ; Description Line 2, adjusted position
 ^FO50,250^A0N,50,50^FDWeek^FS              ; "Week" label, adjusted position
