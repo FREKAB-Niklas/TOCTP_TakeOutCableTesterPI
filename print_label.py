@@ -14,7 +14,7 @@ def split_description(text, max_length):
         return text, ""  # Only one line needed
 
 # Example usage: max_length is the number of characters that can fit on one line
-description = "Imaging cable with 21 take - outs, 5m spacing"
+description = "Imaging cable with 21 take"
 description_line_1, description_line_2 = split_description(description, 30)
 
 # Adjusted ZPL template with improved positioning
