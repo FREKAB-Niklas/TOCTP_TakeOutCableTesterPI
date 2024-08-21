@@ -803,6 +803,7 @@ def update_timer():
     time_info_label.config(text=f"Tid\nNu: {format_time(elapsed_time_current_cycle)}\nFörra: {format_time(elapsed_time_previous_cycle)}\nTotal: {format_time(total_elapsed_time + elapsed_time_current_cycle)}\nStälltid: {format_time(downtime)}")
     root.after(1000, update_timer)  # Update every second (1000 milliseconds)
 
+
 def reset_test():
     response = custom_messagebox("Reset", "Är du säker att du vill reseta?")
     if response:
@@ -1175,7 +1176,9 @@ def finish_batch():
     total_downtime = downtime
     total_work_time = total_elapsed_time
     avg_cycle_time = total_cycle_time // total_cycles if total_cycles > 0 else 0
-    last_cycle_time = timedelta(seconds=elapsed_time_current_cycle)
+    
+    # Safeguard elapsed_time_current_cycle
+    last_cycle_time = timedelta(seconds=elapsed_time_current_cycle) if elapsed_time_current_cycle != 0 else timedelta()
     avg_work_time = total_work_time // total_cycles if total_cycles > 0 else 0
 
     # Data for Main Sheet
