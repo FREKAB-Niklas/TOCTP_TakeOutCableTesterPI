@@ -71,6 +71,7 @@ cable_drum_properties = {
 
 def save_pins():
     selected_pins = [button['text'] for button in buttons if button.cget("bg") == "#32CD32"]
+    article_number = article_number_entry.get()
     article_name = article_name_entry.get()
     cable_drum = cable_drum_var.get()
     spacing = spacing_var.get()
@@ -79,7 +80,7 @@ def save_pins():
     # The number of takeouts is the same as the number of selected pins
     takeouts = len(selected_pins)
 
-    if not article_name:
+    if not article_number:
         custom_messagebox("Fel", "Vänligen ange ett artikelnummer.", "error")
         return
 
@@ -94,15 +95,16 @@ def save_pins():
     if not os.path.exists(folder_path):
         os.makedirs(folder_path)
 
-    file_path = os.path.join(folder_path, f"{article_name}.txt")
+    file_path = os.path.join(folder_path, f"{article_number}.txt")
 
     if os.path.exists(file_path):
-        if not custom_messagebox("Artikeln finns", f"En artikel med namnet '{article_name}.txt' finns redan. Vill du spara över den?", "askyesno"):
+        if not custom_messagebox("Artikeln finns", f"En artikel med namnet '{article_number}.txt' finns redan. Vill du spara över den?", "askyesno"):
             return
 
     with open(file_path, "w") as file:
         file.write(f"[DEFAULT]\n")
-        file.write(f"filename={article_name}\n")
+        file.write(f"filename={article_number}\n")
+        file.write(f"name={article_name}\n")
         file.write(f"spacing={spacing}\n")
         file.write(f"length={length}\n")
         file.write(f"takeouts={takeouts}\n")
@@ -150,9 +152,15 @@ logo_label.pack(side=tk.LEFT, padx=10, pady=10)
 logo_label.bind("<Button-1>", lambda e: root.destroy())  # Temporary function to close the app
 
 # Text Entry for Article Name
-article_name_label = tk.Label(header_frame, text="Artikelnummer:", font=body_font)
+article_number_label = tk.Label(header_frame, text="Artikelnummer:", font=body_font)
+article_number_label.pack(side=tk.LEFT, padx=10)
+article_number_entry = tk.Entry(header_frame, font=body_font)
+article_number_entry.pack(side=tk.LEFT, padx=10)
+
+# Text Entry for Article Name
+article_name_label = tk.Label(header_frame, text="Benämning:", font=body_font)
 article_name_label.pack(side=tk.LEFT, padx=10)
-article_name_entry = tk.Entry(header_frame, font=body_font)
+article_name_entry = tk.Entry(header_frame, font=body_font, width=40)
 article_name_entry.pack(side=tk.LEFT, padx=10)
 
 # Pin Selection Section
@@ -160,7 +168,7 @@ main_frame = tk.Frame(root)
 main_frame.pack(pady=20, fill=tk.X)
 
 pins_frame = tk.Frame(main_frame)
-pins_frame.pack(side=tk.LEFT, padx=300)
+pins_frame.pack(side=tk.LEFT, padx=200)
 
 options_frame = tk.Frame(main_frame)
 options_frame.pack(side=tk.LEFT, padx=0)
@@ -192,20 +200,38 @@ spacing_var = tk.StringVar(value="1")
 # Cable Drum Selection
 cable_drum_label = tk.Label(options_frame, text="Cable Drum:", font=body_font)
 cable_drum_label.pack(anchor="w", pady=5)
+
 cable_drum_buttons = []
+spacing_buttons = []
+
+def select_option(buttons, selected_button, var, option):
+    # Reset all buttons in the group to light gray
+    for button in buttons:
+        button.config(bg="light gray")
+    # Set the selected button to green
+    selected_button.config(bg="#32CD32")
+    # Set the associated variable
+    var.set(option)
+
+# Create Cable Drum buttons
 for option in ["1", "2", "3"]:
     button = tk.Button(options_frame, text=option, font=body_font, width=8, height=2,
-                       command=lambda button=button: toggle_button_option(button), bg="light gray")
+                       bg="light gray")
+    # Use lambda to pass the current button and option to the select_option function
+    button.config(command=lambda b=button, o=option: select_option(cable_drum_buttons, b, cable_drum_var, o))
     button.pack(pady=5)
     cable_drum_buttons.append(button)
 
 # Spacing Selection
 spacing_label = tk.Label(options_frame, text="Spacing (m):", font=body_font)
 spacing_label.pack(anchor="w", pady=5)
-spacing_buttons = []
+
+# Create Spacing buttons
 for option in ["1", "2", "5", "10", "20"]:
     button = tk.Button(options_frame, text=option, font=body_font, width=8, height=2,
-                       command=lambda button=button: toggle_button_option(button), bg="light gray")
+                       bg="light gray")
+    # Use lambda to pass the current button and option to the select_option function
+    button.config(command=lambda b=button, o=option: select_option(spacing_buttons, b, spacing_var, o))
     button.pack(pady=5)
     spacing_buttons.append(button)
 
@@ -219,7 +245,7 @@ length_entry.pack(anchor="w", pady=5)
 
 # Save Button
 save_button = tk.Button(root, text="Spara", font=body_font, bg="#32CD32", fg="black", command=save_pins, width=10, height=6)
-save_button.pack(side=tk.BOTTOM, pady=60)
+save_button.pack(side=tk.BOTTOM, pady=10, padx=10)
 
 
 

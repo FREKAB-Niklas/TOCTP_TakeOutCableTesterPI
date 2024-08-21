@@ -1,0 +1,9 @@
+[DEFAULT]
+filename=test88
+name=kabel
+spacing=1
+length=18
+takeouts=8
+width=142
+inner_diameter=178
+pins=1: A,2: B,3: C,4: D,5: E,6: F,7: G,8: H
