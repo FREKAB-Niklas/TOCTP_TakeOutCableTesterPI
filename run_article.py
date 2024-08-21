@@ -803,7 +803,6 @@ def update_timer():
     time_info_label.config(text=f"Tid\nNu: {format_time(elapsed_time_current_cycle)}\nFörra: {format_time(elapsed_time_previous_cycle)}\nTotal: {format_time(total_elapsed_time + elapsed_time_current_cycle)}\nStälltid: {format_time(downtime)}")
     root.after(1000, update_timer)  # Update every second (1000 milliseconds)
 
-
 def reset_test():
     response = custom_messagebox("Reset", "Är du säker att du vill reseta?")
     if response:
@@ -1080,90 +1079,7 @@ def update_log(filename, data):
     except FileNotFoundError:
         create_new_log_file(filename, data)
 
-def save_log_after_each_cycle(filename, cycle_data, sheet_name):
-    try:
-        # Load the existing workbook
-        wb = openpyxl.load_workbook(filename)
-        
-        # Ensure the worksheet exists for the current batch
-        if sheet_name not in wb.sheetnames:
-            ws = wb.create_sheet(sheet_name)
-            # Add headers to the new sheet
-            headers = ["Tillverkad", "Antal pins", "Fullt testad", "Cykeltid (HH:MM:SS)",
-                       "Stycktid (HH:MM:SS)", "Styck Ställtid (HH:MM:SS)", "Serienummer"]
-            for col_num, header in enumerate(headers, 1):
-                ws.cell(row=1, column=col_num, value=header)
-        else:
-            ws = wb[sheet_name]
 
-        # Find the next empty row
-        next_row = ws.max_row + 1
-
-        # Write cycle data to the next available row
-        for col_num, (key, value) in enumerate(cycle_data.items(), 1):
-            ws.cell(row=next_row, column=col_num, value=value)
-
-        # Save the updated workbook
-        wb.save(filename)
-
-    except FileNotFoundError:
-        # If the file does not exist, create a new one
-        create_new_log_file(filename, cycle_data)
-
-
-def log_cycle(serial_number, fully_tested, cycle_time, work_time, downtime, total_pins):
-    cycle_date = datetime.now().strftime('%y-%m-%d %H:%M')
-
-    # Prepare data for logging
-    cycle_data = {
-        "Tillverkad": cycle_date,
-        "Antal pins": total_pins,
-        "Fullt testad": "Ja" if fully_tested else "Nej",
-        "Cykeltid (HH:MM:SS)": cycle_time,
-        "Stycktid (HH:MM:SS)": work_time,
-        "Styck Ställtid (HH:MM:SS)": downtime,
-        "Serienummer": serial_number
-    }
-
-    # Get the directory where the script is located
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-
-    # Create log file path based on current date (as sheet name)
-    current_date = datetime.now().strftime('%y%m%d')
-    log_filepath = os.path.join(script_dir, "Artiklar", f"{filename}_log.xlsx")
-
-    # Append the cycle data to the log file (in the date-specific sheet)
-    save_log_after_each_cycle(log_filepath, cycle_data, current_date)
-
-
-def update_main_sheet(filename, total_cycles, total_time, skipped_tests, avg_cycle_time, last_cycle_time):
-    try:
-        # Load the existing workbook
-        wb = openpyxl.load_workbook(filename)
-
-        # Check if Main sheet exists, else create one
-        if 'Main' not in wb.sheetnames:
-            ws = wb.create_sheet('Main')
-            # Add headers to the main sheet
-            headers = ["Artikelnummer", "AVG. Stycktid", "Total Tid", "Senaste Stycktid", "Total Antal"]
-            for col_num, header in enumerate(headers, 2):
-                ws.cell(row=1, column=col_num, value=header)
-        else:
-            ws = wb['Main']
-
-        # Update the Main sheet with batch data
-        ws['B2'] = filename.split('_')[0]  # Artikelnummer
-        ws['C2'] = str(avg_cycle_time)     # Average Cycle Time
-        ws['D2'] = str(total_time)         # Total Time
-        ws['E2'] = str(last_cycle_time)    # Latest Cycle Time
-        ws['F2'] = total_cycles            # Total Number of Cycles
-        ws['G2'] = skipped_tests           # Total Skipped Tests
-
-        # Save the updated workbook
-        wb.save(filename)
-
-    except FileNotFoundError:
-        print(f"Error: Log file {filename} not found.")
 
 
 # Function to finish the batch
@@ -1176,13 +1092,10 @@ def finish_batch():
     total_downtime = downtime
     total_work_time = total_elapsed_time
     avg_cycle_time = total_cycle_time // total_cycles if total_cycles > 0 else 0
-    
-    # Safeguard elapsed_time_current_cycle
-    last_cycle_time = timedelta(seconds=elapsed_time_current_cycle) if elapsed_time_current_cycle != 0 else timedelta()
     avg_work_time = total_work_time // total_cycles if total_cycles > 0 else 0
+    avg_downtime = total_downtime // total_cycles if total_cycles > 0 else 0
 
-    # Data for Main Sheet
-    total_data = {
+    data = {
         "Batchdatum": [batch_date],
         "Antal": [total_cycles],
         "Antal skippad test": [skipped_tests],
@@ -1191,15 +1104,17 @@ def finish_batch():
         "Total Stycktid (HH:MM:SS)": [seconds_to_hms(total_work_time)],
         "Cykeltid (HH:MM:SS)": [seconds_to_hms(avg_cycle_time)],
         "Stycktid (HH:MM:SS)": [seconds_to_hms(avg_work_time)],
-        "Styck Ställtid (HH:MM:SS)": [seconds_to_hms(downtime)]
+        "Styck Ställtid (HH:MM:SS)": [seconds_to_hms(avg_downtime)]
     }
-
     # Get the directory where the script is located
     script_dir = os.path.dirname(os.path.abspath(__file__))
+
+    # Construct the full path to the 'Artiklar' directory inside the PI folder
     log_filepath = os.path.join(script_dir, "Artiklar", f"{filename}_log.xlsx")
 
-    # Call the update_log function with the constructed path (update batch data)
-    update_main_sheet(log_filepath, total_cycles, total_cycle_time, skipped_tests, avg_cycle_time, last_cycle_time)
+    # Call the update_log function with the constructed path
+    update_log(log_filepath, data)
+
 
     # Reset batch variables
     amount_of_cycles_done = 0
