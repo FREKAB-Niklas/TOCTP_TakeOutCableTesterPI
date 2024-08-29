@@ -22,7 +22,7 @@ import busio
 from digitalio import Direction, Pull
 import math
 import paho.mqtt.client as mqtt
-
+import shutil
 
 
 print(f"{datetime.now()}: run_article.py is starting...")
@@ -1059,7 +1059,7 @@ def update_log(filename, data):
 
         # Add headers for the cycle data if it's a new sheet
         if ws.max_row == 1:
-            cycle_headers = ["Tillvekad", "Antal pins", "Fullt testad", "Cykeltid (HH:MM:SS)",
+            cycle_headers = ["Tillverkad", "Antal pins", "Fullt testad", "Cykeltid (HH:MM:SS)",
                              "Stycktid (HH:MM:SS)", "Styck Ställtid (HH:MM:SS)", "Serienummer"]
             for col_num, header in enumerate(cycle_headers, 1):
                 col_letter = openpyxl.utils.get_column_letter(col_num)
@@ -1091,10 +1091,12 @@ def update_log(filename, data):
         # Save the workbook after adding the new sheet and data
         wb.save(filename)
         print(f"Log updated with batch data in sheet {sheet_name}.")
-
     except FileNotFoundError:
-        # If file doesn't exist, create a new one
+        print(f"File {filename} not found, creating a new one.")
         create_new_log_file(filename, data)
+    except Exception as e:
+        print(f"An error occurred while updating the log file: {e}")
+
 
 
 
@@ -1132,12 +1134,18 @@ def finish_batch():
     # Local path
     local_log_filepath = os.path.join(script_dir, "Artiklar", f"{filename}_log.xlsx")
     
-    # SMB path (change this to the correct mounted path or accessible path for the SMB share)
+    # SMB path
     smb_log_filepath = "/mnt/wireviz/Artiklar/{}_log.xlsx".format(filename)
     
-    # Call the update_log function with both paths
+    # Update the log in the local location
     update_log(local_log_filepath, data)
-    update_log(smb_log_filepath, data)
+
+    # Copy the log file to the SMB path
+    try:
+        shutil.copy(local_log_filepath, smb_log_filepath)
+        print(f"Copied log file to SMB path: {smb_log_filepath}")
+    except Exception as e:
+        print(f"Failed to copy log file to SMB path: {e}")
 
     # Reset batch variables
     amount_of_cycles_done = 0
