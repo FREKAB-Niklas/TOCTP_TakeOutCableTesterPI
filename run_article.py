@@ -693,7 +693,8 @@ def complete_probe():
         root.after(500, confirm_last_probe)
 
 def complete_cycle():
-    global amount_of_cycles_done, elapsed_time_current_cycle, elapsed_time_previous_cycle, total_elapsed_time, current_pin_index, is_running, skipped_tests
+    global amount_of_cycles_done, elapsed_time_current_cycle, elapsed_time_previous_cycle, total_elapsed_time, current_pin_index, is_running, skipped_tests, current_segment, allow_motor_run
+
     amount_of_cycles_done += 1
     elapsed_time_previous_cycle = elapsed_time_current_cycle
     total_elapsed_time += elapsed_time_previous_cycle
@@ -701,13 +702,10 @@ def complete_cycle():
     completed_label.config(text=f"Färdiga: {amount_of_cycles_done}st")
     time_info_label.config(text=f"Tid\nNu: {format_time(elapsed_time_current_cycle)}\nFörra: {format_time(elapsed_time_previous_cycle)}\nTotal: {format_time(total_elapsed_time)}\nStälltid: {format_time(downtime)}")
 
-    # Check if any pins were skipped
-    skipped = any(label.cget("bg") != "#32CD32" for label in left_panel_labels)
-    if skipped:
-        skipped_tests += 1
-        skipped_label.config(text=f"Antal Avvikande: {skipped_tests}st")
-        print(f"Skipped tests detected. Total skipped: {skipped_tests}")
-
+    # Reset the segment index and allow motor run at the start of a new cycle
+    current_segment = 0
+    allow_motor_run = True
+    
     # Reset pins for the next cycle
     current_pin_index = 0
     for label in left_panel_labels:
@@ -719,6 +717,7 @@ def complete_cycle():
 
     is_running = False
     print(f"Cycle completed successfully. Pins reset for next cycle.")
+
 
 def confirm_complete_cycle():
     print("Opening confirmation window for incomplete cycle.")
@@ -806,7 +805,12 @@ def update_timer():
 def reset_test():
     response = custom_messagebox("Reset", "Är du säker att du vill reseta?")
     if response:
-        global current_pin_index, elapsed_time_current_cycle, total_elapsed_time, downtime, is_running, expecting_probe
+        global current_pin_index, elapsed_time_current_cycle, total_elapsed_time, downtime, is_running, expecting_probe, current_segment, allow_motor_run
+
+        # Reset the segment index and allow motor run at the start of a new cycle
+        current_segment = 0
+        allow_motor_run = True
+
         total_elapsed_time += elapsed_time_current_cycle
         elapsed_time_current_cycle = 0
         current_pin_index = 0
@@ -831,9 +835,11 @@ def reset_test():
 
         print("Reset complete and MCP23017 pins reset")  # Add logging for debugging
 
-        
-        time_info_label.config(text=f"Tid\nNu: {format_time(elapsed_time_current_cycle)}\nFörra: {format_time(elapsed_time_previous_cycle)}\nTotal: {format_time(total_elapsed_time)}\nStälltid: {format_time(downtime)}")
+        # Update the motor button
+        update_motor_button()
+
         print("Reset complete. All pins and labels should be back to the initial state.")
+
 
 
 
