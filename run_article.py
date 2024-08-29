@@ -975,6 +975,9 @@ def save_log(filename, data):
 
 
 def create_new_log_file(filename, data):
+    # Ensure the directory exists
+    os.makedirs(os.path.dirname(filename), exist_ok=True)
+
     df = pd.DataFrame(data)
 
     # Extract the relevant part of the filename
@@ -1036,9 +1039,14 @@ def create_new_log_file(filename, data):
 
     print(f"Created new log file: {filename}")
 
+
+
 def update_log(filename, data):
     try:
-        # Load workbook or create new one if not found
+        # Ensure the directory exists
+        os.makedirs(os.path.dirname(filename), exist_ok=True)
+        
+        # Load workbook or create a new one if not found
         wb = openpyxl.load_workbook(filename)
         
         # Name the new sheet based on batch date or count
@@ -1061,26 +1069,24 @@ def update_log(filename, data):
         # Get the next available row in the sheet
         next_row = ws.max_row + 1
 
-        # Check if `data` is a list of lists or dictionaries and adjust the access accordingly
+        # Populate the sheet with data
         for row_num, row_data in enumerate(data):
             if isinstance(row_data, dict):
-                # Assuming row_data is a dictionary
                 ws.cell(row=next_row + row_num, column=1, value=row_data["Batchdatum"])
-                ws.cell(row=next_row + row_num, column=2, value=8)  # Example value for 'Antal pins'
+                ws.cell(row=next_row + row_num, column=2, value=8)
                 ws.cell(row=next_row + row_num, column=3, value="Ja" if row_data['Antal skippad test'] == 0 else "Nej")
                 ws.cell(row=next_row + row_num, column=4, value=row_data['Cykeltid (HH:MM:SS)'])
                 ws.cell(row=next_row + row_num, column=5, value=row_data['Stycktid (HH:MM:SS)'])
                 ws.cell(row=next_row + row_num, column=6, value=row_data['Styck Ställtid (HH:MM:SS)'])
-                ws.cell(row=next_row + row_num, column=7, value=row_num + 1)  # Serienummer
+                ws.cell(row=next_row + row_num, column=7, value=row_num + 1)
             elif isinstance(row_data, list):
-                # Assuming row_data is a list
-                ws.cell(row=next_row + row_num, column=1, value=row_data[0])  # Batchdatum
-                ws.cell(row=next_row + row_num, column=2, value=row_data[1])  # Antal pins (example value)
-                ws.cell(row=next_row + row_num, column=3, value=row_data[2])  # Fullt testad
-                ws.cell(row=next_row + row_num, column=4, value=row_data[3])  # Cykeltid
-                ws.cell(row=next_row + row_num, column=5, value=row_data[4])  # Stycktid
-                ws.cell(row=next_row + row_num, column=6, value=row_data[5])  # Styck Ställtid
-                ws.cell(row=next_row + row_num, column=7, value=row_data[6])  # Serienummer
+                ws.cell(row=next_row + row_num, column=1, value=row_data[0])
+                ws.cell(row=next_row + row_num, column=2, value=row_data[1])
+                ws.cell(row=next_row + row_num, column=3, value=row_data[2])
+                ws.cell(row=next_row + row_num, column=4, value=row_data[3])
+                ws.cell(row=next_row + row_num, column=5, value=row_data[4])
+                ws.cell(row=next_row + row_num, column=6, value=row_data[5])
+                ws.cell(row=next_row + row_num, column=7, value=row_data[6])
 
         # Save the workbook after adding the new sheet and data
         wb.save(filename)
@@ -1089,6 +1095,7 @@ def update_log(filename, data):
     except FileNotFoundError:
         # If file doesn't exist, create a new one
         create_new_log_file(filename, data)
+
 
 
 
