@@ -1065,19 +1065,23 @@ def update_log(filename, data):
                 col_letter = openpyxl.utils.get_column_letter(col_num)
                 ws[f'{col_letter}1'] = header
                 ws[f'{col_letter}1'].font = Font(bold=True)
+        
+        # Check what data we are working with
+        print(f"Data to be added: {data}")
 
         # Get the next available row in the sheet
         next_row = ws.max_row + 1
 
         # Populate the sheet with data
         for row_num, row_data in enumerate(data):
+            print(f"Row data {row_num}: {row_data}")  # Debugging output
             if isinstance(row_data, dict):
-                ws.cell(row=next_row + row_num, column=1, value=row_data["Batchdatum"])
-                ws.cell(row=next_row + row_num, column=2, value=8)
-                ws.cell(row=next_row + row_num, column=3, value="Ja" if row_data['Antal skippad test'] == 0 else "Nej")
-                ws.cell(row=next_row + row_num, column=4, value=row_data['Cykeltid (HH:MM:SS)'])
-                ws.cell(row=next_row + row_num, column=5, value=row_data['Stycktid (HH:MM:SS)'])
-                ws.cell(row=next_row + row_num, column=6, value=row_data['Styck Ställtid (HH:MM:SS)'])
+                ws.cell(row=next_row + row_num, column=1, value=row_data.get("Batchdatum", ""))
+                ws.cell(row=next_row + row_num, column=2, value=row_data.get("Antal pins", 0))
+                ws.cell(row=next_row + row_num, column=3, value="Ja" if row_data.get('Antal skippad test', 0) == 0 else "Nej")
+                ws.cell(row=next_row + row_num, column=4, value=row_data.get('Cykeltid (HH:MM:SS)', ""))
+                ws.cell(row=next_row + row_num, column=5, value=row_data.get('Stycktid (HH:MM:SS)', ""))
+                ws.cell(row=next_row + row_num, column=6, value=row_data.get('Styck Ställtid (HH:MM:SS)', ""))
                 ws.cell(row=next_row + row_num, column=7, value=row_num + 1)
             elif isinstance(row_data, list):
                 ws.cell(row=next_row + row_num, column=1, value=row_data[0])
@@ -1096,6 +1100,7 @@ def update_log(filename, data):
         create_new_log_file(filename, data)
     except Exception as e:
         print(f"An error occurred while updating the log file: {e}")
+
 
 
 
