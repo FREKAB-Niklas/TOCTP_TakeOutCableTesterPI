@@ -22,7 +22,7 @@ import busio
 from digitalio import Direction, Pull
 import math
 import paho.mqtt.client as mqtt
-import shutil
+
 
 
 print(f"{datetime.now()}: run_article.py is starting...")
@@ -105,36 +105,6 @@ root.bind("<Escape>", lambda e: root.destroy())  # Allow exiting fullscreen with
 root.lift()
 root.attributes('-topmost', True)
 root.after(100, lambda: root.attributes('-topmost', False, '-fullscreen', True))
-
-def mount_smb_share():
-    # Define the mount point and SMB path
-    smb_path = "//frekabnas.local/wireviz"
-    mount_point = "/mnt/wireviz"  # Local mount point
-    
-    # Mount the SMB share (assuming credentials are handled or it's a guest share)
-    try:
-        subprocess.run(["sudo", "mount", "-t", "cifs", smb_path, mount_point, "-o", "username=your_username,password=your_password"], check=True)
-        print("SMB share mounted successfully.")
-    except subprocess.CalledProcessError as e:
-        print(f"Failed to mount SMB share: {e}")
-        return False
-    
-    return True
-
-def copy_log_to_smb(filename):
-    mount_point = "/mnt/wireviz"
-    
-    if not os.path.ismount(mount_point):
-        if not mount_smb_share():
-            return
-    
-    try:
-        # Copy the log file to the SMB share
-        destination_path = os.path.join(mount_point, os.path.basename(filename))
-        shutil.copy2(filename, destination_path)
-        print(f"Log file copied to SMB share: {destination_path}")
-    except Exception as e:
-        print(f"Failed to copy log file to SMB share: {e}")
 
 
 def custom_messagebox(title, message, box_type="info"):
@@ -1152,14 +1122,15 @@ def finish_batch():
     # Get the directory where the script is located
     script_dir = os.path.dirname(os.path.abspath(__file__))
 
-    # Construct the full path to the 'Artiklar' directory inside the PI folder
-    log_filepath = os.path.join(script_dir, "Artiklar", f"{filename}_log.xlsx")
-
-    # Call the update_log function with the constructed path
-    update_log(log_filepath, data)
-
-    # Copy the log file to the SMB share
-    copy_log_to_smb(log_filepath)
+    # Local path
+    local_log_filepath = os.path.join(script_dir, "Artiklar", f"{filename}_log.xlsx")
+    
+    # SMB path (change this to the correct mounted path or accessible path for the SMB share)
+    smb_log_filepath = "/mnt/wireviz/Artiklar/{}_log.xlsx".format(filename)
+    
+    # Call the update_log function with both paths
+    update_log(local_log_filepath, data)
+    update_log(smb_log_filepath, data)
 
     # Reset batch variables
     amount_of_cycles_done = 0
@@ -1171,6 +1142,7 @@ def finish_batch():
     # Update the labels
     completed_label.config(text=f"Färdiga: {amount_of_cycles_done}st")
     skipped_label.config(text=f"Antal Avvikande: {skipped_tests}st")
+
 
 
 
