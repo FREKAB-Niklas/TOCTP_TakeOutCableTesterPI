@@ -1112,33 +1112,27 @@ def finish_batch():
 
     batch_date = datetime.now().strftime('%y-%m-%d %H:%M')
 
-    # Load the workbook
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    local_log_filepath = os.path.join(script_dir, "Artiklar", f"{filename}_log.xlsx")
-    smb_log_filepath = "/mnt/nas/Artiklar/{}_log.xlsx".format(filename)
-    
-    try:
-        wb = openpyxl.load_workbook(local_log_filepath)
-    except FileNotFoundError:
-        wb = openpyxl.Workbook()  # Create a new workbook if it doesn't exist
-
-    batch_name = f"Batch_{len(wb.sheetnames) + 1}"  # Sequential batch name
-
     # Prepare data for each cycle and pass it to update_log
     for i in range(amount_of_cycles_done):
-        cycle_time = max(timedelta(seconds=0), timedelta(seconds=elapsed_time_previous_cycle))
-        work_time = max(timedelta(seconds=0), cycle_time - timedelta(seconds=downtime))
-        stall_time = max(timedelta(seconds=0), timedelta(seconds=downtime))
-
         cycle_data = {
             "Batchdatum": batch_date,
             "Antal": 1,
             "Antal skippad test": skipped_tests,
-            "Serienummer": i + 1
+            "Serienummer": i + 1,
+            "Fullt testad": "Ja" if skipped_tests == 0 else "Nej",
+            "Cykeltid (HH:MM:SS)": "",
+            "Stycktid (HH:MM:SS)": "",
+            "Styck Ställtid (HH:MM:SS)": ""
         }
 
-        update_log(local_log_filepath, cycle_data, batch_name)
-        update_log(smb_log_filepath, cycle_data, batch_name)
+        # Get the directory where the script is located
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        local_log_filepath = os.path.join(script_dir, "Artiklar", f"{filename}_log.xlsx")
+        smb_log_filepath = "/mnt/nas/Artiklar/{}_log.xlsx".format(filename)
+
+        # Pass data to the update_log function, which handles sheet creation
+        update_log(local_log_filepath, cycle_data)
+        update_log(smb_log_filepath, cycle_data)
 
     # Reset batch variables after logging all cycles
     amount_of_cycles_done = 0
@@ -1147,12 +1141,10 @@ def finish_batch():
     downtime = 0
     skipped_tests = 0
 
-    # Prepare a new sheet for the next batch
-    prepare_next_batch_sheet()
-
     # Update the labels
     completed_label.config(text=f"Färdiga: {amount_of_cycles_done}st")
     skipped_label.config(text=f"Antal Avvikande: {skipped_tests}st")
+
 
 
 
