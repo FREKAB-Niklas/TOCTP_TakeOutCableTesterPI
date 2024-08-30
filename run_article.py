@@ -1130,7 +1130,7 @@ def finish_batch():
     local_log_filepath = os.path.join(script_dir, "Artiklar", f"{filename}_log.xlsx")
     
     # SMB path
-    smb_log_filepath = "/mnt/wireviz/Artiklar/{}_log.xlsx".format(filename)
+    smb_log_filepath = "smb://frekabnas.local/wireviz/Artiklar/{}_log.xlsx".format(filename)
     
     # Update the log in the local location
     update_log(local_log_filepath, data)
