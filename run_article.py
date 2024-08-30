@@ -1051,33 +1051,22 @@ def update_log(filename, data, batch_name=None):
 
         # Ensure Sheet1 exists or create it
         if 'Sheet1' not in wb.sheetnames:
-            ws_main = wb.create_sheet(title='Sheet1', index=0)
-            # Add headers similar to create_new_log_file
-            headers = ["Artikelnummer", "AVG. Stycktid", "Senaste Stycktid", "Total Tid", "Total Antal"]
-            for col_num, header in enumerate(headers, 2):  # Starting at column B
-                ws_main.cell(row=1, column=col_num * 2).value = header
-                ws_main.cell(row=1, column=col_num * 2).font = Font(bold=True)
-
-            # Additional setup for the main sheet
-            ws_main.column_dimensions['A'].width = 5
-            ws_main.column_dimensions['B'].width = 25
-            ws_main.column_dimensions['C'].width = 25
-            ws_main.column_dimensions['D'].width = 25
-            ws_main.column_dimensions['E'].width = 25
-            ws_main.column_dimensions['F'].width = 25
-            ws_main.column_dimensions['G'].width = 25
-            ws_main.column_dimensions['H'].width = 25
-            ws_main.column_dimensions['I'].width = 25
-            ws_main.column_dimensions['J'].width = 25
-            ws_main.column_dimensions['K'].width = 25
-
-            # Add extra headers for total calculations
-            ws_main['G1'] = "Total Tid"
-            ws_main['G3'] = "Total Antal"
-            ws_main['G1'].font = Font(bold=True)
-            ws_main['G3'].font = Font(bold=True)
+            create_new_log_file(filename, [data])  # Create a new log file with the initial data
+            return  # No need to continue since the file is created
         else:
             ws_main = wb['Sheet1']
+
+        # Calculate totals and averages for the main sheet
+        total_cycles, total_time = calculate_totals(data)
+        avg_cycle_time = calculate_average_time(total_time, total_cycles)
+        article_number = os.path.basename(filename).split('_')[0]
+
+        # Write to the main sheet, update totals/averages (assuming they are in row 2)
+        ws_main.cell(row=2, column=2, value=article_number)
+        ws_main.cell(row=2, column=4, value=str(avg_cycle_time))
+        ws_main.cell(row=2, column=6, value=data["Cykeltid (HH:MM:SS)"])
+        ws_main.cell(row=2, column=8, value=seconds_to_hms(total_time))
+        ws_main.cell(row=2, column=10, value=total_cycles)
 
         # Name the new batch sheet based on batch date or count
         batch_date = datetime.now().strftime('%y-%m-%d %H:%M')
@@ -1095,21 +1084,8 @@ def update_log(filename, data, batch_name=None):
                 ws_batch[f'{col_letter}1'] = header
                 ws_batch[f'{col_letter}1'].font = Font(bold=True)
 
-        # Get the next available row in both sheets
-        next_row_main = ws_main.max_row + 1
+        # Get the next available row in the batch sheet
         next_row_batch = ws_batch.max_row + 1
-
-        # Calculate totals and averages for the main sheet
-        total_cycles, total_time = calculate_totals(data)
-        avg_cycle_time = calculate_average_time(total_time, total_cycles)
-        article_number = os.path.basename(filename).split('_')[0]
-
-        # Write to the main sheet
-        ws_main.cell(row=2, column=2, value=article_number)
-        ws_main.cell(row=2, column=4, value=str(avg_cycle_time))
-        ws_main.cell(row=2, column=6, value=data["Cykeltid (HH:MM:SS)"])
-        ws_main.cell(row=2, column=8, value=seconds_to_hms(total_time))
-        ws_main.cell(row=2, column=10, value=total_cycles)
 
         # Write to the batch sheet
         ws_batch.cell(row=next_row_batch, column=1, value=data["Batchdatum"])
@@ -1123,7 +1099,8 @@ def update_log(filename, data, batch_name=None):
 
     except FileNotFoundError:
         # If file doesn't exist, create a new one
-        create_new_log_file(filename, data)
+        create_new_log_file(filename, [data])
+
 
 
 
