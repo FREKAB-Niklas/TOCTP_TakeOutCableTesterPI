@@ -1111,6 +1111,17 @@ def finish_batch():
     global amount_of_cycles_done, total_elapsed_time, downtime, skipped_tests, elapsed_time_previous_cycle, elapsed_time_current_cycle
 
     batch_date = datetime.now().strftime('%y-%m-%d %H:%M')
+
+    # Load the workbook
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    local_log_filepath = os.path.join(script_dir, "Artiklar", f"{filename}_log.xlsx")
+    smb_log_filepath = "/mnt/nas/Artiklar/{}_log.xlsx".format(filename)
+    
+    try:
+        wb = openpyxl.load_workbook(local_log_filepath)
+    except FileNotFoundError:
+        wb = openpyxl.Workbook()  # Create a new workbook if it doesn't exist
+
     batch_name = f"Batch_{len(wb.sheetnames) + 1}"  # Sequential batch name
 
     # Prepare data for each cycle and pass it to update_log
@@ -1125,10 +1136,6 @@ def finish_batch():
             "Antal skippad test": skipped_tests,
             "Serienummer": i + 1
         }
-
-        script_dir = os.path.dirname(os.path.abspath(__file__))
-        local_log_filepath = os.path.join(script_dir, "Artiklar", f"{filename}_log.xlsx")
-        smb_log_filepath = "/mnt/nas/Artiklar/{}_log.xlsx".format(filename)
 
         update_log(local_log_filepath, cycle_data, batch_name)
         update_log(smb_log_filepath, cycle_data, batch_name)
@@ -1146,6 +1153,7 @@ def finish_batch():
     # Update the labels
     completed_label.config(text=f"Färdiga: {amount_of_cycles_done}st")
     skipped_label.config(text=f"Antal Avvikande: {skipped_tests}st")
+
 
 
 
