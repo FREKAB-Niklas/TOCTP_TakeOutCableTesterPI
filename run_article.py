@@ -1041,35 +1041,47 @@ def create_new_log_file(filename, data):
 
 
 
-def update_log(filename, data, sheet_name):
+def update_log(filename, data):
     try:
+        # Ensure the directory exists
         os.makedirs(os.path.dirname(filename), exist_ok=True)
+        
+        # Load workbook or create a new one if not found
         wb = openpyxl.load_workbook(filename)
         
+        # Name the new sheet based on batch date or count
+        batch_date = datetime.now().strftime('%y-%m-%d %H:%M')
+        sheet_name = f"Batch_{batch_date.replace(':', '-')}"
         if sheet_name in wb.sheetnames:
             ws = wb[sheet_name]
         else:
             ws = wb.create_sheet(title=sheet_name)
-            cycle_headers = ["Tillvekad", "Antal pins", "Fullt testad", "Cykeltid (HH:MM:SS)",
-                             "Stycktid (HH:MM:SS)", "Styck Ställtid (HH:MM:SS)", "Serienummer"]
+
+        # Add headers for the cycle data if it's a new sheet
+        if ws.max_row == 1:
+            cycle_headers = ["Tillvekad", "Antal pins", "Fullt testad", "Serienummer"]
             for col_num, header in enumerate(cycle_headers, 1):
                 col_letter = openpyxl.utils.get_column_letter(col_num)
                 ws[f'{col_letter}1'] = header
                 ws[f'{col_letter}1'].font = Font(bold=True)
 
+        # Get the next available row in the sheet
         next_row = ws.max_row + 1
-        ws.cell(row=next_row, column=1, value=data["Batchdatum"])
-        ws.cell(row=next_row, column=2, value=8)
-        ws.cell(row=next_row, column=3, value="Ja" if data['Antal skippad test'] == 0 else "Nej")
-        ws.cell(row=next_row, column=4, value=data['Cykeltid (HH:MM:SS)'])
-        ws.cell(row=next_row, column=5, value=data['Stycktid (HH:MM:SS)'])
-        ws.cell(row=next_row, column=6, value=data['Styck Ställtid (HH:MM:SS)'])
-        ws.cell(row=next_row, column=7, value=data['Serienummer'])
 
+        # Populate the sheet with data
+        ws.cell(row=next_row, column=1, value=data["Batchdatum"])
+        ws.cell(row=next_row, column=2, value=8)  # Assuming 8 pins per cycle; adjust as needed
+        ws.cell(row=next_row, column=3, value="Ja" if data['Antal skippad test'] == 0 else "Nej")
+        ws.cell(row=next_row, column=4, value=data['Serienummer'])
+
+        # Save the workbook after adding the new sheet and data
         wb.save(filename)
         print(f"Log updated with batch data in sheet {sheet_name}.")
+
     except FileNotFoundError:
+        # If file doesn't exist, create a new one
         create_new_log_file(filename, data)
+
 
 
 def prepare_next_batch_sheet():
