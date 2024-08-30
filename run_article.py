@@ -1140,7 +1140,7 @@ def finish_batch():
     local_log_filepath = os.path.join(script_dir, "Artiklar", f"{filename}_log.xlsx")
     
     # SMB path (change this to the correct mounted path or accessible path for the SMB share)
-    smb_log_filepath = "/mnt/wireviz/Artiklar/{}_log.xlsx".format(filename)
+    smb_log_filepath = "/mnt/nas/Artiklar/{}_log.xlsx".format(filename)
     
     # Call the update_log function with both paths and pass the cycle_data list
     for cycle_entry in cycle_data:
