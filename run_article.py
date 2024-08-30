@@ -1036,100 +1036,88 @@ def create_new_log_file(filename, data):
 
     print(f"Created new log file: {filename}")
 
-def update_log(filename, data, batch_name=None):
+def update_log(filename, data):
     try:
-        # Load workbook or create new one if not found
-        if os.path.exists(filename):
-            wb = openpyxl.load_workbook(filename)
+        wb = openpyxl.load_workbook(filename)
+        ws = wb.active
+
+        next_row = ws.max_row + 1
+        for idx, (key, value) in enumerate(data.items(), start=1):
+            if idx == 1:  # Format Batchdatum as 'yy-mm-dd hh:mm'
+                value[0] = datetime.now().strftime('%y-%m-%d %H:%M')
+            ws.cell(row=next_row, column=idx + 1, value=value[0])
+
+        # Ensure the first entry's Batchdatum is formatted correctly
+        if next_row == 7 and ws.cell(row=7, column=2).value == "240802":
+            ws.cell(row=7, column=2).value = datetime.now().strftime('%y-%m-%d %H:%M')
+
+        # Update the total calculation formulas
+        last_row = next_row
+        current_total_time = str_to_timedelta(ws['G2'].value) if ws['G2'].value else timedelta()
+        current_total_count = ws['G4'].value if ws['G4'].value else 0
+
+        new_time = str_to_timedelta(ws[f'E{next_row}'].value)
+        new_count = ws[f'C{next_row}'].value
+
+        ws['G2'] = current_total_time + new_time
+        ws['G4'] = current_total_count + new_count
+
+        # Update the Senaste Stycktid with the latest entry's Cykeltid (HH:MM:SS)
+        ws['H2'] = ws.cell(row=next_row, column=8).value
+
+        # Calculate the average in Python
+        total_time = sum([str_to_timedelta(ws[f'E{row}'].value) for row in range(6, last_row + 1)], timedelta())
+        total_count = sum([ws[f'C{row}'].value for row in range(6, last_row + 1)])
+        f2_value = total_time / total_count if total_count > 0 else timedelta()
+        h2_value = str_to_timedelta(ws['H2'].value)
+
+        print(f"H2 Value: {h2_value}, F2 Value: {f2_value}")  # Debug output
+
+        # Update the average value in F2
+        ws['F2'] = str(f2_value)
+
+        # Apply conditional formatting based on the recalculated average
+        if h2_value < f2_value:
+            ws['H2'].fill = PatternFill(start_color="00FF00", end_color="00FF00", fill_type="solid")
         else:
-            wb = openpyxl.Workbook()
+            ws['H2'].fill = PatternFill(start_color="FF0000", end_color="FF0000", fill_type="solid")
 
-        # Update the main sheet (Sheet1)
-        if 'Sheet1' not in wb.sheetnames:
-            create_new_log_file(filename, [data])  # Create a new log file with the initial data
-            return  # No need to continue since the file is created
+        # Name the new batch sheet based on batch date or count
+        batch_date = datetime.now().strftime('%y-%m-%d %H:%M')
+        sheet_name = batch_name if batch_name else f"Batch_{batch_date.replace(':', '-')}"
+        if sheet_name in wb.sheetnames:
+            ws_batch = wb[sheet_name]
         else:
-            ws_main = wb['Sheet1']
-            update_main_sheet(ws_main, data)
+            ws_batch = wb.create_sheet(title=sheet_name)
 
-        # Update or create batch sheet
-        if batch_name:
-            update_batch_sheet(wb, data, batch_name)
+        # Add headers for the batch sheet if it's a new sheet
+        if ws_batch.max_row == 1:
+            batch_headers = ["Tillvekad", "Antal pins", "Fullt testad", "Serienummer"]
+            for col_num, header in enumerate(batch_headers, 1):
+                col_letter = openpyxl.utils.get_column_letter(col_num)
+                ws_batch[f'{col_letter}1'] = header
+                ws_batch[f'{col_letter}1'].font = Font(bold=True)
 
-        # Save the workbook after updating
+        # Get the next available row in the batch sheet
+        next_row_batch = ws_batch.max_row + 1
+
+        # Write to the batch sheet
+        ws_batch.cell(row=next_row_batch, column=1, value=data["Batchdatum"])
+        ws_batch.cell(row=next_row_batch, column=2, value=8)  # Assuming 8 pins per cycle; adjust as needed
+        ws_batch.cell(row=next_row_batch, column=3, value="Ja" if data["Antal skippad test"] == 0 else "Nej")
+        ws_batch.cell(row=next_row_batch, column=4, value=data["Serienummer"])
+
+        # Save the workbook after adding the new data
         wb.save(filename)
-        print(f"Log updated with batch data in sheet {batch_name} and main data in Sheet1.")
+        print(f"Log updated with batch data in sheet {sheet_name} and main data in Sheet1.")
 
+
+
+
+        # Save the workbook after updating the background color
+        wb.save(filename)
     except FileNotFoundError:
-        # If file doesn't exist, create a new one
-        create_new_log_file(filename, [data])
-
-
-def update_main_sheet(ws_main, data):
-    next_row = ws_main.max_row + 1
-    for idx, (key, value) in enumerate(data.items(), start=1):
-        if idx == 1:  # Format Batchdatum as 'yy-mm-dd hh:mm'
-            value[0] = datetime.now().strftime('%y-%m-%d %H:%M')
-        ws_main.cell(row=next_row, column=idx + 1, value=value[0])
-
-    # Ensure the first entry's Batchdatum is formatted correctly
-    if next_row == 7 and ws_main.cell(row=7, column=2).value == "240802":
-        ws_main.cell(row=7, column=2).value = datetime.now().strftime('%y-%m-%d %H:%M')
-
-    # Update the total calculation formulas
-    last_row = next_row
-    current_total_time = str_to_timedelta(ws_main['G2'].value) if ws_main['G2'].value else timedelta()
-    current_total_count = ws_main['G4'].value if ws_main['G4'].value else 0
-
-    new_time = str_to_timedelta(ws_main[f'E{next_row}'].value)
-    new_count = ws_main[f'C{next_row}'].value
-
-    ws_main['G2'] = current_total_time + new_time
-    ws_main['G4'] = current_total_count + new_count
-
-    # Update the Senaste Stycktid with the latest entry's Cykeltid (HH:MM:SS)
-    ws_main['H2'] = ws_main.cell(row=next_row, column=8).value
-
-    # Calculate the average in Python
-    total_time = sum([str_to_timedelta(ws_main[f'E{row}'].value) for row in range(6, last_row + 1)], timedelta())
-    total_count = sum([ws_main[f'C{row}'].value for row in range(6, last_row + 1)])
-    f2_value = total_time / total_count if total_count > 0 else timedelta()
-    h2_value = str_to_timedelta(ws_main['H2'].value)
-
-    # Update the average value in F2
-    ws_main['F2'] = str(f2_value)
-
-    # Apply conditional formatting based on the recalculated average
-    if h2_value < f2_value:
-        ws_main['H2'].fill = PatternFill(start_color="00FF00", end_color="00FF00", fill_type="solid")
-    else:
-        ws_main['H2'].fill = PatternFill(start_color="FF0000", end_color="FF0000", fill_type="solid")
-
-
-def update_batch_sheet(wb, data, batch_name):
-    # Name the new batch sheet based on batch date or count
-    if batch_name in wb.sheetnames:
-        ws_batch = wb[batch_name]
-    else:
-        ws_batch = wb.create_sheet(title=batch_name)
-
-    # Add headers for the batch sheet if it's a new sheet
-    if ws_batch.max_row == 1:
-        batch_headers = ["Tillvekad", "Antal pins", "Fullt testad", "Serienummer"]
-        for col_num, header in enumerate(batch_headers, 1):
-            col_letter = openpyxl.utils.get_column_letter(col_num)
-            ws_batch[f'{col_letter}1'] = header
-            ws_batch[f'{col_letter}1'].font = Font(bold=True)
-
-    # Get the next available row in the batch sheet
-    next_row_batch = ws_batch.max_row + 1
-
-    # Write to the batch sheet
-    ws_batch.cell(row=next_row_batch, column=1, value=data["Batchdatum"][0])
-    ws_batch.cell(row=next_row_batch, column=2, value=8)  # Assuming 8 pins per cycle; adjust as needed
-    ws_batch.cell(row=next_row_batch, column=3, value="Ja" if data["Antal skippad test"][0] == 0 else "Nej")
-    ws_batch.cell(row=next_row_batch, column=4, value=data.get("Serienummer", [None])[0])  # Handle missing Serienummer key
-
+        create_new_log_file(filename, data)
 
 
 
@@ -1163,9 +1151,11 @@ def finish_batch():
 
     # Construct the full path to the 'Artiklar' directory inside the PI folder
     log_filepath = os.path.join(script_dir, "Artiklar", f"{filename}_log.xlsx")
+    smb_log_filepath = "/mnt/nas/Artiklar/{}_log.xlsx".format(filename)
 
     # Call the update_log function with the constructed path
     update_log(log_filepath, data)
+    update_log(smb_log_filepath, data)
 
 
     # Reset batch variables
