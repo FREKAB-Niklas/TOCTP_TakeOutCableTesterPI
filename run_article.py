@@ -1068,16 +1068,12 @@ def update_log(filename, data, batch_name=None):
 
 def update_main_sheet(ws_main, data):
     next_row = ws_main.max_row + 1
+
     for idx, (key, value) in enumerate(data.items(), start=1):
         if idx == 1:  # Format Batchdatum as 'yy-mm-dd hh:mm'
             value[0] = datetime.now().strftime('%y-%m-%d %H:%M')
-        ws_main.cell(row=next_row, column=idx + 1, value=value[0])
+        ws_main.cell(row=next_row, column=idx + 1, value=value[0] if isinstance(value, list) else value)
 
-    # Ensure the first entry's Batchdatum is formatted correctly
-    if next_row == 7 and ws_main.cell(row=7, column=2).value == "240802":
-        ws_main.cell(row=7, column=2).value = datetime.now().strftime('%y-%m-%d %H:%M')
-
-    # Update the total calculation formulas
     last_row = next_row
     current_total_time = str_to_timedelta(ws_main['G2'].value) if ws_main['G2'].value else timedelta()
     current_total_count = ws_main['G4'].value if ws_main['G4'].value else 0
@@ -1086,25 +1082,26 @@ def update_main_sheet(ws_main, data):
     new_count = ws_main[f'C{next_row}'].value
 
     ws_main['G2'] = current_total_time + new_time
-    ws_main['G4'] = current_total_count + new_count
+    ws_main['G4'] = current_total_count + (new_count if isinstance(new_count, (int, float)) else 0)
 
     # Update the Senaste Stycktid with the latest entry's Cykeltid (HH:MM:SS)
     ws_main['H2'] = ws_main.cell(row=next_row, column=8).value
 
     # Calculate the average in Python
-    total_time = sum([str_to_timedelta(ws_main[f'E{row}'].value) for row in range(6, last_row + 1)], timedelta())
-    total_count = sum([ws_main[f'C{row}'].value for row in range(6, last_row + 1)])
-    f2_value = total_time / total_count if total_count > 0 else timedelta()
+    total_time = sum([str_to_timedelta(ws_main[f'E{row}'].value).total_seconds() for row in range(6, last_row + 1)], timedelta())
+    total_count = sum([int(ws_main[f'C{row}'].value) for row in range(6, last_row + 1) if isinstance(ws_main[f'C{row}'].value, (int, float))])
+    avg_time = total_time / total_count if total_count > 0 else 0
+
+    ws_main['F2'] = str(timedelta(seconds=avg_time))
+
     h2_value = str_to_timedelta(ws_main['H2'].value)
 
-    # Update the average value in F2
-    ws_main['F2'] = str(f2_value)
-
     # Apply conditional formatting based on the recalculated average
-    if h2_value < f2_value:
+    if h2_value < timedelta(seconds=avg_time):
         ws_main['H2'].fill = PatternFill(start_color="00FF00", end_color="00FF00", fill_type="solid")
     else:
         ws_main['H2'].fill = PatternFill(start_color="FF0000", end_color="FF0000", fill_type="solid")
+
 
 
 def update_batch_sheet(wb, data, batch_name):
