@@ -1108,6 +1108,7 @@ def update_log(filename, data):
 
 
 
+
 # Function to finish the batch
 def finish_batch():
     global amount_of_cycles_done, total_elapsed_time, downtime, skipped_tests
