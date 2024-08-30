@@ -1123,7 +1123,8 @@ def finish_batch():
         "Total Stycktid (HH:MM:SS)": [],
         "Cykeltid (HH:MM:SS)": [],
         "Stycktid (HH:MM:SS)": [],
-        "Styck Ställtid (HH:MM:SS)": []
+        "Styck Ställtid (HH:MM:SS)": [],
+        "Serienummer": []  # Added Serienummer to handle cycle-specific numbering
     }
 
     for cycle in range(total_cycles):
@@ -1136,6 +1137,7 @@ def finish_batch():
         data["Cykeltid (HH:MM:SS)"].append(seconds_to_hms(avg_cycle_time))
         data["Stycktid (HH:MM:SS)"].append(seconds_to_hms(avg_work_time))
         data["Styck Ställtid (HH:MM:SS)"].append(seconds_to_hms(avg_downtime))
+        data["Serienummer"].append(cycle + 1)  # Assign unique Serienummer for each cycle
 
     # Get the directory where the script is located
     script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -1160,6 +1162,7 @@ def finish_batch():
     # Update the labels
     completed_label.config(text=f"Färdiga: {amount_of_cycles_done}st")
     skipped_label.config(text=f"Antal Avvikande: {skipped_tests}st")
+
 
 
 
