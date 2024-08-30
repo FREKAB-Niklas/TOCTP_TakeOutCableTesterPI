@@ -1069,15 +1069,15 @@ def update_log(filename, data):
         # Get the next available row in the sheet
         next_row = ws.max_row + 1
 
-        # Populate the sheet with data
-        for row_data in data["Batchdatum"]:
-            ws.cell(row=next_row, column=1, value=row_data)
+        # Populate the sheet with data for each cycle
+        for cycle_index in range(len(data["Batchdatum"])):
+            ws.cell(row=next_row, column=1, value=data["Batchdatum"][cycle_index])
             ws.cell(row=next_row, column=2, value=8)  # Update this line according to your pins count logic
-            ws.cell(row=next_row, column=3, value="Ja" if data['Antal skippad test'][0] == 0 else "Nej")
-            ws.cell(row=next_row, column=4, value=data['Cykeltid (HH:MM:SS)'][0])
-            ws.cell(row=next_row, column=5, value=data['Stycktid (HH:MM:SS)'][0])
-            ws.cell(row=next_row, column=6, value=data['Styck Ställtid (HH:MM:SS)'][0])
-            ws.cell(row=next_row, column=7, value=next_row - 1)  # Serienummer starts from 1
+            ws.cell(row=next_row, column=3, value="Ja" if data['Antal skippad test'][cycle_index] == 0 else "Nej")
+            ws.cell(row=next_row, column=4, value=data['Cykeltid (HH:MM:SS)'][cycle_index])
+            ws.cell(row=next_row, column=5, value=data['Stycktid (HH:MM:SS)'][cycle_index])
+            ws.cell(row=next_row, column=6, value=data['Styck Ställtid (HH:MM:SS)'][cycle_index])
+            ws.cell(row=next_row, column=7, value=cycle_index + 1)  # Serienummer starts from 1
 
             next_row += 1  # Move to the next row for any subsequent data
 
@@ -1088,6 +1088,7 @@ def update_log(filename, data):
     except FileNotFoundError:
         # If file doesn't exist, create a new one
         create_new_log_file(filename, data)
+
 
 
 
