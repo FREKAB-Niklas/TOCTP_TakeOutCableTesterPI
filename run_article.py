@@ -1100,54 +1100,47 @@ def update_log(filename, data):
 
 # Function to finish the batch
 def finish_batch():
-    global amount_of_cycles_done, total_elapsed_time, downtime, skipped_tests
+    global amount_of_cycles_done, total_elapsed_time, downtime, skipped_tests, elapsed_time_previous_cycle, elapsed_time_current_cycle
 
     batch_date = datetime.now().strftime('%y-%m-%d %H:%M')
-    
-    # Initialize a list to hold data for each cycle
-    cycle_data = []
 
-    for cycle in range(amount_of_cycles_done):
-        total_cycles = 1
-        total_cycle_time = total_elapsed_time // amount_of_cycles_done  # Divide total time by the number of cycles
-        total_downtime = downtime // amount_of_cycles_done  # Divide total downtime by the number of cycles
-        total_work_time = total_elapsed_time - total_downtime
-        avg_cycle_time = total_cycle_time
-        avg_work_time = total_work_time
-        avg_downtime = total_downtime
+    # Prepare data for each cycle and pass it to update_log
+    for i in range(amount_of_cycles_done):
+        # Calculate the specific times for this cycle
+        cycle_time = seconds_to_hms(elapsed_time_previous_cycle)
+        work_time = seconds_to_hms(elapsed_time_previous_cycle - downtime)
+        stall_time = seconds_to_hms(downtime)
 
-        # Create a dictionary for each cycle's data
-        cycle_dict = {
+        cycle_data = {
             "Batchdatum": batch_date,
-            "Antal": 1,
+            "Antal": 1,  # Assuming 1 cycle per entry
             "Antal skippad test": skipped_tests,
-            "Total Cykeltid (HH:MM:SS)": seconds_to_hms(total_cycle_time),
-            "Total Ställtid (HH:MM:SS)": seconds_to_hms(total_downtime),
-            "Total Stycktid (HH:MM:SS)": seconds_to_hms(total_work_time),
-            "Cykeltid (HH:MM:SS)": seconds_to_hms(avg_cycle_time),
-            "Stycktid (HH:MM:SS)": seconds_to_hms(avg_work_time),
-            "Styck Ställtid (HH:MM:SS)": seconds_to_hms(avg_downtime),
-            "Serienummer": cycle + 1
+            "Total Cykeltid (HH:MM:SS)": cycle_time,
+            "Total Ställtid (HH:MM:SS)": stall_time,
+            "Total Stycktid (HH:MM:SS)": work_time,
+            "Cykeltid (HH:MM:SS)": cycle_time,
+            "Stycktid (HH:MM:SS)": work_time,
+            "Styck Ställtid (HH:MM:SS)": stall_time,
+            "Serienummer": i + 1
         }
 
-        # Append the dictionary to the cycle_data list
-        cycle_data.append(cycle_dict)
-    
-    # Get the directory where the script is located
-    script_dir = os.path.dirname(os.path.abspath(__file__))
+        # Update the elapsed_time_previous_cycle to current cycle for the next entry
+        elapsed_time_previous_cycle = elapsed_time_current_cycle
 
-    # Local path
-    local_log_filepath = os.path.join(script_dir, "Artiklar", f"{filename}_log.xlsx")
-    
-    # SMB path (change this to the correct mounted path or accessible path for the SMB share)
-    smb_log_filepath = "/mnt/nas/Artiklar/{}_log.xlsx".format(filename)
-    
-    # Call the update_log function with both paths and pass the cycle_data list
-    for cycle_entry in cycle_data:
-        update_log(local_log_filepath, cycle_entry)
-        update_log(smb_log_filepath, cycle_entry)
+        # Get the directory where the script is located
+        script_dir = os.path.dirname(os.path.abspath(__file__))
 
-    # Reset batch variables
+        # Local path
+        local_log_filepath = os.path.join(script_dir, "Artiklar", f"{filename}_log.xlsx")
+        
+        # SMB path (change this to the correct mounted path or accessible path for the SMB share)
+        smb_log_filepath = "/mnt/nas/Artiklar/{}_log.xlsx".format(filename)
+        
+        # Call the update_log function with both paths
+        update_log(local_log_filepath, cycle_data)
+        update_log(smb_log_filepath, cycle_data)
+
+    # Reset batch variables after logging all cycles
     amount_of_cycles_done = 0
     elapsed_time_current_cycle = 0
     total_elapsed_time = 0
