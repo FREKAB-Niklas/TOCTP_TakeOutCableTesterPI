@@ -1053,83 +1053,59 @@ def update_log(filename, data, batch_name=None):
         if 'Sheet1' not in wb.sheetnames:
             ws_main = wb.create_sheet(title='Sheet1', index=0)
             main_headers = ["Batchdatum", "Antal", "Antal skippad test", "Total Cykeltid (HH:MM:SS)",
-                            "Total Ställtid (HH:MM:SS)", "Total Stycktid (HH:MM:SS)", "Cykeltid (HH:MM:SS)",
-                            "Stycktid (HH:MM:SS)", "Styck Ställtid (HH:MM:SS)"]
+                            "Total Ställtid (HH:MM:SS)", "Total Stycktid (HH:MM:SS)"]
             for col_num, header in enumerate(main_headers, 1):
                 ws_main[f'{openpyxl.utils.get_column_letter(col_num)}1'] = header
                 ws_main[f'{openpyxl.utils.get_column_letter(col_num)}1'].font = Font(bold=True)
         else:
             ws_main = wb['Sheet1']
 
-        # Name the new batch sheet based on batch date or count
-        batch_date = datetime.now().strftime('%y-%m-%d %H:%M')
-        sheet_name = batch_name if batch_name else f"Batch_{batch_date.replace(':', '-')}"
-        if sheet_name in wb.sheetnames:
-            ws_batch = wb[sheet_name]
+        # Check if this is a batch sheet update or main sheet update
+        if batch_name:
+            # Name the new batch sheet based on batch date or count
+            if batch_name in wb.sheetnames:
+                ws_batch = wb[batch_name]
+            else:
+                ws_batch = wb.create_sheet(title=batch_name)
+
+            # Add headers for the batch sheet if it's a new sheet
+            if ws_batch.max_row == 1:
+                batch_headers = ["Tillvekad", "Antal pins", "Fullt testad", "Serienummer"]
+                for col_num, header in enumerate(batch_headers, 1):
+                    col_letter = openpyxl.utils.get_column_letter(col_num)
+                    ws_batch[f'{col_letter}1'] = header
+                    ws_batch[f'{col_letter}1'].font = Font(bold=True)
+
+            # Get the next available row in the batch sheet
+            next_row_batch = ws_batch.max_row + 1
+
+            # Write to the batch sheet
+            ws_batch.cell(row=next_row_batch, column=1, value=data["Batchdatum"])
+            ws_batch.cell(row=next_row_batch, column=2, value=8)  # Assuming 8 pins per cycle; adjust as needed
+            ws_batch.cell(row=next_row_batch, column=3, value="Ja" if data["Antal skippad test"] == 0 else "Nej")
+            ws_batch.cell(row=next_row_batch, column=4, value=data["Serienummer"])
         else:
-            ws_batch = wb.create_sheet(title=sheet_name)
+            # Main sheet cumulative data update
+            next_row_main = ws_main.max_row + 1
 
-        # Add headers for the batch sheet if it's a new sheet
-        if ws_batch.max_row == 1:
-            batch_headers = ["Tillvekad", "Antal pins", "Fullt testad", "Serienummer"]
-            for col_num, header in enumerate(batch_headers, 1):
-                col_letter = openpyxl.utils.get_column_letter(col_num)
-                ws_batch[f'{col_letter}1'] = header
-                ws_batch[f'{col_letter}1'].font = Font(bold=True)
-
-        # Get the next available row in both sheets
-        next_row_main = ws_main.max_row + 1
-        next_row_batch = ws_batch.max_row + 1
-
-        # Write to the main sheet
-        ws_main.cell(row=next_row_main, column=1, value=data["Batchdatum"])
-        ws_main.cell(row=next_row_main, column=2, value=1)  # Assuming 1 cycle per log entry
-        ws_main.cell(row=next_row_main, column=3, value=data["Antal skippad test"])
-        ws_main.cell(row=next_row_main, column=4, value=data["Total Cykeltid (HH:MM:SS)"])
-        ws_main.cell(row=next_row_main, column=5, value=data["Total Ställtid (HH:MM:SS)"])
-        ws_main.cell(row=next_row_main, column=6, value=data["Total Stycktid (HH:MM:SS)"])
-        ws_main.cell(row=next_row_main, column=7, value=data["Cykeltid (HH:MM:SS)"])
-        ws_main.cell(row=next_row_main, column=8, value=data["Stycktid (HH:MM:SS)"])
-        ws_main.cell(row=next_row_main, column=9, value=data["Styck Ställtid (HH:MM:SS)"])
-
-        # Write to the batch sheet
-        ws_batch.cell(row=next_row_batch, column=1, value=data["Batchdatum"])
-        ws_batch.cell(row=next_row_batch, column=2, value=8)  # Assuming 8 pins per cycle; adjust as needed
-        ws_batch.cell(row=next_row_batch, column=3, value="Ja" if data["Antal skippad test"] == 0 else "Nej")
-        ws_batch.cell(row=next_row_batch, column=4, value=data["Serienummer"])
+            # Write cumulative data to the main sheet
+            ws_main.cell(row=next_row_main, column=1, value=data["Batchdatum"])
+            ws_main.cell(row=next_row_main, column=2, value=data["Antal"])
+            ws_main.cell(row=next_row_main, column=3, value=data["Antal skippad test"])
+            ws_main.cell(row=next_row_main, column=4, value=data["Total Cykeltid (HH:MM:SS)"])
+            ws_main.cell(row=next_row_main, column=5, value=data["Total Ställtid (HH:MM:SS)"])
+            ws_main.cell(row=next_row_main, column=6, value=data["Total Stycktid (HH:MM:SS)"])
 
         # Save the workbook after adding the new data
         wb.save(filename)
-        print(f"Log updated with batch data in sheet {sheet_name} and main data in Sheet1.")
+        if batch_name:
+            print(f"Log updated with cycle data in sheet {batch_name}.")
+        else:
+            print(f"Log updated with cumulative batch data in Sheet1.")
 
     except FileNotFoundError:
         # If file doesn't exist, create a new one
         create_new_log_file(filename, data)
-
-
-
-
-def prepare_next_batch_sheet():
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    local_log_filepath = os.path.join(script_dir, "Artiklar", f"{filename}_log.xlsx")
-    smb_log_filepath = "/mnt/nas/Artiklar/{}_log.xlsx".format(filename)
-
-    for path in [local_log_filepath, smb_log_filepath]:
-        try:
-            wb = openpyxl.load_workbook(path)
-            batch_name = f"Batch_{len(wb.sheetnames) + 1}"  # Ensure unique batch name
-            ws = wb.create_sheet(title=batch_name)
-            cycle_headers = ["Tillvekad", "Antal pins", "Fullt testad", "Cykeltid (HH:MM:SS)",
-                             "Stycktid (HH:MM:SS)", "Styck Ställtid (HH:MM:SS)", "Serienummer"]
-            for col_num, header in enumerate(cycle_headers, 1):
-                col_letter = openpyxl.utils.get_column_letter(col_num)
-                ws[f'{col_letter}1'] = header
-                ws[f'{col_letter}1'].font = Font(bold=True)
-            wb.save(path)
-        except Exception as e:
-            print(f"Error preparing next batch sheet: {e}")
-
-
 
 
 
@@ -1140,11 +1116,21 @@ def finish_batch():
     batch_date = datetime.now().strftime('%y-%m-%d %H:%M')
     batch_name = f"Batch_{amount_of_cycles_done + 1}"  # Sequential batch name
 
+    # Accumulate data for the entire batch
+    total_cycle_time = timedelta(seconds=0)
+    total_work_time = timedelta(seconds=0)
+    total_stall_time = timedelta(seconds=0)
+
     for i in range(amount_of_cycles_done):
         cycle_time = max(timedelta(seconds=0), timedelta(seconds=elapsed_time_previous_cycle))
         work_time = max(timedelta(seconds=0), cycle_time - timedelta(seconds=downtime))
         stall_time = max(timedelta(seconds=0), timedelta(seconds=downtime))
 
+        total_cycle_time += cycle_time
+        total_work_time += work_time
+        total_stall_time += stall_time
+
+        # Log each cycle individually in the batch sheet
         cycle_data = {
             "Batchdatum": batch_date,
             "Antal": 1,
@@ -1162,23 +1148,38 @@ def finish_batch():
         local_log_filepath = os.path.join(script_dir, "Artiklar", f"{filename}_log.xlsx")
         smb_log_filepath = "/mnt/nas/Artiklar/{}_log.xlsx".format(filename)
 
-        # Call update_log for both local and network paths
+        # Update the batch sheet with individual cycle data
         update_log(local_log_filepath, cycle_data, batch_name)
         update_log(smb_log_filepath, cycle_data, batch_name)
 
-    # Reset batch variables after logging all cycles
+    # After logging each cycle, update the main sheet with the cumulative data
+    cumulative_data = {
+        "Batchdatum": batch_date,
+        "Antal": amount_of_cycles_done,
+        "Antal skippad test": skipped_tests,
+        "Total Cykeltid (HH:MM:SS)": seconds_to_hms(total_cycle_time.total_seconds()),
+        "Total Ställtid (HH:MM:SS)": seconds_to_hms(total_stall_time.total_seconds()),
+        "Total Stycktid (HH:MM:SS)": seconds_to_hms(total_work_time.total_seconds()),
+        "Cykeltid (HH:MM:SS)": "",  # Not applicable for batch summary
+        "Stycktid (HH:MM:SS)": "",  # Not applicable for batch summary
+        "Styck Ställtid (HH:MM:SS)": ""  # Not applicable for batch summary
+    }
+
+    # Update the main sheet with cumulative batch data
+    update_log(local_log_filepath, cumulative_data, batch_name=None)
+    update_log(smb_log_filepath, cumulative_data, batch_name=None)
+
+    # Reset batch variables after logging the batch summary
     amount_of_cycles_done = 0
     elapsed_time_current_cycle = 0
     total_elapsed_time = 0
     downtime = 0
     skipped_tests = 0
 
-    # Prepare a new sheet for the next batch
-    prepare_next_batch_sheet()
-
     # Update the labels
     completed_label.config(text=f"Färdiga: {amount_of_cycles_done}st")
     skipped_label.config(text=f"Antal Avvikande: {skipped_tests}st")
+
 
 
 
