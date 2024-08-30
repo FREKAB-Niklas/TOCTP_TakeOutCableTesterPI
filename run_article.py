@@ -1059,7 +1059,7 @@ def update_log(filename, data, batch_name=None):
         # Write to the batch sheet
         ws_batch.cell(row=next_row_batch, column=1, value=data["Batchdatum"][0])  # Extract first element
         ws_batch.cell(row=next_row_batch, column=2, value=8)  # Assuming 8 pins per cycle; adjust as needed
-        ws_batch.cell(row=next_row_batch, column(3), value="Ja" if data["Antal skippad test"][0] == 0 else "Nej")
+        ws_batch.cell(row=next_row_batch, column=3, value="Ja" if data["Antal skippad test"][0] == 0 else "Nej")
         ws_batch.cell(row=next_row_batch, column=4, value=data["Serienummer"])  # Assuming Serienummer is not a list
 
         # Save the workbook after adding the new data
