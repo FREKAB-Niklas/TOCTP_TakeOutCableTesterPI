@@ -1049,13 +1049,10 @@ def update_log(filename, data, batch_name=None):
         # Load workbook or create a new one if not found
         wb = openpyxl.load_workbook(filename)
         
-        # Name the new sheet based on batch date or count
+        # Ensure we're using the correct batch sheet
         batch_date = datetime.now().strftime('%y-%m-%d %H:%M')
         sheet_name = batch_name if batch_name else f"Batch_{batch_date.replace(':', '-')}"
-        if sheet_name in wb.sheetnames:
-            ws = wb[sheet_name]
-        else:
-            ws = wb.create_sheet(title=sheet_name)
+        ws = wb[sheet_name] if sheet_name in wb.sheetnames else wb.create_sheet(title=sheet_name)
 
         # Add headers for the cycle data if it's a new sheet
         if ws.max_row == 1:
@@ -1084,6 +1081,7 @@ def update_log(filename, data, batch_name=None):
 
 
 
+
 def prepare_next_batch_sheet():
     script_dir = os.path.dirname(os.path.abspath(__file__))
     local_log_filepath = os.path.join(script_dir, "Artiklar", f"{filename}_log.xlsx")
@@ -1092,7 +1090,7 @@ def prepare_next_batch_sheet():
     for path in [local_log_filepath, smb_log_filepath]:
         try:
             wb = openpyxl.load_workbook(path)
-            batch_name = f"Batch_{len(wb.sheetnames) + 1}"
+            batch_name = f"Batch_{len(wb.sheetnames) + 1}"  # Ensure unique batch name
             ws = wb.create_sheet(title=batch_name)
             cycle_headers = ["Tillvekad", "Antal pins", "Fullt testad", "Cykeltid (HH:MM:SS)",
                              "Stycktid (HH:MM:SS)", "Styck Ställtid (HH:MM:SS)", "Serienummer"]
@@ -1106,12 +1104,14 @@ def prepare_next_batch_sheet():
 
 
 
+
+
 # Function to finish the batch
 def finish_batch():
     global amount_of_cycles_done, total_elapsed_time, downtime, skipped_tests, elapsed_time_previous_cycle, elapsed_time_current_cycle
 
     batch_date = datetime.now().strftime('%y-%m-%d %H:%M')
-    batch_name = f"Batch_{amount_of_cycles_done + 1}"  # Sequential batch name
+    batch_name = f"Batch_{len(wb.sheetnames) + 1}"  # Sequential batch name
 
     # Prepare data for each cycle and pass it to update_log
     for i in range(amount_of_cycles_done):
@@ -1123,16 +1123,8 @@ def finish_batch():
             "Batchdatum": batch_date,
             "Antal": 1,
             "Antal skippad test": skipped_tests,
-            "Total Cykeltid (HH:MM:SS)": seconds_to_hms(cycle_time.total_seconds()),
-            "Total Ställtid (HH:MM:SS)": seconds_to_hms(stall_time.total_seconds()),
-            "Total Stycktid (HH:MM:SS)": seconds_to_hms(work_time.total_seconds()),
-            "Cykeltid (HH:MM:SS)": seconds_to_hms(cycle_time.total_seconds()),
-            "Stycktid (HH:MM:SS)": seconds_to_hms(work_time.total_seconds()),
-            "Styck Ställtid (HH:MM:SS)": seconds_to_hms(stall_time.total_seconds()),
             "Serienummer": i + 1
         }
-
-        elapsed_time_previous_cycle = elapsed_time_current_cycle
 
         script_dir = os.path.dirname(os.path.abspath(__file__))
         local_log_filepath = os.path.join(script_dir, "Artiklar", f"{filename}_log.xlsx")
@@ -1154,12 +1146,6 @@ def finish_batch():
     # Update the labels
     completed_label.config(text=f"Färdiga: {amount_of_cycles_done}st")
     skipped_label.config(text=f"Antal Avvikande: {skipped_tests}st")
-
-
-
-
-
-
 
 
 
