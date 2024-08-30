@@ -1099,6 +1099,7 @@ def update_log(filename, data):
 
 
 
+
 # Function to finish the batch
 def finish_batch():
     global amount_of_cycles_done, total_elapsed_time, downtime, skipped_tests
@@ -1112,17 +1113,29 @@ def finish_batch():
     avg_work_time = total_work_time // total_cycles if total_cycles > 0 else 0
     avg_downtime = total_downtime // total_cycles if total_cycles > 0 else 0
 
+    # Initialize data dictionary
     data = {
-        "Batchdatum": [batch_date],
-        "Antal": [total_cycles],
-        "Antal skippad test": [skipped_tests],
-        "Total Cykeltid (HH:MM:SS)": [seconds_to_hms(total_cycle_time)],
-        "Total Ställtid (HH:MM:SS)": [seconds_to_hms(total_downtime)],
-        "Total Stycktid (HH:MM:SS)": [seconds_to_hms(total_work_time)],
-        "Cykeltid (HH:MM:SS)": [seconds_to_hms(avg_cycle_time)],
-        "Stycktid (HH:MM:SS)": [seconds_to_hms(avg_work_time)],
-        "Styck Ställtid (HH:MM:SS)": [seconds_to_hms(avg_downtime)]
+        "Batchdatum": [],
+        "Antal": [],
+        "Antal skippad test": [],
+        "Total Cykeltid (HH:MM:SS)": [],
+        "Total Ställtid (HH:MM:SS)": [],
+        "Total Stycktid (HH:MM:SS)": [],
+        "Cykeltid (HH:MM:SS)": [],
+        "Stycktid (HH:MM:SS)": [],
+        "Styck Ställtid (HH:MM:SS)": []
     }
+
+    for cycle in range(total_cycles):
+        data["Batchdatum"].append(batch_date)
+        data["Antal"].append(8)  # Update this according to your pin count logic
+        data["Antal skippad test"].append(skipped_tests)
+        data["Total Cykeltid (HH:MM:SS)"].append(seconds_to_hms(total_cycle_time))
+        data["Total Ställtid (HH:MM:SS)"].append(seconds_to_hms(total_downtime))
+        data["Total Stycktid (HH:MM:SS)"].append(seconds_to_hms(total_work_time))
+        data["Cykeltid (HH:MM:SS)"].append(seconds_to_hms(avg_cycle_time))
+        data["Stycktid (HH:MM:SS)"].append(seconds_to_hms(avg_work_time))
+        data["Styck Ställtid (HH:MM:SS)"].append(seconds_to_hms(avg_downtime))
 
     # Get the directory where the script is located
     script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -1130,18 +1143,12 @@ def finish_batch():
     # Local path
     local_log_filepath = os.path.join(script_dir, "Artiklar", f"{filename}_log.xlsx")
     
-    # SMB path
-    smb_log_filepath = "smb://frekabnas.local/wireviz/Artiklar/{}_log.xlsx".format(filename)
+    # SMB path (change this to the correct mounted path or accessible path for the SMB share)
+    smb_log_filepath = "/mnt/wireviz/Artiklar/{}_log.xlsx".format(filename)
     
-    # Update the log in the local location
+    # Call the update_log function with both paths
     update_log(local_log_filepath, data)
-
-    # Copy the log file to the SMB path
-    try:
-        shutil.copy(local_log_filepath, smb_log_filepath)
-        print(f"Copied log file to SMB path: {smb_log_filepath}")
-    except Exception as e:
-        print(f"Failed to copy log file to SMB path: {e}")
+    update_log(smb_log_filepath, data)
 
     # Reset batch variables
     amount_of_cycles_done = 0
@@ -1153,6 +1160,7 @@ def finish_batch():
     # Update the labels
     completed_label.config(text=f"Färdiga: {amount_of_cycles_done}st")
     skipped_label.config(text=f"Antal Avvikande: {skipped_tests}st")
+
 
 
 
