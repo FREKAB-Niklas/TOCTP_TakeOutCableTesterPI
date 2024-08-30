@@ -1088,7 +1088,7 @@ def update_main_sheet(ws_main, data):
     ws_main['H2'] = ws_main.cell(row=next_row, column=8).value
 
     # Calculate the average in Python
-    total_time = sum([str_to_timedelta(ws_main[f'E{row}'].value).total_seconds() for row in range(6, last_row + 1)], timedelta())
+    total_time = sum([str_to_timedelta(ws_main[f'E{row}'].value).total_seconds() for row in range(6, last_row + 1)], 0)
     total_count = sum([int(ws_main[f'C{row}'].value) for row in range(6, last_row + 1) if isinstance(ws_main[f'C{row}'].value, (int, float))])
     avg_time = total_time / total_count if total_count > 0 else 0
 
