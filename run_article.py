@@ -1105,40 +1105,36 @@ def finish_batch():
     global amount_of_cycles_done, total_elapsed_time, downtime, skipped_tests
 
     batch_date = datetime.now().strftime('%y-%m-%d %H:%M')
-    total_cycles = amount_of_cycles_done
-    total_cycle_time = total_elapsed_time + downtime
-    total_downtime = downtime
-    total_work_time = total_elapsed_time
-    avg_cycle_time = total_cycle_time // total_cycles if total_cycles > 0 else 0
-    avg_work_time = total_work_time // total_cycles if total_cycles > 0 else 0
-    avg_downtime = total_downtime // total_cycles if total_cycles > 0 else 0
+    
+    # Initialize a list to hold data for each cycle
+    cycle_data = []
 
-    # Initialize data dictionary
-    data = {
-        "Batchdatum": [],
-        "Antal": [],
-        "Antal skippad test": [],
-        "Total Cykeltid (HH:MM:SS)": [],
-        "Total Ställtid (HH:MM:SS)": [],
-        "Total Stycktid (HH:MM:SS)": [],
-        "Cykeltid (HH:MM:SS)": [],
-        "Stycktid (HH:MM:SS)": [],
-        "Styck Ställtid (HH:MM:SS)": [],
-        "Serienummer": []  # Added Serienummer to handle cycle-specific numbering
-    }
+    for cycle in range(amount_of_cycles_done):
+        total_cycles = 1
+        total_cycle_time = total_elapsed_time // amount_of_cycles_done  # Divide total time by the number of cycles
+        total_downtime = downtime // amount_of_cycles_done  # Divide total downtime by the number of cycles
+        total_work_time = total_elapsed_time - total_downtime
+        avg_cycle_time = total_cycle_time
+        avg_work_time = total_work_time
+        avg_downtime = total_downtime
 
-    for cycle in range(total_cycles):
-        data["Batchdatum"].append(batch_date)
-        data["Antal"].append(8)  # Update this according to your pin count logic
-        data["Antal skippad test"].append(skipped_tests)
-        data["Total Cykeltid (HH:MM:SS)"].append(seconds_to_hms(total_cycle_time))
-        data["Total Ställtid (HH:MM:SS)"].append(seconds_to_hms(total_downtime))
-        data["Total Stycktid (HH:MM:SS)"].append(seconds_to_hms(total_work_time))
-        data["Cykeltid (HH:MM:SS)"].append(seconds_to_hms(avg_cycle_time))
-        data["Stycktid (HH:MM:SS)"].append(seconds_to_hms(avg_work_time))
-        data["Styck Ställtid (HH:MM:SS)"].append(seconds_to_hms(avg_downtime))
-        data["Serienummer"].append(cycle + 1)  # Assign unique Serienummer for each cycle
+        # Create a dictionary for each cycle's data
+        cycle_dict = {
+            "Batchdatum": batch_date,
+            "Antal": 1,
+            "Antal skippad test": skipped_tests,
+            "Total Cykeltid (HH:MM:SS)": seconds_to_hms(total_cycle_time),
+            "Total Ställtid (HH:MM:SS)": seconds_to_hms(total_downtime),
+            "Total Stycktid (HH:MM:SS)": seconds_to_hms(total_work_time),
+            "Cykeltid (HH:MM:SS)": seconds_to_hms(avg_cycle_time),
+            "Stycktid (HH:MM:SS)": seconds_to_hms(avg_work_time),
+            "Styck Ställtid (HH:MM:SS)": seconds_to_hms(avg_downtime),
+            "Serienummer": cycle + 1
+        }
 
+        # Append the dictionary to the cycle_data list
+        cycle_data.append(cycle_dict)
+    
     # Get the directory where the script is located
     script_dir = os.path.dirname(os.path.abspath(__file__))
 
@@ -1148,9 +1144,10 @@ def finish_batch():
     # SMB path (change this to the correct mounted path or accessible path for the SMB share)
     smb_log_filepath = "/mnt/wireviz/Artiklar/{}_log.xlsx".format(filename)
     
-    # Call the update_log function with both paths
-    update_log(local_log_filepath, data)
-    update_log(smb_log_filepath, data)
+    # Call the update_log function with both paths and pass the cycle_data list
+    for cycle_entry in cycle_data:
+        update_log(local_log_filepath, cycle_entry)
+        update_log(smb_log_filepath, cycle_entry)
 
     # Reset batch variables
     amount_of_cycles_done = 0
@@ -1162,6 +1159,7 @@ def finish_batch():
     # Update the labels
     completed_label.config(text=f"Färdiga: {amount_of_cycles_done}st")
     skipped_label.config(text=f"Antal Avvikande: {skipped_tests}st")
+
 
 
 
