@@ -1106,21 +1106,21 @@ def finish_batch():
 
     # Prepare data for each cycle and pass it to update_log
     for i in range(amount_of_cycles_done):
-        # Calculate the specific times for this cycle
-        cycle_time = seconds_to_hms(elapsed_time_previous_cycle)
-        work_time = seconds_to_hms(elapsed_time_previous_cycle - downtime)
-        stall_time = seconds_to_hms(downtime)
+        # Ensure the values are non-negative and correctly handled
+        cycle_time = max(timedelta(seconds=0), timedelta(seconds=elapsed_time_previous_cycle))
+        work_time = max(timedelta(seconds=0), cycle_time - timedelta(seconds=downtime))
+        stall_time = max(timedelta(seconds=0), timedelta(seconds=downtime))
 
         cycle_data = {
             "Batchdatum": batch_date,
             "Antal": 1,  # Assuming 1 cycle per entry
             "Antal skippad test": skipped_tests,
-            "Total Cykeltid (HH:MM:SS)": cycle_time,
-            "Total Ställtid (HH:MM:SS)": stall_time,
-            "Total Stycktid (HH:MM:SS)": work_time,
-            "Cykeltid (HH:MM:SS)": cycle_time,
-            "Stycktid (HH:MM:SS)": work_time,
-            "Styck Ställtid (HH:MM:SS)": stall_time,
+            "Total Cykeltid (HH:MM:SS)": seconds_to_hms(cycle_time.total_seconds()),
+            "Total Ställtid (HH:MM:SS)": seconds_to_hms(stall_time.total_seconds()),
+            "Total Stycktid (HH:MM:SS)": seconds_to_hms(work_time.total_seconds()),
+            "Cykeltid (HH:MM:SS)": seconds_to_hms(cycle_time.total_seconds()),
+            "Stycktid (HH:MM:SS)": seconds_to_hms(work_time.total_seconds()),
+            "Styck Ställtid (HH:MM:SS)": seconds_to_hms(stall_time.total_seconds()),
             "Serienummer": i + 1
         }
 
@@ -1150,6 +1150,7 @@ def finish_batch():
     # Update the labels
     completed_label.config(text=f"Färdiga: {amount_of_cycles_done}st")
     skipped_label.config(text=f"Antal Avvikande: {skipped_tests}st")
+
 
 
 
