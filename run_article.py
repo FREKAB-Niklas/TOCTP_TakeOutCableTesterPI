@@ -1082,38 +1082,6 @@ def update_log(filename, data):
         else:
             ws['H2'].fill = PatternFill(start_color="FF0000", end_color="FF0000", fill_type="solid")
 
-        # Name the new batch sheet based on batch date or count
-        batch_date = datetime.now().strftime('%y-%m-%d %H:%M')
-        sheet_name = batch_name if batch_name else f"Batch_{batch_date.replace(':', '-')}"
-        if sheet_name in wb.sheetnames:
-            ws_batch = wb[sheet_name]
-        else:
-            ws_batch = wb.create_sheet(title=sheet_name)
-
-        # Add headers for the batch sheet if it's a new sheet
-        if ws_batch.max_row == 1:
-            batch_headers = ["Tillvekad", "Antal pins", "Fullt testad", "Serienummer"]
-            for col_num, header in enumerate(batch_headers, 1):
-                col_letter = openpyxl.utils.get_column_letter(col_num)
-                ws_batch[f'{col_letter}1'] = header
-                ws_batch[f'{col_letter}1'].font = Font(bold=True)
-
-        # Get the next available row in the batch sheet
-        next_row_batch = ws_batch.max_row + 1
-
-        # Write to the batch sheet
-        ws_batch.cell(row=next_row_batch, column=1, value=data["Batchdatum"])
-        ws_batch.cell(row=next_row_batch, column=2, value=8)  # Assuming 8 pins per cycle; adjust as needed
-        ws_batch.cell(row=next_row_batch, column=3, value="Ja" if data["Antal skippad test"] == 0 else "Nej")
-        ws_batch.cell(row=next_row_batch, column=4, value=data["Serienummer"])
-
-        # Save the workbook after adding the new data
-        wb.save(filename)
-        print(f"Log updated with batch data in sheet {sheet_name} and main data in Sheet1.")
-
-
-
-
         # Save the workbook after updating the background color
         wb.save(filename)
     except FileNotFoundError:
@@ -1151,11 +1119,9 @@ def finish_batch():
 
     # Construct the full path to the 'Artiklar' directory inside the PI folder
     log_filepath = os.path.join(script_dir, "Artiklar", f"{filename}_log.xlsx")
-    smb_log_filepath = "/mnt/nas/Artiklar/{}_log.xlsx".format(filename)
 
     # Call the update_log function with the constructed path
     update_log(log_filepath, data)
-    update_log(smb_log_filepath, data)
 
 
     # Reset batch variables
