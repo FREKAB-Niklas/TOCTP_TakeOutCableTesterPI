@@ -1041,7 +1041,7 @@ def create_new_log_file(filename, data):
 
 
 
-def update_log(filename, data):
+def update_log(filename, data, batch_name=None):
     try:
         # Ensure the directory exists
         os.makedirs(os.path.dirname(filename), exist_ok=True)
@@ -1051,7 +1051,7 @@ def update_log(filename, data):
         
         # Name the new sheet based on batch date or count
         batch_date = datetime.now().strftime('%y-%m-%d %H:%M')
-        sheet_name = f"Batch_{batch_date.replace(':', '-')}"
+        sheet_name = batch_name if batch_name else f"Batch_{batch_date.replace(':', '-')}"
         if sheet_name in wb.sheetnames:
             ws = wb[sheet_name]
         else:
