@@ -1059,47 +1059,36 @@ def update_log(filename, data):
 
         # Add headers for the cycle data if it's a new sheet
         if ws.max_row == 1:
-            cycle_headers = ["Tillverkad", "Antal pins", "Fullt testad", "Cykeltid (HH:MM:SS)",
+            cycle_headers = ["Tillvekad", "Antal pins", "Fullt testad", "Cykeltid (HH:MM:SS)",
                              "Stycktid (HH:MM:SS)", "Styck Ställtid (HH:MM:SS)", "Serienummer"]
             for col_num, header in enumerate(cycle_headers, 1):
                 col_letter = openpyxl.utils.get_column_letter(col_num)
                 ws[f'{col_letter}1'] = header
                 ws[f'{col_letter}1'].font = Font(bold=True)
-        
-        # Check what data we are working with
-        print(f"Data to be added: {data}")
 
         # Get the next available row in the sheet
         next_row = ws.max_row + 1
 
         # Populate the sheet with data
-        for row_num, row_data in enumerate(data):
-            print(f"Row data {row_num}: {row_data}")  # Debugging output
-            if isinstance(row_data, dict):
-                ws.cell(row=next_row + row_num, column=1, value=row_data.get("Batchdatum", ""))
-                ws.cell(row=next_row + row_num, column=2, value=row_data.get("Antal pins", 0))
-                ws.cell(row=next_row + row_num, column=3, value="Ja" if row_data.get('Antal skippad test', 0) == 0 else "Nej")
-                ws.cell(row=next_row + row_num, column=4, value=row_data.get('Cykeltid (HH:MM:SS)', ""))
-                ws.cell(row=next_row + row_num, column=5, value=row_data.get('Stycktid (HH:MM:SS)', ""))
-                ws.cell(row=next_row + row_num, column=6, value=row_data.get('Styck Ställtid (HH:MM:SS)', ""))
-                ws.cell(row=next_row + row_num, column=7, value=row_num + 1)
-            elif isinstance(row_data, list):
-                ws.cell(row=next_row + row_num, column=1, value=row_data[0])
-                ws.cell(row=next_row + row_num, column=2, value=row_data[1])
-                ws.cell(row=next_row + row_num, column=3, value=row_data[2])
-                ws.cell(row=next_row + row_num, column=4, value=row_data[3])
-                ws.cell(row=next_row + row_num, column=5, value=row_data[4])
-                ws.cell(row=next_row + row_num, column=6, value=row_data[5])
-                ws.cell(row=next_row + row_num, column=7, value=row_data[6])
+        for row_data in data["Batchdatum"]:
+            ws.cell(row=next_row, column=1, value=row_data)
+            ws.cell(row=next_row, column=2, value=8)  # Update this line according to your pins count logic
+            ws.cell(row=next_row, column=3, value="Ja" if data['Antal skippad test'][0] == 0 else "Nej")
+            ws.cell(row=next_row, column=4, value=data['Cykeltid (HH:MM:SS)'][0])
+            ws.cell(row=next_row, column=5, value=data['Stycktid (HH:MM:SS)'][0])
+            ws.cell(row=next_row, column=6, value=data['Styck Ställtid (HH:MM:SS)'][0])
+            ws.cell(row=next_row, column=7, value=next_row - 1)  # Serienummer starts from 1
+
+            next_row += 1  # Move to the next row for any subsequent data
 
         # Save the workbook after adding the new sheet and data
         wb.save(filename)
         print(f"Log updated with batch data in sheet {sheet_name}.")
+
     except FileNotFoundError:
-        print(f"File {filename} not found, creating a new one.")
+        # If file doesn't exist, create a new one
         create_new_log_file(filename, data)
-    except Exception as e:
-        print(f"An error occurred while updating the log file: {e}")
+
 
 
 
