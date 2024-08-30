@@ -1072,36 +1072,65 @@ def update_log(filename, data, batch_name=None):
 
 
 def finish_batch():
-    global amount_of_cycles_done, total_elapsed_time, downtime, skipped_tests
+    global amount_of_cycles_done, total_elapsed_time, downtime, skipped_tests, elapsed_time_previous_cycle, elapsed_time_current_cycle
 
     batch_date = datetime.now().strftime('%y-%m-%d %H:%M')
-    total_cycles = amount_of_cycles_done
-    total_cycle_time = total_elapsed_time + downtime
-    total_downtime = downtime
-    total_work_time = total_elapsed_time
-    avg_cycle_time = total_cycle_time // total_cycles if total_cycles > 0 else 0
-    avg_work_time = total_work_time // total_cycles if total_cycles > 0 else 0
-    avg_downtime = total_downtime // total_cycles if total_cycles > 0 else 0
 
-    # Accumulate batch data
-    data = {
+    # Accumulate data for the entire batch
+    total_cycle_time = timedelta(seconds=0)
+    total_work_time = timedelta(seconds=0)
+    total_stall_time = timedelta(seconds=0)
+
+    # Create an empty list to store all cycle data for the batch
+    batch_data_list = []
+
+    for i in range(amount_of_cycles_done):
+        cycle_time = max(timedelta(seconds=0), timedelta(seconds=elapsed_time_previous_cycle))
+        work_time = max(timedelta(seconds=0), cycle_time - timedelta(seconds=downtime))
+        stall_time = max(timedelta(seconds=0), timedelta(seconds=downtime))
+
+        total_cycle_time += cycle_time
+        total_work_time += work_time
+        total_stall_time += stall_time
+
+        # Store each cycle's data in the batch_data_list
+        cycle_data = {
+            "Batchdatum": batch_date,
+            "Antal": 1,
+            "Antal skippad test": skipped_tests,
+            "Total Cykeltid (HH:MM:SS)": seconds_to_hms(cycle_time.total_seconds()),
+            "Total Ställtid (HH:MM:SS)": seconds_to_hms(stall_time.total_seconds()),
+            "Total Stycktid (HH:MM:SS)": seconds_to_hms(work_time.total_seconds()),
+            "Cykeltid (HH:MM:SS)": seconds_to_hms(cycle_time.total_seconds()),
+            "Stycktid (HH:MM:SS)": seconds_to_hms(work_time.total_seconds()),
+            "Styck Ställtid (HH:MM:SS)": seconds_to_hms(stall_time.total_seconds()),
+            "Serienummer": i + 1  # Serienummer starts from 1 and increments
+        }
+        batch_data_list.append(cycle_data)
+
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        local_log_filepath = os.path.join(script_dir, "Artiklar", f"{filename}_log.xlsx")
+        smb_log_filepath = "/mnt/nas/Artiklar/{}_log.xlsx".format(filename)
+
+        # Update the batch sheet with individual cycle data
+        update_log(local_log_filepath, cycle_data, batch_name=f"Batch_{i + 1}")
+        update_log(smb_log_filepath, cycle_data, batch_name=f"Batch_{i + 1}")
+
+    # Now, update the main sheet using the summary of the batch
+    main_data = {
         "Batchdatum": batch_date,
-        "Antal": [total_cycles],
-        "Antal skippad test": [skipped_tests],
-        "Total Cykeltid (HH:MM:SS)": [seconds_to_hms(total_cycle_time)],
-        "Total Ställtid (HH:MM:SS)": [seconds_to_hms(total_downtime)],
-        "Total Stycktid (HH:MM:SS)": [seconds_to_hms(total_work_time)],
-        "Cykeltid (HH:MM:SS)": [seconds_to_hms(avg_cycle_time)],
-        "Stycktid (HH:MM:SS)": [seconds_to_hms(avg_work_time)],
-        "Styck Ställtid (HH:MM:SS)": [seconds_to_hms(avg_downtime)]
+        "Antal": amount_of_cycles_done,
+        "Antal skippad test": skipped_tests,
+        "Total Cykeltid (HH:MM:SS)": seconds_to_hms(total_cycle_time.total_seconds()),
+        "Total Ställtid (HH:MM:SS)": seconds_to_hms(total_stall_time.total_seconds()),
+        "Total Stycktid (HH:MM:SS)": seconds_to_hms(total_work_time.total_seconds())
     }
 
-    # Update logs
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    log_filepath = os.path.join(script_dir, "Artiklar", f"{filename}_log.xlsx")
-    update_log(log_filepath, data, batch_name=f"Batch_{total_cycles}")
+    # Update the main sheet with cumulative batch data
+    update_log(local_log_filepath, main_data)
+    update_log(smb_log_filepath, main_data)
 
-    # Reset variables
+    # Reset batch variables after logging the batch summary
     amount_of_cycles_done = 0
     elapsed_time_current_cycle = 0
     total_elapsed_time = 0
@@ -1111,6 +1140,7 @@ def finish_batch():
     # Update the labels
     completed_label.config(text=f"Färdiga: {amount_of_cycles_done}st")
     skipped_label.config(text=f"Antal Avvikande: {skipped_tests}st")
+
 
 
 
