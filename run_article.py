@@ -1014,6 +1014,7 @@ def create_new_log_file(filename, data):
 
 def update_log(filename, data, batch_name=None):
     try:
+        # Load workbook or create new one if not found
         if os.path.exists(filename):
             wb = openpyxl.load_workbook(filename)
         else:
@@ -1026,18 +1027,19 @@ def update_log(filename, data, batch_name=None):
         else:
             ws_main = wb['Sheet1']
 
-        # Update Sheet1 (Main Sheet)
+        # Calculate totals and averages for the main sheet
         total_cycles, total_time = calculate_totals(data)
         avg_cycle_time = calculate_average_time(total_time, total_cycles)
         article_number = os.path.basename(filename).split('_')[0]
 
+        # Write to the main sheet, update totals/averages (assuming they are in row 2)
         ws_main.cell(row=2, column=2, value=article_number)
         ws_main.cell(row=2, column=4, value=str(avg_cycle_time))
-        ws_main.cell(row=2, column=6, value=data["Cykeltid (HH:MM:SS)"])
+        ws_main.cell(row=2, column=6, value=data["Cykeltid (HH:MM:SS)"][0])  # Extract first element from the list
         ws_main.cell(row=2, column=8, value=seconds_to_hms(total_time))
         ws_main.cell(row=2, column=10, value=total_cycles)
 
-        # Create or update the batch sheet
+        # Name the new batch sheet based on batch date or count
         batch_date = datetime.now().strftime('%y-%m-%d %H:%M')
         sheet_name = batch_name if batch_name else f"Batch_{batch_date.replace(':', '-')}"
         if sheet_name in wb.sheetnames:
@@ -1045,23 +1047,29 @@ def update_log(filename, data, batch_name=None):
         else:
             ws_batch = wb.create_sheet(title=sheet_name)
 
-        # Add headers for the batch sheet if it's new
+        # Add headers for the batch sheet if it's a new sheet
         if ws_batch.max_row == 1:
             batch_headers = ["Tillverkad", "Antal pins", "Fullt testad", "Serienummer"]
             for col_num, header in enumerate(batch_headers, 1):
                 ws_batch.cell(row=1, column=col_num, value=header).font = Font(bold=True)
 
-        # Write the cycle data to the batch sheet
+        # Get the next available row in the batch sheet
         next_row_batch = ws_batch.max_row + 1
-        ws_batch.cell(row=next_row_batch, column=1, value=data["Batchdatum"])
-        ws_batch.cell(row=next_row_batch, column=2, value=8)  # Assuming 8 pins per cycle
-        ws_batch.cell(row=next_row_batch, column=3, value="Ja" if data["Antal skippad test"] == 0 else "Nej")
-        ws_batch.cell(row=next_row_batch, column=4, value=data["Serienummer"])
 
+        # Write to the batch sheet
+        ws_batch.cell(row=next_row_batch, column=1, value=data["Batchdatum"][0])  # Extract first element
+        ws_batch.cell(row=next_row_batch, column=2, value=8)  # Assuming 8 pins per cycle; adjust as needed
+        ws_batch.cell(row=next_row_batch, column(3), value="Ja" if data["Antal skippad test"][0] == 0 else "Nej")
+        ws_batch.cell(row=next_row_batch, column=4, value=data["Serienummer"])  # Assuming Serienummer is not a list
+
+        # Save the workbook after adding the new data
         wb.save(filename)
-        print(f"Updated log with batch data in {sheet_name} and main data in Sheet1.")
+        print(f"Log updated with batch data in sheet {sheet_name} and main data in Sheet1.")
+
     except FileNotFoundError:
+        # If file doesn't exist, create a new one
         create_new_log_file(filename, [data])
+
 
 def finish_batch():
     global amount_of_cycles_done, total_elapsed_time, downtime, skipped_tests
