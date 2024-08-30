@@ -1060,9 +1060,8 @@ def update_log(filename, data, batch_name=None):
         else:
             ws_main = wb['Sheet1']
 
-        # Check if this is a batch sheet update or main sheet update
+        # If updating batch sheet, handle separately
         if batch_name:
-            # Name the new batch sheet based on batch date or count
             if batch_name in wb.sheetnames:
                 ws_batch = wb[batch_name]
             else:
@@ -1114,7 +1113,6 @@ def finish_batch():
     global amount_of_cycles_done, total_elapsed_time, downtime, skipped_tests, elapsed_time_previous_cycle, elapsed_time_current_cycle
 
     batch_date = datetime.now().strftime('%y-%m-%d %H:%M')
-    batch_name = f"Batch_{amount_of_cycles_done + 1}"  # Sequential batch name
 
     # Accumulate data for the entire batch
     total_cycle_time = timedelta(seconds=0)
@@ -1149,25 +1147,22 @@ def finish_batch():
         smb_log_filepath = "/mnt/nas/Artiklar/{}_log.xlsx".format(filename)
 
         # Update the batch sheet with individual cycle data
-        update_log(local_log_filepath, cycle_data, batch_name)
-        update_log(smb_log_filepath, cycle_data, batch_name)
+        update_log(local_log_filepath, cycle_data, batch_name=f"Batch_{amount_of_cycles_done}")
+        update_log(smb_log_filepath, cycle_data, batch_name=f"Batch_{amount_of_cycles_done}")
 
-    # After logging each cycle, update the main sheet with the cumulative data
-    cumulative_data = {
+    # Now, update the main sheet using the format from `create_new_log_file`
+    main_data = {
         "Batchdatum": batch_date,
         "Antal": amount_of_cycles_done,
         "Antal skippad test": skipped_tests,
         "Total Cykeltid (HH:MM:SS)": seconds_to_hms(total_cycle_time.total_seconds()),
         "Total Ställtid (HH:MM:SS)": seconds_to_hms(total_stall_time.total_seconds()),
-        "Total Stycktid (HH:MM:SS)": seconds_to_hms(total_work_time.total_seconds()),
-        "Cykeltid (HH:MM:SS)": "",  # Not applicable for batch summary
-        "Stycktid (HH:MM:SS)": "",  # Not applicable for batch summary
-        "Styck Ställtid (HH:MM:SS)": ""  # Not applicable for batch summary
+        "Total Stycktid (HH:MM:SS)": seconds_to_hms(total_work_time.total_seconds())
     }
 
     # Update the main sheet with cumulative batch data
-    update_log(local_log_filepath, cumulative_data, batch_name=None)
-    update_log(smb_log_filepath, cumulative_data, batch_name=None)
+    update_log(local_log_filepath, main_data)
+    update_log(smb_log_filepath, main_data)
 
     # Reset batch variables after logging the batch summary
     amount_of_cycles_done = 0
@@ -1179,6 +1174,7 @@ def finish_batch():
     # Update the labels
     completed_label.config(text=f"Färdiga: {amount_of_cycles_done}st")
     skipped_label.config(text=f"Antal Avvikande: {skipped_tests}st")
+
 
 
 
