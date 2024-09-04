@@ -29,7 +29,7 @@ script_dir = os.path.dirname(os.path.abspath(__file__))
 # Construct the full path to the image file inside the PI folder
 logo_path = os.path.join(script_dir, "logo.png")
 
-def run_article(filename, pins, spacing, length, width, inner_diameter, takeouts):
+def run_article(filename, description, pins, spacing, length, width, inner_diameter, takeouts):
     # Get the directory where the script is located
     script_dir = os.path.dirname(os.path.abspath(__file__))
     
@@ -40,6 +40,7 @@ def run_article(filename, pins, spacing, length, width, inner_diameter, takeouts
     with open("article_config.txt", "w") as config_file:
         config_file.write("[DEFAULT]\n")
         config_file.write(f"filename={filename}\n")
+        config_file.write(f"description={description}\n")
         config_file.write(f"pins=" + ",".join(pins) + "\n")
         config_file.write(f"spacing={spacing}\n")
         config_file.write(f"length={length}\n")
@@ -282,6 +283,7 @@ def load_article_file():
     
     # Parse configuration values
     filename = os.path.basename(file_path).split('.')[0]
+    description = [line.strip().split('=')[1] for line in lines if line.startswith("description")][0]
     pins = [line.strip() for line in lines if line.startswith("pins")]
     spacing = [line.strip().split('=')[1] for line in lines if line.startswith("spacing")][0]
     length = [line.strip().split('=')[1] for line in lines if line.startswith("length")][0]
@@ -290,7 +292,7 @@ def load_article_file():
     takeouts = [line.strip().split('=')[1] for line in lines if line.startswith("takeouts")][0]
     
     # Run the article with all the parameters
-    run_article(filename, pins, spacing, length, width, inner_diameter, takeouts)
+    run_article(filename, description, pins, spacing, length, width, inner_diameter, takeouts)
 
 
 def show_keyboard(entry_widget, on_submit, message="Enter password to delete file:"):
