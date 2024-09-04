@@ -369,7 +369,7 @@ config = configparser.ConfigParser()
 config.read('article_config.txt')
 
 filename = config['DEFAULT']['filename']
-description = config['DEFAULT']['name']
+description = config['DEFAULT']['description']
 pins = config['DEFAULT']['pins'].split(',')
 if pins[0].startswith("pins="):
     pins[0] = pins[0][5:]
