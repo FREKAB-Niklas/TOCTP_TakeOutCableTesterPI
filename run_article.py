@@ -24,6 +24,7 @@ from digitalio import Direction, Pull
 import math
 import paho.mqtt.client as mqtt
 import shutil
+import configparser
 
 
 print(f"{datetime.now()}: run_article.py is starting...")
@@ -102,7 +103,15 @@ else:
 
 
 def initialize_serial_number():
-    global current_serial_number
+    global current_serial_number, filename  # Add filename to global variables if it's not already there
+    
+    # Read the configuration file
+    config = configparser.ConfigParser()
+    config.read('article_config.txt')
+    
+    # Get the filename from the config
+    filename = config['DEFAULT']['filename']
+    
     script_dir = os.path.dirname(os.path.abspath(__file__))
     local_log_filepath = os.path.join(script_dir, "Artiklar", f"{filename}_log.xlsx")
     
