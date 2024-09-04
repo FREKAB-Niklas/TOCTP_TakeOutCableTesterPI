@@ -1058,14 +1058,18 @@ def update_log(filename, data, is_cycle_data=False):
         else:
             # Update main sheet
             next_row = ws_main.max_row + 1
-            for idx, (key, value) in enumerate(data.items(), start=1):
-                if idx == 1:  # Batchdatum
-                    sheet_name = f"Batch_{value.replace(':', '-')}"
-                    cell = ws_main.cell(row=next_row, column=idx + 1, value=value)
-                    cell.hyperlink = f"#{sheet_name}!A1"
-                    cell.style = "Hyperlink"
-                else:
-                    ws_main.cell(row=next_row, column=idx + 1, value=value)
+            if isinstance(data, dict):
+                for idx, (key, value) in enumerate(data.items(), start=1):
+                    if idx == 1:  # Batchdatum
+                        sheet_name = f"Batch_{value.replace(':', '-')}"
+                        cell = ws_main.cell(row=next_row, column=idx + 1, value=value)
+                        cell.hyperlink = f"#{sheet_name}!A1"
+                        cell.style = "Hyperlink"
+                    else:
+                        ws_main.cell(row=next_row, column=idx + 1, value=value)
+            elif isinstance(data, list):
+                for idx, value in enumerate(data, start=2):
+                    ws_main.cell(row=next_row, column=idx, value=value)
 
             # Update totals and averages
             current_total_time = str_to_timedelta(ws_main['G2'].value) if ws_main['G2'].value else timedelta()
@@ -1099,6 +1103,8 @@ def update_log(filename, data, is_cycle_data=False):
 
     except Exception as e:
         print(f"Error updating log: {e}")
+        print(f"Data type: {type(data)}")
+        print(f"Data content: {data}")
 
 
 
@@ -1107,6 +1113,10 @@ def finish_batch():
 
     batch_date = datetime.now().strftime('%y-%m-%d %H:%M')
     
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    local_log_filepath = os.path.join(script_dir, "Artiklar", f"{filename}_log.xlsx")
+    nas_log_filepath = f"/mnt/nas/Artiklar/{filename}_log.xlsx"
+
     # Log each cycle
     for i in range(amount_of_cycles_done):
         cycle_data = {
@@ -1115,25 +1125,24 @@ def finish_batch():
             "Serienummer": i + 1
         }
         
-        script_dir = os.path.dirname(os.path.abspath(__file__))
-        log_filepath = os.path.join(script_dir, "Artiklar", f"{filename}_log.xlsx")
-        
-        update_log(log_filepath, cycle_data, is_cycle_data=True)
+        update_log(local_log_filepath, cycle_data, is_cycle_data=True)
+        update_log(nas_log_filepath, cycle_data, is_cycle_data=True)
 
     # Log batch summary
     batch_data = {
-        "Batchdatum": [batch_date],
-        "Antal": [amount_of_cycles_done],
-        "Antal skippad test": [skipped_tests],
-        "Total Cykeltid (HH:MM:SS)": [seconds_to_hms(total_elapsed_time + downtime)],
-        "Total Ställtid (HH:MM:SS)": [seconds_to_hms(downtime)],
-        "Total Stycktid (HH:MM:SS)": [seconds_to_hms(total_elapsed_time)],
-        "Cykeltid (HH:MM:SS)": [seconds_to_hms((total_elapsed_time + downtime) // amount_of_cycles_done if amount_of_cycles_done > 0 else 0)],
-        "Stycktid (HH:MM:SS)": [seconds_to_hms(total_elapsed_time // amount_of_cycles_done if amount_of_cycles_done > 0 else 0)],
-        "Styck Ställtid (HH:MM:SS)": [seconds_to_hms(downtime // amount_of_cycles_done if amount_of_cycles_done > 0 else 0)]
+        "Batchdatum": batch_date,
+        "Antal": amount_of_cycles_done,
+        "Antal skippad test": skipped_tests,
+        "Total Cykeltid (HH:MM:SS)": seconds_to_hms(total_elapsed_time + downtime),
+        "Total Ställtid (HH:MM:SS)": seconds_to_hms(downtime),
+        "Total Stycktid (HH:MM:SS)": seconds_to_hms(total_elapsed_time),
+        "Cykeltid (HH:MM:SS)": seconds_to_hms((total_elapsed_time + downtime) // amount_of_cycles_done if amount_of_cycles_done > 0 else 0),
+        "Stycktid (HH:MM:SS)": seconds_to_hms(total_elapsed_time // amount_of_cycles_done if amount_of_cycles_done > 0 else 0),
+        "Styck Ställtid (HH:MM:SS)": seconds_to_hms(downtime // amount_of_cycles_done if amount_of_cycles_done > 0 else 0)
     }
     
-    update_log(log_filepath, batch_data)
+    update_log(local_log_filepath, batch_data)
+    update_log(nas_log_filepath, batch_data)
 
     # Reset batch variables
     amount_of_cycles_done = 0
@@ -1144,6 +1153,8 @@ def finish_batch():
     # Update the labels
     completed_label.config(text=f"Färdiga: {amount_of_cycles_done}st")
     skipped_label.config(text=f"Antal Avvikande: {skipped_tests}st")
+
+    print(f"Log files updated locally and on NAS for {filename}")
 
 
 
