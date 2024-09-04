@@ -31,6 +31,9 @@ print(f"{datetime.now()}: run_article.py is starting...")
 # Static cable diameter
 CABLE_DIAMETER = 8.0  # in mm
 
+# Add this with your other global variables at the top of the script
+current_serial_number = 0
+
 # MQTT setup
 mqtt_broker_ip = "192.168.10.9"  # Replace with your actual broker IP
 client = mqtt.Client()
@@ -96,6 +99,11 @@ if not pygame_initialized:
     reject_sound = None
 else:
     print(f"{datetime.now()}: Pygame initialized successfully with audio support.")
+
+
+# ... (after global variable declarations)
+initialize_serial_number()
+# ... (before GUI setup)
 
 # Initialize main window
 root = tk.Tk()
@@ -166,6 +174,8 @@ def custom_info_popup(title, message):
 
 
 print(f"{datetime.now()}: Window opened")
+
+
 
 # Initialize I2C bus and MCP23017
 i2c = busio.I2C(board.SCL, board.SDA)
@@ -464,8 +474,6 @@ def set_dual_color(label, color1, color2=None, pin_text="", width=600, height=50
 
 
 
-
-
 # Modify the on_pin_probe and complete_probe functions
 allow_motor_run = True
 
@@ -696,9 +704,10 @@ def complete_probe():
         root.after(500, confirm_last_probe)
 
 def complete_cycle():
-    global amount_of_cycles_done, elapsed_time_current_cycle, elapsed_time_previous_cycle, total_elapsed_time, current_pin_index, is_running, skipped_tests, current_segment, allow_motor_run
+    global amount_of_cycles_done, elapsed_time_current_cycle, elapsed_time_previous_cycle, total_elapsed_time, current_pin_index, is_running, skipped_tests, current_segment, allow_motor_run, current_serial_number
 
     amount_of_cycles_done += 1
+    current_serial_number += 1
     elapsed_time_previous_cycle = elapsed_time_current_cycle
     total_elapsed_time += elapsed_time_previous_cycle
     elapsed_time_current_cycle = 0
@@ -720,6 +729,11 @@ def complete_cycle():
 
     is_running = False
     print(f"Cycle completed successfully. Pins reset for next cycle.")
+
+    # Print label with serial number
+    print_label(current_serial_number)
+
+    # The cycle data logging is already handled in your existing batch sheet update
 
 
 def confirm_complete_cycle():
@@ -939,6 +953,30 @@ def calculate_average_time(total_time, total_cycles):
         average_time = timedelta(seconds=0)
     return average_time
 
+def read_last_serial_number_from_log(filename):
+    try:
+        wb = openpyxl.load_workbook(filename)
+        ws_main = wb['Main']
+        last_row = ws_main.max_row
+        total_count = ws_main['G4'].value
+        return total_count if total_count else 0
+    except Exception as e:
+        print(f"Error reading last serial number: {e}")
+        return 0
+
+
+def initialize_serial_number():
+    global current_serial_number
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    local_log_filepath = os.path.join(script_dir, "Artiklar", f"{filename}_log.xlsx")
+    
+    current_serial_number = read_last_serial_number_from_log(local_log_filepath)
+    print(f"Initialized serial number to: {current_serial_number}")
+
+
+def print_label(serial_number):
+    # Implement your label printing logic here
+    print(f"Printing label for serial number: {serial_number}")
 
 def save_log(filename, data):
     # Convert the data dictionary to a DataFrame
@@ -1126,9 +1164,6 @@ def update_log(filename, data, is_cycle_data=False):
         print(f"Error updating log: {e}")
         print(f"Data type: {type(data)}")
         print(f"Data content: {data}")
-
-
-
 def finish_batch():
     global amount_of_cycles_done, total_elapsed_time, downtime, skipped_tests
 
@@ -1176,6 +1211,8 @@ def finish_batch():
     skipped_label.config(text=f"Antal Avvikande: {skipped_tests}st")
 
     print(f"Log files updated locally and on NAS for {filename}")
+    # Reset serial number for the next batch
+    initialize_serial_number()
 
 
 
