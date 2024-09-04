@@ -129,7 +129,10 @@ def initialize_serial_number():
     current_serial_number = read_last_serial_number_from_log(local_log_filepath)
     print(f"Initialized serial number to: {current_serial_number}")
 
+
 def split_description(text, max_length):
+    if text is None:
+        return "", ""
     if len(text) > max_length:
         split_pos = text.rfind(' ', 0, max_length)
         if split_pos == -1:
@@ -146,9 +149,11 @@ def print_label(serial_number):
     config.read('article_config.txt')
 
     # Get variables from config
-    article_number = config['DEFAULT']['filename']
-    description = config['DEFAULT']['name']
-    revision = config['DEFAULT']['rev']
+    article_number = config['DEFAULT'].get('filename', 'Unknown')
+    description = config['DEFAULT'].get('name', '')
+    if not description:
+        description = config['DEFAULT'].get('description', 'No description')
+    revision = config['DEFAULT'].get('rev', 'A')
 
     # Prepare other variables
     date = datetime.now().strftime("%y%W")  # Current year and week number
