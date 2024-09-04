@@ -102,6 +102,17 @@ else:
     print(f"{datetime.now()}: Pygame initialized successfully with audio support.")
 
 
+def read_last_serial_number_from_log(filename):
+    try:
+        wb = openpyxl.load_workbook(filename)
+        ws_main = wb['Main']
+        last_row = ws_main.max_row
+        total_count = ws_main['G4'].value
+        return total_count if total_count else 0
+    except Exception as e:
+        print(f"Error reading last serial number: {e}")
+        return 0
+
 def initialize_serial_number():
     global current_serial_number, filename  # Add filename to global variables if it's not already there
     
@@ -971,16 +982,6 @@ def calculate_average_time(total_time, total_cycles):
         average_time = timedelta(seconds=0)
     return average_time
 
-def read_last_serial_number_from_log(filename):
-    try:
-        wb = openpyxl.load_workbook(filename)
-        ws_main = wb['Main']
-        last_row = ws_main.max_row
-        total_count = ws_main['G4'].value
-        return total_count if total_count else 0
-    except Exception as e:
-        print(f"Error reading last serial number: {e}")
-        return 0
 
 
 
