@@ -1,8 +1,0 @@
-[DEFAULT]
-filename=Test
-name=123/spacing=1
-length=
-takeouts=8
-width=142
-inner_diameter=178
-pins=17: T,18: U,19: V,20: W,21: X,22: Y,23: Z,24: a

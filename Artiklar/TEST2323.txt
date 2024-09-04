@@ -1,8 +1,0 @@
-[DEFAULT]
-filename=TEST2323
-spacing=1
-length=
-takeouts=8
-width=142
-inner_diameter=178
-pins=25: b,26: c,27: d,28: e,29: f,30: g,31: h,32: j
