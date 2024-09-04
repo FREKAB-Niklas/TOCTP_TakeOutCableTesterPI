@@ -391,7 +391,7 @@ print(f"Inner Diameter: {inner_diameter} mm")
 print(f"Drum Width: {width} mm")
 
 
-print(f"{datetime.now()}: Config read successfully. Filename: {filename},Description: {description}, Pins: {pins}")
+print(f"{datetime.now()}: Config read successfully. Filename: {filename}, Description: {description}, Pins: {pins}")
 
 # Get the directory where the script is located
 script_dir = os.path.dirname(os.path.abspath(__file__))
