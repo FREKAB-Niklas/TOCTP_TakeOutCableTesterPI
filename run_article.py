@@ -974,77 +974,65 @@ def save_log(filename, data):
     wb.save(filename)
 
 
-def create_new_log_file(filename, data):
-    df = pd.DataFrame(data)
+def create_new_log_file(filename):
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = "Main"
 
     # Extract the relevant part of the filename
     base_filename = os.path.basename(filename)
     article_number = base_filename.split('_')[0]
 
-    with pd.ExcelWriter(filename, engine='openpyxl') as writer:
-        df.to_excel(writer, index=False, startrow=4, startcol=1)
+    # Add the image and set its position and size
+    img = OpenpyxlImage(logo_path)
+    img.anchor = 'A1'
+    img.width = 340  # Set the width to fit into A1:B3
+    img.height = 80  # Set the height to fit into A1:B3
+    ws.add_image(img)
 
-        workbook = writer.book
-        worksheet = writer.sheets['Sheet1']
+    # Add headers
+    headers = ["Artikelnummer", "AVG. Stycktid", "Senaste Stycktid"]
+    values = [article_number, "00:00:00", "00:00:00"]
+    for col_num, (header, value) in enumerate(zip(headers, values), 2):
+        ws.cell(row=1, column=col_num * 2).value = header
+        ws.cell(row=2, column=col_num * 2).value = value
+        ws.cell(row=1, column=col_num * 2).font = Font(bold=True)
+        ws.cell(row=2, column=col_num * 2).alignment = Alignment(horizontal="center")
 
-        # Add the image and set its position and size
-        img = OpenpyxlImage(logo_path)
-        img.anchor = 'A1'
-        img.width = 340  # Set the width to fit into A1:B3
-        img.height = 80  # Set the height to fit into A1:B3
-        worksheet.add_image(img)
+    # Add headers for the log data
+    column_headers = ["Batchdatum", "Antal", "Antal skippad test", "Total Cykeltid (HH:MM:SS)",
+                      "Total Ställtid (HH:MM:SS)", "Total Stycktid (HH:MM:SS)", "Cykeltid (HH:MM:SS)",
+                      "Stycktid (HH:MM:SS)", "Styck Ställtid (HH:MM:SS)"]
+    
+    for col_num, header in enumerate(column_headers, 2):
+        ws.cell(row=5, column=col_num).value = header
+        ws.cell(row=5, column=col_num).alignment = Alignment(horizontal="center")
+        ws.cell(row=5, column=col_num).font = Font(bold=True)
 
-        # Add headers
-        headers = ["Artikelnummer", "AVG. Stycktid", "Senaste Stycktid"]
-        values = [article_number, "00:00:00", df.iloc[0]['Cykeltid (HH:MM:SS)']]  # Initialize with the first entry's Cykeltid
-        for col_num, (header, value) in enumerate(zip(headers, values), 2):
-            worksheet.cell(row=1, column=col_num * 2).value = header
-            worksheet.cell(row=2, column=col_num * 2).value = value
-            worksheet.cell(row=1, column=col_num * 2).font = Font(bold=True)
-            worksheet.cell(row=2, column=col_num * 2).alignment = Alignment(horizontal="center")
+    # Set column widths
+    for col in range(1, 12):
+        ws.column_dimensions[get_column_letter(col)].width = 25
 
-        worksheet.column_dimensions['A'].width = 5
-        worksheet.column_dimensions['B'].width = 25
-        worksheet.column_dimensions['C'].width = 25
-        worksheet.column_dimensions['D'].width = 25
-        worksheet.column_dimensions['E'].width = 25
-        worksheet.column_dimensions['F'].width = 25
-        worksheet.column_dimensions['G'].width = 25
-        worksheet.column_dimensions['H'].width = 25
-        worksheet.column_dimensions['I'].width = 25
-        worksheet.column_dimensions['J'].width = 25
-        worksheet.column_dimensions['K'].width = 25
+    # Add headers for total calculations
+    ws['G1'] = "Total Tid"
+    ws['G3'] = "Total Antal"
+    ws['G1'].font = Font(bold=True)
+    ws['G3'].font = Font(bold=True)
 
-        # Calculate total cycles and total time
-        total_cycles, total_time = calculate_totals(data)
+    # Initialize total values
+    ws['G2'] = "00:00:00"
+    ws['G4'] = 0
 
-        # Calculate average cycle time
-        avg_cycle_time = calculate_average_time(total_time, total_cycles)
-
-        # Add headers for total calculations
-        worksheet['G1'] = "Total Tid"
-        worksheet['G3'] = "Total Antal"
-
-        # Make headers bold
-        worksheet['G1'].font = Font(bold=True)
-        worksheet['G3'].font = Font(bold=True)
-
-        # Update calculated values in the worksheet
-        worksheet['G4'] = total_cycles
-        worksheet['G2'] = seconds_to_hms(total_time)
-        worksheet['F2'] = str(avg_cycle_time)
-
+    wb.save(filename)
     print(f"Created new log file: {filename}")
 
 def update_log(filename, data, is_cycle_data=False):
     try:
-        if os.path.exists(filename):
-            wb = openpyxl.load_workbook(filename)
-        else:
-            create_new_log_file(filename, [data])
-            return
-
-        ws_main = wb.active
+        if not os.path.exists(filename):
+            create_new_log_file(filename)
+        
+        wb = openpyxl.load_workbook(filename)
+        ws_main = wb['Main']
 
         if is_cycle_data:
             # Handle cycle data in a separate sheet
@@ -1085,7 +1073,7 @@ def update_log(filename, data, is_cycle_data=False):
             new_time = str_to_timedelta(ws_main[f'E{next_row}'].value)
             new_count = ws_main[f'C{next_row}'].value
 
-            ws_main['G2'] = current_total_time + new_time
+            ws_main['G2'] = str(current_total_time + new_time)
             ws_main['G4'] = current_total_count + new_count
 
             # Update Senaste Stycktid
@@ -1110,6 +1098,7 @@ def update_log(filename, data, is_cycle_data=False):
 
     except Exception as e:
         print(f"Error updating log: {e}")
+
 
 
 def finish_batch():
