@@ -1041,14 +1041,13 @@ def update_log(filename, data, is_cycle_data=False):
         if os.path.exists(filename):
             wb = openpyxl.load_workbook(filename)
         else:
-            wb = openpyxl.Workbook()
-            create_new_log_file(filename, data)
+            create_new_log_file(filename, [data])
             return
 
-        ws_main = wb['Sheet1']
-        
+        ws_main = wb.active
+
         if is_cycle_data:
-            # Handle cycle data
+            # Handle cycle data in a separate sheet
             batch_date = data["Batchdatum"]
             sheet_name = f"Batch_{batch_date.replace(':', '-')}"
             if sheet_name not in wb.sheetnames:
@@ -1060,31 +1059,58 @@ def update_log(filename, data, is_cycle_data=False):
                 ws_batch = wb[sheet_name]
 
             next_row = ws_batch.max_row + 1
+            total_completed = ws_main['G4'].value if ws_main['G4'].value else 0
+            serial_number = total_completed + data["Serienummer"]
+
             ws_batch.cell(row=next_row, column=1, value=data["Batchdatum"])
             ws_batch.cell(row=next_row, column=2, value=len(pins))
             ws_batch.cell(row=next_row, column=3, value="Ja" if data["Antal skippad test"] == 0 else "Nej")
-            ws_batch.cell(row=next_row, column=4, value=data["Serienummer"])
+            ws_batch.cell(row=next_row, column=4, value=serial_number)
         else:
             # Update main sheet
             next_row = ws_main.max_row + 1
-            for col, value in enumerate(data.values(), 2):
-                ws_main.cell(row=next_row, column=col, value=value)
+            for idx, (key, value) in enumerate(data.items(), start=1):
+                if idx == 1:  # Batchdatum
+                    sheet_name = f"Batch_{value.replace(':', '-')}"
+                    cell = ws_main.cell(row=next_row, column=idx + 1, value=value)
+                    cell.hyperlink = f"#{sheet_name}!A1"
+                    cell.style = "Hyperlink"
+                else:
+                    ws_main.cell(row=next_row, column=idx + 1, value=value)
 
             # Update totals and averages
-            total_cycles = sum(ws_main.cell(row=r, column=3).value for r in range(6, next_row + 1))
-            total_time = sum(str_to_timedelta(ws_main.cell(row=r, column=5).value).total_seconds() for r in range(6, next_row + 1))
-            avg_time = timedelta(seconds=total_time / total_cycles) if total_cycles > 0 else timedelta()
+            current_total_time = str_to_timedelta(ws_main['G2'].value) if ws_main['G2'].value else timedelta()
+            current_total_count = ws_main['G4'].value if ws_main['G4'].value else 0
+
+            new_time = str_to_timedelta(ws_main[f'E{next_row}'].value)
+            new_count = ws_main[f'C{next_row}'].value
+
+            ws_main['G2'] = current_total_time + new_time
+            ws_main['G4'] = current_total_count + new_count
+
+            # Update Senaste Stycktid
+            ws_main['H2'] = ws_main.cell(row=next_row, column=8).value
+
+            # Calculate average
+            total_time = sum([str_to_timedelta(ws_main[f'E{row}'].value) for row in range(6, next_row + 1)], timedelta())
+            total_count = sum([ws_main[f'C{row}'].value for row in range(6, next_row + 1)])
+            avg_time = total_time / total_count if total_count > 0 else timedelta()
 
             ws_main['F2'] = str(avg_time)
-            ws_main['H2'] = data["Cykeltid (HH:MM:SS)"]
-            ws_main['G2'] = seconds_to_hms(total_time)
-            ws_main['G4'] = total_cycles
+
+            # Apply conditional formatting
+            h2_value = str_to_timedelta(ws_main['H2'].value)
+            if h2_value < avg_time:
+                ws_main['H2'].fill = PatternFill(start_color="00FF00", end_color="00FF00", fill_type="solid")
+            else:
+                ws_main['H2'].fill = PatternFill(start_color="FF0000", end_color="FF0000", fill_type="solid")
 
         wb.save(filename)
         print(f"Log updated: {filename}")
 
     except Exception as e:
         print(f"Error updating log: {e}")
+
 
 def finish_batch():
     global amount_of_cycles_done, total_elapsed_time, downtime, skipped_tests
@@ -1256,6 +1282,8 @@ def update_log(filename, data, is_cycle_data=False):
             create_new_log_file(filename, [data])
             return
 
+        ws_main = wb.active
+
         if is_cycle_data:
             # Handle cycle data in a separate sheet
             batch_date = data["Batchdatum"]
@@ -1269,45 +1297,51 @@ def update_log(filename, data, is_cycle_data=False):
                 ws_batch = wb[sheet_name]
 
             next_row = ws_batch.max_row + 1
+            total_completed = ws_main['G4'].value if ws_main['G4'].value else 0
+            serial_number = total_completed + data["Serienummer"]
+
             ws_batch.cell(row=next_row, column=1, value=data["Batchdatum"])
             ws_batch.cell(row=next_row, column=2, value=len(pins))
             ws_batch.cell(row=next_row, column=3, value="Ja" if data["Antal skippad test"] == 0 else "Nej")
-            ws_batch.cell(row=next_row, column=4, value=data["Serienummer"])
+            ws_batch.cell(row=next_row, column=4, value=serial_number)
         else:
             # Update main sheet
-            ws = wb.active
-            next_row = ws.max_row + 1
+            next_row = ws_main.max_row + 1
             for idx, (key, value) in enumerate(data.items(), start=1):
-                if idx == 1:  # Format Batchdatum as 'yy-mm-dd hh:mm'
-                    value = datetime.now().strftime('%y-%m-%d %H:%M')
-                ws.cell(row=next_row, column=idx + 1, value=value)
+                if idx == 1:  # Batchdatum
+                    sheet_name = f"Batch_{value.replace(':', '-')}"
+                    cell = ws_main.cell(row=next_row, column=idx + 1, value=value)
+                    cell.hyperlink = f"#{sheet_name}!A1"
+                    cell.style = "Hyperlink"
+                else:
+                    ws_main.cell(row=next_row, column=idx + 1, value=value)
 
             # Update totals and averages
-            current_total_time = str_to_timedelta(ws['G2'].value) if ws['G2'].value else timedelta()
-            current_total_count = ws['G4'].value if ws['G4'].value else 0
+            current_total_time = str_to_timedelta(ws_main['G2'].value) if ws_main['G2'].value else timedelta()
+            current_total_count = ws_main['G4'].value if ws_main['G4'].value else 0
 
-            new_time = str_to_timedelta(ws[f'E{next_row}'].value)
-            new_count = ws[f'C{next_row}'].value
+            new_time = str_to_timedelta(ws_main[f'E{next_row}'].value)
+            new_count = ws_main[f'C{next_row}'].value
 
-            ws['G2'] = current_total_time + new_time
-            ws['G4'] = current_total_count + new_count
+            ws_main['G2'] = current_total_time + new_time
+            ws_main['G4'] = current_total_count + new_count
 
             # Update Senaste Stycktid
-            ws['H2'] = ws.cell(row=next_row, column=8).value
+            ws_main['H2'] = ws_main.cell(row=next_row, column=8).value
 
             # Calculate average
-            total_time = sum([str_to_timedelta(ws[f'E{row}'].value) for row in range(6, next_row + 1)], timedelta())
-            total_count = sum([ws[f'C{row}'].value for row in range(6, next_row + 1)])
+            total_time = sum([str_to_timedelta(ws_main[f'E{row}'].value) for row in range(6, next_row + 1)], timedelta())
+            total_count = sum([ws_main[f'C{row}'].value for row in range(6, next_row + 1)])
             avg_time = total_time / total_count if total_count > 0 else timedelta()
 
-            ws['F2'] = str(avg_time)
+            ws_main['F2'] = str(avg_time)
 
             # Apply conditional formatting
-            h2_value = str_to_timedelta(ws['H2'].value)
+            h2_value = str_to_timedelta(ws_main['H2'].value)
             if h2_value < avg_time:
-                ws['H2'].fill = PatternFill(start_color="00FF00", end_color="00FF00", fill_type="solid")
+                ws_main['H2'].fill = PatternFill(start_color="00FF00", end_color="00FF00", fill_type="solid")
             else:
-                ws['H2'].fill = PatternFill(start_color="FF0000", end_color="FF0000", fill_type="solid")
+                ws_main['H2'].fill = PatternFill(start_color="FF0000", end_color="FF0000", fill_type="solid")
 
         wb.save(filename)
         print(f"Log updated: {filename}")
@@ -1320,17 +1354,156 @@ def finish_batch():
 
     batch_date = datetime.now().strftime('%y-%m-%d %H:%M')
     
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    local_log_filepath = os.path.join(script_dir, "Artiklar", f"{filename}_log.xlsx")
+    nas_log_filepath = f"/mnt/nas/Artiklar/{filename}_log.xlsx"
+
+    # Get the current total completed from the main sheet
+    try:
+        wb = openpyxl.load_workbook(local_log_filepath)
+        ws_main = wb.active
+        total_completed = ws_main['G4'].value if ws_main['G4'].value else 0
+    except:
+        total_completed = 0
+
     # Log each cycle
     for i in range(amount_of_cycles_done):
         cycle_data = {
             "Batchdatum": batch_date,
             "Antal skippad test": skipped_tests,
-            "Serienummer": i + 1
+            "Serienummer": total_completed + i + 1
         }
         
-        script_dir = os.path.dirname(os.path.abspath(__file__))
-        local_log_filepath = os.path.join(script_dir, "Artiklar", f"{filename}_log.xlsx")
-        nas_log_filepath = f"/mnt/nas/Artiklar/{filename}_log.xlsx"
+        update_log(local_log_filepath, cycle_data, is_cycle_data=True)
+        update_log(nas_log_filepath, cycle_data, is_cycle_data=True)
+
+    # Log batch summary
+    batch_data = {
+        "Batchdatum": batch_date,
+        "Antal": amount_of_cycles_done,
+        "Antal skippad test": skipped_tests,
+        "Total Cykeltid (HH:MM:SS)": seconds_to_hms(total_elapsed_time + downtime),
+        "Total Ställtid (HH:MM:SS)": seconds_to_hms(downtime),
+        "Total Stycktid (HH:MM:SS)": seconds_to_hms(total_elapsed_time),
+        "Cykeltid (HH:MM:SS)": seconds_to_hms((total_elapsed_time + downtime) // amount_of_cycles_done if amount_of_cycles_done > 0 else 0),
+        "Stycktid (HH:MM:SS)": seconds_to_hms(total_elapsed_time // amount_of_cycles_done if amount_of_cycles_done > 0 else 0),
+        "Styck Ställtid (HH:MM:SS)": seconds_to_hms(downtime // amount_of_cycles_done if amount_of_cycles_done > 0 else 0)
+    }
+    
+    update_log(local_log_filepath, batch_data)
+    update_log(nas_log_filepath, batch_data)
+
+    # Reset batch variables
+    amount_of_cycles_done = 0
+    total_elapsed_time = 0
+    downtime = 0
+    skipped_tests = 0
+
+    # Update the labels
+    completed_label.config(text=f"Färdiga: {amount_of_cycles_done}st")
+    skipped_label.config(text=f"Antal Avvikande: {skipped_tests}st")
+
+    print(f"Log files updated locally and on NAS for {filename}")
+
+def update_log(filename, data, is_cycle_data=False):
+    try:
+        if os.path.exists(filename):
+            wb = openpyxl.load_workbook(filename)
+        else:
+            create_new_log_file(filename, [data])
+            return
+
+        ws_main = wb.active
+
+        if is_cycle_data:
+            # Handle cycle data in a separate sheet
+            batch_date = data["Batchdatum"]
+            sheet_name = f"Batch_{batch_date.replace(':', '-')}"
+            if sheet_name not in wb.sheetnames:
+                ws_batch = wb.create_sheet(title=sheet_name)
+                headers = ["Tillverkad", "Antal pins", "Fullt testad", "Serienummer"]
+                for col, header in enumerate(headers, 1):
+                    ws_batch.cell(row=1, column=col, value=header).font = Font(bold=True)
+            else:
+                ws_batch = wb[sheet_name]
+
+            next_row = ws_batch.max_row + 1
+            total_completed = ws_main['G4'].value if ws_main['G4'].value else 0
+            serial_number = total_completed + data["Serienummer"]
+
+            ws_batch.cell(row=next_row, column=1, value=data["Batchdatum"])
+            ws_batch.cell(row=next_row, column=2, value=len(pins))
+            ws_batch.cell(row=next_row, column=3, value="Ja" if data["Antal skippad test"] == 0 else "Nej")
+            ws_batch.cell(row=next_row, column=4, value=serial_number)
+        else:
+            # Update main sheet
+            next_row = ws_main.max_row + 1
+            for idx, (key, value) in enumerate(data.items(), start=1):
+                if idx == 1:  # Batchdatum
+                    sheet_name = f"Batch_{value.replace(':', '-')}"
+                    cell = ws_main.cell(row=next_row, column=idx + 1, value=value)
+                    cell.hyperlink = f"#{sheet_name}!A1"
+                    cell.style = "Hyperlink"
+                else:
+                    ws_main.cell(row=next_row, column=idx + 1, value=value)
+
+            # Update totals and averages
+            current_total_time = str_to_timedelta(ws_main['G2'].value) if ws_main['G2'].value else timedelta()
+            current_total_count = ws_main['G4'].value if ws_main['G4'].value else 0
+
+            new_time = str_to_timedelta(ws_main[f'E{next_row}'].value)
+            new_count = ws_main[f'C{next_row}'].value
+
+            ws_main['G2'] = current_total_time + new_time
+            ws_main['G4'] = current_total_count + new_count
+
+            # Update Senaste Stycktid
+            ws_main['H2'] = ws_main.cell(row=next_row, column=8).value
+
+            # Calculate average
+            total_time = sum([str_to_timedelta(ws_main[f'E{row}'].value) for row in range(6, next_row + 1)], timedelta())
+            total_count = sum([ws_main[f'C{row}'].value for row in range(6, next_row + 1)])
+            avg_time = total_time / total_count if total_count > 0 else timedelta()
+
+            ws_main['F2'] = str(avg_time)
+
+            # Apply conditional formatting
+            h2_value = str_to_timedelta(ws_main['H2'].value)
+            if h2_value < avg_time:
+                ws_main['H2'].fill = PatternFill(start_color="00FF00", end_color="00FF00", fill_type="solid")
+            else:
+                ws_main['H2'].fill = PatternFill(start_color="FF0000", end_color="FF0000", fill_type="solid")
+
+        wb.save(filename)
+        print(f"Log updated: {filename}")
+
+    except Exception as e:
+        print(f"Error updating log: {e}")
+
+def finish_batch():
+    global amount_of_cycles_done, total_elapsed_time, downtime, skipped_tests
+
+    batch_date = datetime.now().strftime('%y-%m-%d %H:%M')
+    
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    local_log_filepath = os.path.join(script_dir, "Artiklar", f"{filename}_log.xlsx")
+    nas_log_filepath = f"/mnt/nas/Artiklar/{filename}_log.xlsx"
+
+    # Get the current total completed from the main sheet
+    try:
+        wb = openpyxl.load_workbook(local_log_filepath)
+        ws_main = wb.active
+        total_completed = ws_main['G4'].value if ws_main['G4'].value else 0
+    except:
+        total_completed = 0
+
+    # Log each cycle
+    for i in range(amount_of_cycles_done):
+        cycle_data = {
+            "Batchdatum": batch_date,
+            "Antal skippad test": skipped_tests,
+            "Serienummer": total_completed + i + 1
+        }
         
         update_log(local_log_filepath, cycle_data, is_cycle_data=True)
         update_log(nas_log_filepath, cycle_data, is_cycle_data=True)
