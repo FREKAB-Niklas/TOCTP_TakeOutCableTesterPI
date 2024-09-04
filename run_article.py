@@ -131,7 +131,7 @@ def initialize_serial_number():
 
 
 def split_description(text, max_length):
-    if text is None:
+    if text is None or text == "":
         return "", ""
     if len(text) > max_length:
         split_pos = text.rfind(' ', 0, max_length)
@@ -161,15 +161,15 @@ def print_label(serial_number):
     # ZPL template
     zpl_template = """
     ^XA
-    ^FO00,30^A0N,90,90^FD{ARTICLE_NUMBER}^FS
-    ^FO00,130^A0N,40,40^FD{DESCRIPTION_LINE_1}^FS
-    ^FO00,180^A0N,40,40^FD{DESCRIPTION_LINE_2}^FS
-    ^FO00,250^A0N,50,50^FDWeek^FS
-    ^FO240,250^A0N,50,50^FDREV^FS
-    ^FO400,250^A0N,50,50^FDSerial^FS
-    ^FO00,320^A0N,70,70^FD{DATE}^FS
-    ^FO240,320^A0N,70,70^FD{REV}^FS
-    ^FO400,320^A0N,70,70^FD{SERIAL}^FS
+    ^FO80,30^A0N,100,100^FD{ARTICLE_NUMBER}^FS
+    ^FO80,130^A0N,40,40^FD{DESCRIPTION_LINE_1}^FS
+    ^FO80,180^A0N,40,40^FD{DESCRIPTION_LINE_2}^FS
+    ^FO80,250^A0N,50,50^FDWeek^FS
+    ^FO280,250^A0N,50,50^FDREV^FS
+    ^FO480,250^A0N,50,50^FDSerial^FS
+    ^FO80,320^A0N,70,70^FD{DATE}^FS
+    ^FO280,320^A0N,70,70^FD{REV}^FS
+    ^FO480,320^A0N,70,70^FD{SERIAL}^FS
     ^XZ
     """
 
@@ -199,7 +199,6 @@ def print_label(serial_number):
 
     print(f"Label printed for article {article_number}, serial number: {serial}")
     print(f"Description: {description}")  # Add this line for debugging
-
 
 
 # ... (after global variable declarations)
