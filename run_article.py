@@ -151,7 +151,7 @@ def print_label(serial_number):
     # Get variables from config
     part_number = config['DEFAULT'].get('filename', 'Unknown')
     description = config['DEFAULT'].get('description', '')
-    rev = config['DEFAULT'].get('rev', 'A')
+    rev = config['DEFAULT'].get('rev', '')
 
     # Prepare other variables
     week = datetime.now().strftime("%y%W")  # Current year and week number

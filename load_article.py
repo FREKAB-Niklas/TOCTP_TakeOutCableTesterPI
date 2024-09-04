@@ -41,6 +41,7 @@ def run_article(filename, description, pins, spacing, length, width, inner_diame
         config_file.write("[DEFAULT]\n")
         config_file.write(f"filename={filename}\n")
         config_file.write(f"description={description}\n")
+        config_file.write(f"rev={rev}\n")
         config_file.write(f"pins=" + ",".join(pins) + "\n")
         config_file.write(f"spacing={spacing}\n")
         config_file.write(f"length={length}\n")
