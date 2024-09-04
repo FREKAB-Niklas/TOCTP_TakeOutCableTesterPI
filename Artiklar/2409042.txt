@@ -1,0 +1,10 @@
+[DEFAULT]
+filename=2409042
+description=Test2409042
+rev=B
+spacing=5
+length=50
+takeouts=8
+width=142
+inner_diameter=178
+pins=1: A,2: B,3: C,4: D,5: E,6: F,7: G,8: H

@@ -1,0 +1,10 @@
+[DEFAULT]
+filename=240904
+description=test240904
+rev=A
+spacing=5
+length=50
+takeouts=8
+width=142
+inner_diameter=178
+pins=1: A,2: B,3: C,4: D,5: E,6: F,7: G,8: H

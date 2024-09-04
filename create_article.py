@@ -73,6 +73,7 @@ def save_pins():
     selected_pins = [button['text'] for button in buttons if button.cget("bg") == "#32CD32"]
     article_number = article_number_entry.get()
     article_name = article_name_entry.get()
+    article_revision = article_revision_entry.get()
     cable_drum = cable_drum_var.get()
     spacing = spacing_var.get()
     length = length_entry.get()
@@ -104,7 +105,8 @@ def save_pins():
     with open(file_path, "w") as file:
         file.write(f"[DEFAULT]\n")
         file.write(f"filename={article_number}\n")
-        file.write(f"name={article_name}\n")
+        file.write(f"description={article_name}\n")
+        file.write(f"rev={article_revision}\n")
         file.write(f"spacing={spacing}\n")
         file.write(f"length={length}\n")
         file.write(f"takeouts={takeouts}\n")
@@ -162,6 +164,12 @@ article_name_label = tk.Label(header_frame, text="Benämning:", font=body_font)
 article_name_label.pack(side=tk.LEFT, padx=10)
 article_name_entry = tk.Entry(header_frame, font=body_font, width=40)
 article_name_entry.pack(side=tk.LEFT, padx=10)
+
+# Text Entry for Article Revision
+article_revision_label = tk.Label(header_frame, text="Revision:", font=body_font)
+article_revision_label.pack(side=tk.LEFT, padx=10)
+article_revision_entry = tk.Entry(header_frame, font=body_font, width=5)
+article_revision_entry.pack(side=tk.LEFT, padx=10)
 
 # Pin Selection Section
 main_frame = tk.Frame(root)
