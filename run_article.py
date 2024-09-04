@@ -369,7 +369,6 @@ config = configparser.ConfigParser()
 config.read('article_config.txt')
 
 filename = config['DEFAULT']['filename']
-description = config['DEFAULT']['description']
 pins = config['DEFAULT']['pins'].split(',')
 if pins[0].startswith("pins="):
     pins[0] = pins[0][5:]
@@ -389,7 +388,6 @@ print(f"Spacing: {spacing} mm")
 print(f"Total Length: {length} mm")
 print(f"Inner Diameter: {inner_diameter} mm")
 print(f"Drum Width: {width} mm")
-print(f"Description: {description}")
 
 # Get the directory where the script is located
 script_dir = os.path.dirname(os.path.abspath(__file__))
