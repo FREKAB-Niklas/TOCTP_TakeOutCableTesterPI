@@ -1016,7 +1016,7 @@ def create_new_log_file(filename):
 
     ws.column_dimensions['A'].width = 5   # Adjust as needed
     ws.column_dimensions['B'].width = 20  # Adjust as needed
-    ws.column_dimensions['C'].width = 15  # Adjust as needed
+    ws.column_dimensions['C'].width = 25  # Adjust as needed
     ws.column_dimensions['D'].width = 25  # Adjust as needed
     ws.column_dimensions['E'].width = 25  # Adjust as needed
     ws.column_dimensions['F'].width = 25  # Adjust as needed
@@ -1084,7 +1084,7 @@ def update_log(filename, data, is_cycle_data=False):
                     if idx == 1:  # Batchdatum
                         sheet_name = f"Batch_{value.replace(':', '-')}"
                         cell = ws_main.cell(row=next_row, column=idx + 1, value=value)
-                        cell.hyperlink = f"#{sheet_name}!A1"
+                        cell.hyperlink = f"#'{sheet_name}'!A1"
                         cell.style = "Hyperlink"
                     else:
                         ws_main.cell(row=next_row, column=idx + 1, value=value)
