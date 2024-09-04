@@ -101,6 +101,15 @@ else:
     print(f"{datetime.now()}: Pygame initialized successfully with audio support.")
 
 
+def initialize_serial_number():
+    global current_serial_number
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    local_log_filepath = os.path.join(script_dir, "Artiklar", f"{filename}_log.xlsx")
+    
+    current_serial_number = read_last_serial_number_from_log(local_log_filepath)
+    print(f"Initialized serial number to: {current_serial_number}")
+
+
 # ... (after global variable declarations)
 initialize_serial_number()
 # ... (before GUI setup)
@@ -965,13 +974,6 @@ def read_last_serial_number_from_log(filename):
         return 0
 
 
-def initialize_serial_number():
-    global current_serial_number
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    local_log_filepath = os.path.join(script_dir, "Artiklar", f"{filename}_log.xlsx")
-    
-    current_serial_number = read_last_serial_number_from_log(local_log_filepath)
-    print(f"Initialized serial number to: {current_serial_number}")
 
 
 def print_label(serial_number):
