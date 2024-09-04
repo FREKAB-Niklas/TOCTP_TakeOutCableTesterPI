@@ -131,17 +131,16 @@ def initialize_serial_number():
 
 
 def split_description(text, max_length):
-    if text is None or text == "":
-        return "", ""
     if len(text) > max_length:
+        # Find the closest space to split the line
         split_pos = text.rfind(' ', 0, max_length)
-        if split_pos == -1:
+        if split_pos == -1:  # No space found, force split
             split_pos = max_length
         line1 = text[:split_pos]
-        line2 = text[split_pos + 1:]
+        line2 = text[split_pos + 1:]  # Start from next char after the space
         return line1, line2
     else:
-        return text, ""
+        return text, ""  # Only one line needed
 
 def print_label(serial_number):
     # Read the configuration file
@@ -149,29 +148,14 @@ def print_label(serial_number):
     config.read('article_config.txt')
 
     # Get variables from config
-    article_number = config['DEFAULT'].get('filename', 'Unknown')
+    part_number = config['DEFAULT'].get('filename', 'Unknown')
     description = config['DEFAULT'].get('name', '')
     if not description:
         description = config['DEFAULT'].get('description', 'No description')
-    revision = config['DEFAULT'].get('rev', 'A')
+    rev = config['DEFAULT'].get('rev', 'A')
 
     # Prepare other variables
-    date = datetime.now().strftime("%y%W")  # Current year and week number
-
-    # ZPL template
-    zpl_template = """
-    ^XA
-    ^FO80,30^A0N,100,100^FD{ARTICLE_NUMBER}^FS
-    ^FO80,130^A0N,40,40^FD{DESCRIPTION_LINE_1}^FS
-    ^FO80,180^A0N,40,40^FD{DESCRIPTION_LINE_2}^FS
-    ^FO80,250^A0N,50,50^FDWeek^FS
-    ^FO280,250^A0N,50,50^FDREV^FS
-    ^FO480,250^A0N,50,50^FDSerial^FS
-    ^FO80,320^A0N,70,70^FD{DATE}^FS
-    ^FO280,320^A0N,70,70^FD{REV}^FS
-    ^FO480,320^A0N,70,70^FD{SERIAL}^FS
-    ^XZ
-    """
+    week = datetime.now().strftime("%y%W")  # Current year and week number
 
     # Split description if needed
     description_line_1, description_line_2 = split_description(description, 30)
@@ -179,13 +163,28 @@ def print_label(serial_number):
     # Format serial number to 5 digits
     serial = f"{serial_number:05d}"
 
+    # Adjusted ZPL template with improved positioning
+    zpl_template = """
+    ^XA
+    ^FO00,30^A0N,90,90^FD{PART_NUMBER}^FS  ; Part Number, made larger
+    ^FO00,130^A0N,40,40^FD{DESCRIPTION_LINE_1}^FS  ; Description Line 1, adjusted position
+    ^FO00,180^A0N,40,40^FD{DESCRIPTION_LINE_2}^FS  ; Description Line 2, adjusted position
+    ^FO00,250^A0N,50,50^FDWeek^FS              ; "Week" label, adjusted position
+    ^FO240,250^A0N,50,50^FDREV^FS              ; "REV" label, adjusted position
+    ^FO400,250^A0N,50,50^FDSerial^FS           ; "Serial" label, adjusted position
+    ^FO00,320^A0N,70,70^FD{WEEK}^FS            ; Week number, adjusted position and size
+    ^FO240,320^A0N,70,70^FD{REV}^FS            ; Revision, adjusted position and size
+    ^FO400,320^A0N,70,70^FD{SERIAL}^FS         ; Serial number, adjusted position and size
+    ^XZ
+    """
+
     # Replace placeholders with actual values
     zpl_code = zpl_template.format(
-        ARTICLE_NUMBER=article_number,
+        PART_NUMBER=part_number,
         DESCRIPTION_LINE_1=description_line_1,
         DESCRIPTION_LINE_2=description_line_2,
-        DATE=date,
-        REV=revision,
+        WEEK=week,
+        REV=rev,
         SERIAL=serial
     )
 
@@ -197,7 +196,7 @@ def print_label(serial_number):
     # Send the ZPL file to the printer in raw mode
     os.system(f"lp -d GK420d -o raw {zpl_file_path}")
 
-    print(f"Label printed for article {article_number}, serial number: {serial}")
+    print(f"Label printed for part number {part_number}, serial number: {serial}")
     print(f"Description: {description}")  # Add this line for debugging
 
 
