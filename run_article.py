@@ -150,9 +150,7 @@ def print_label(serial_number):
 
     # Get variables from config
     part_number = config['DEFAULT'].get('filename', 'Unknown')
-    description = config['DEFAULT'].get('name', '')
-    if not description:
-        description = config['DEFAULT'].get('description', 'No description')
+    description = config['DEFAULT'].get('description', '')
     rev = config['DEFAULT'].get('rev', 'A')
 
     # Prepare other variables
