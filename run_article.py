@@ -368,20 +368,41 @@ for mcp, pin in relay_mappings.values():
 config = configparser.ConfigParser()
 config.read('article_config.txt')
 
-filename = config['DEFAULT']['filename']
-description = config['DEFAULT']['description']
-pins = config['DEFAULT']['pins'].split(',')
+# Print the raw contents of the file
+print("Raw contents of the config file:")
+with open('article_config.txt', 'r') as f:
+    print(f.read())
+
+# Print all keys in the DEFAULT section
+print("\nAll keys in DEFAULT section:")
+for key in config['DEFAULT']:
+    print(key)
+
+# Now, let's try to read each value individually
+try:
+    filename = config['DEFAULT']['filename']
+    print(f"Filename: {filename}")
+except KeyError:
+    print("'filename' not found in config")
+
+try:
+    description = config['DEFAULT']['description']
+    print(f"Description: {description}")
+except KeyError:
+    print("'description' not found in config")
+
+# For the rest of the values, let's use the get() method with default values
+pins = config['DEFAULT'].get('pins', '').split(',')
 if pins[0].startswith("pins="):
     pins[0] = pins[0][5:]
-takeouts = int(config['DEFAULT']['takeouts'])
-stops = takeouts - 1  # Adjusting the number of stops to account for manual winding to the first takeout
-spacing = float(config['DEFAULT']['spacing']) * 1000  # Convert to mm
-length = float(config['DEFAULT']['length']) * 1000  # Convert to mm
-inner_diameter = float(config['DEFAULT']['inner_diameter'])
-width = float(config['DEFAULT']['width'])
+takeouts = config['DEFAULT'].get('takeouts', 0)
+spacing = float(config['DEFAULT'].get('spacing', 0)) * 1000  # Convert to mm
+length = float(config['DEFAULT'].get('length', 0)) * 1000  # Convert to mm
+inner_diameter = float(config['DEFAULT'].get('inner_diameter', 0))
+width = float(config['DEFAULT'].get('width', 0))
 
 # Display the parameters
-print(f"{datetime.now()}: Config read successfully.")
+print(f"\n{datetime.now()}: Config read results:")
 print(f"Filename: {filename}")
 print(f"Description: {description}")
 print(f"Pins: {pins}")
