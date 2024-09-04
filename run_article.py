@@ -131,16 +131,17 @@ def initialize_serial_number():
 
 
 def split_description(text, max_length):
+    if text is None:
+        return "", ""
     if len(text) > max_length:
-        # Find the closest space to split the line
         split_pos = text.rfind(' ', 0, max_length)
-        if split_pos == -1:  # No space found, force split
+        if split_pos == -1:
             split_pos = max_length
         line1 = text[:split_pos]
-        line2 = text[split_pos + 1:]  # Start from next char after the space
+        line2 = text[split_pos + 1:]
         return line1, line2
     else:
-        return text, ""  # Only one line needed
+        return text, ""
 
 def print_label(serial_number):
     # Read the configuration file
@@ -368,6 +369,7 @@ config = configparser.ConfigParser()
 config.read('article_config.txt')
 
 filename = config['DEFAULT']['filename']
+description = config['DEFAULT']['name']
 pins = config['DEFAULT']['pins'].split(',')
 if pins[0].startswith("pins="):
     pins[0] = pins[0][5:]
@@ -389,7 +391,7 @@ print(f"Inner Diameter: {inner_diameter} mm")
 print(f"Drum Width: {width} mm")
 
 
-print(f"{datetime.now()}: Config read successfully. Filename: {filename}, Pins: {pins}")
+print(f"{datetime.now()}: Config read successfully. Filename: {filename},Description: {description}, Pins: {pins}")
 
 # Get the directory where the script is located
 script_dir = os.path.dirname(os.path.abspath(__file__))
