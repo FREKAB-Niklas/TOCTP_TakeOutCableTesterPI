@@ -1014,6 +1014,18 @@ def create_new_log_file(filename):
     for col in range(1, 12):
         ws.column_dimensions[get_column_letter(col)].width = 25
 
+    ws.column_dimensions['A'].width = 5   # Adjust as needed
+    ws.column_dimensions['B'].width = 20  # Adjust as needed
+    ws.column_dimensions['C'].width = 15  # Adjust as needed
+    ws.column_dimensions['D'].width = 25  # Adjust as needed
+    ws.column_dimensions['E'].width = 25  # Adjust as needed
+    ws.column_dimensions['F'].width = 25  # Adjust as needed
+    ws.column_dimensions['G'].width = 25  # Adjust as needed
+    ws.column_dimensions['H'].width = 25  # Adjust as needed
+    ws.column_dimensions['I'].width = 25  # Adjust as needed
+    ws.column_dimensions['J'].width = 25  # Adjust as needed
+    ws.column_dimensions['K'].width = 25  # Adjust as needed
+
     # Add headers for total calculations
     ws['G1'] = "Total Tid"
     ws['G3'] = "Total Antal"
@@ -1044,9 +1056,18 @@ def update_log(filename, data, is_cycle_data=False):
                 headers = ["Tillverkad", "Antal pins", "Fullt testad", "Serienummer"]
                 for col, header in enumerate(headers, 1):
                     ws_batch.cell(row=1, column=col, value=header).font = Font(bold=True)
+
+                ws_batch.column_dimensions['A'].width = 20  # Tillverkad
+                ws_batch.column_dimensions['B'].width = 15  # Antal pins
+                ws_batch.column_dimensions['C'].width = 15  # Fullt testad
+                ws_batch.column_dimensions['D'].width = 15  # Serienummer
             else:
                 ws_batch = wb[sheet_name]
 
+            ws_batch.column_dimensions['A'].width = 20  # Tillverkad
+            ws_batch.column_dimensions['B'].width = 15  # Antal pins
+            ws_batch.column_dimensions['C'].width = 15  # Fullt testad
+            ws_batch.column_dimensions['D'].width = 15  # Serienummer
             next_row = ws_batch.max_row + 1
             total_completed = ws_main['G4'].value if ws_main['G4'].value else 0
             serial_number = total_completed + data["Serienummer"]
