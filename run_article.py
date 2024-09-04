@@ -129,6 +129,71 @@ def initialize_serial_number():
     current_serial_number = read_last_serial_number_from_log(local_log_filepath)
     print(f"Initialized serial number to: {current_serial_number}")
 
+def split_description(text, max_length):
+    if len(text) > max_length:
+        split_pos = text.rfind(' ', 0, max_length)
+        if split_pos == -1:
+            split_pos = max_length
+        line1 = text[:split_pos]
+        line2 = text[split_pos + 1:]
+        return line1, line2
+    else:
+        return text, ""
+
+def print_label(serial_number):
+    # Read the configuration file
+    config = configparser.ConfigParser()
+    config.read('article_config.txt')
+
+    # Get variables from config
+    article_number = config['DEFAULT']['filename']
+    description = config['DEFAULT']['name']
+    revision = config['DEFAULT']['rev']
+
+    # Prepare other variables
+    date = datetime.now().strftime("%y%W")  # Current year and week number
+
+    # ZPL template
+    zpl_template = """
+    ^XA
+    ^FO80,30^A0N,100,100^FD{ARTICLE_NUMBER}^FS
+    ^FO80,130^A0N,40,40^FD{DESCRIPTION_LINE_1}^FS
+    ^FO80,180^A0N,40,40^FD{DESCRIPTION_LINE_2}^FS
+    ^FO80,250^A0N,50,50^FDWeek^FS
+    ^FO280,250^A0N,50,50^FDREV^FS
+    ^FO480,250^A0N,50,50^FDSerial^FS
+    ^FO80,320^A0N,70,70^FD{DATE}^FS
+    ^FO280,320^A0N,70,70^FD{REV}^FS
+    ^FO480,320^A0N,70,70^FD{SERIAL}^FS
+    ^XZ
+    """
+
+    # Split description if needed
+    description_line_1, description_line_2 = split_description(description, 30)
+
+    # Format serial number to 5 digits
+    serial = f"{serial_number:05d}"
+
+    # Replace placeholders with actual values
+    zpl_code = zpl_template.format(
+        ARTICLE_NUMBER=article_number,
+        DESCRIPTION_LINE_1=description_line_1,
+        DESCRIPTION_LINE_2=description_line_2,
+        DATE=date,
+        REV=revision,
+        SERIAL=serial
+    )
+
+    # Write the ZPL to a temporary file
+    zpl_file_path = "/tmp/label.zpl"
+    with open(zpl_file_path, "w") as f:
+        f.write(zpl_code)
+
+    # Send the ZPL file to the printer in raw mode
+    os.system(f"lp -d GK420d -o raw {zpl_file_path}")
+
+    print(f"Label printed for article {article_number}, serial number: {serial}")
+
 
 # ... (after global variable declarations)
 initialize_serial_number()
@@ -985,10 +1050,6 @@ def calculate_average_time(total_time, total_cycles):
 
 
 
-
-def print_label(serial_number):
-    # Implement your label printing logic here
-    print(f"Printing label for serial number: {serial_number}")
 
 def save_log(filename, data):
     # Convert the data dictionary to a DataFrame
