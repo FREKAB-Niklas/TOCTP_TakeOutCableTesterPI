@@ -24,10 +24,10 @@ zpl_template = """
 ^FO00,130^A0N,40,40^FD{DESCRIPTION_LINE_1}^FS  ; Description Line 1, adjusted position
 ^FO00,180^A0N,40,40^FD{DESCRIPTION_LINE_2}^FS  ; Description Line 2, adjusted position
 ^FO00,250^A0N,50,50^FDWeek^FS              ; "Week" label, adjusted position
-^FO200,250^A0N,50,50^FDREV^FS              ; "REV" label, adjusted position
+^FO240,250^A0N,50,50^FDREV^FS              ; "REV" label, adjusted position
 ^FO400,250^A0N,50,50^FDSerial^FS           ; "Serial" label, adjusted position
 ^FO00,320^A0N,70,70^FD{WEEK}^FS            ; Week number, adjusted position and size
-^FO200,320^A0N,70,70^FD{REV}^FS            ; Revision, adjusted position and size
+^FO240,320^A0N,70,70^FD{REV}^FS            ; Revision, adjusted position and size
 ^FO400,320^A0N,70,70^FD{SERIAL}^FS         ; Serial number, adjusted position and size
 ^XZ
 """
