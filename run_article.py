@@ -571,12 +571,15 @@ def set_dual_color(label, color1, color2=None, pin_text="", width=600, height=50
 
 
 
-# Modify the on_pin_probe and complete_probe functions
-allow_motor_run = True
+# Global variables
+current_segment = 0
+total_segments = takeouts - 1  # Assuming 'takeouts' is defined in your config
+all_pins_probed = False
+allow_motor_run = False
 
 # Modify the on_pin_probe function
 def on_pin_probe(gui_pin_label):
-    global current_pin_index, expecting_probe, success_sound, reject_sound, current_segment, allow_motor_run
+    global current_pin_index, expecting_probe, success_sound, reject_sound, current_segment, allow_motor_run, all_pins_probed
 
     print(f"on_pin_probe called with gui_pin_label={gui_pin_label}, expecting_probe={expecting_probe}")
 
@@ -599,7 +602,6 @@ def on_pin_probe(gui_pin_label):
 
         if current_pin_index < len(left_panel_labels):
             next_pin_label = left_panel_labels[current_pin_index].cget("text")
-            # Update the central label color and add debugging output
             if isinstance(color_mapping[next_pin_label], tuple):
                 print(f"Next pin uses dual color: {color_mapping[next_pin_label]}")
                 set_dual_color(current_wire_label, *color_mapping[next_pin_label], pin_text=next_pin_label)
@@ -610,13 +612,12 @@ def on_pin_probe(gui_pin_label):
             left_panel_labels[current_pin_index].config(bg="yellow")
         else:
             print("All pins probed successfully.")
-            check_all_probed()
+            all_pins_probed = True
 
         # Check if the segment is complete and update motor button
-        if current_pin_index % (len(left_panel_labels) // takeouts) == 0:
+        if current_pin_index % (len(left_panel_labels) // takeouts) == 0 or all_pins_probed:
             print("Probing for the current segment is complete. Updating motor button.")
             allow_motor_run = True
-            update_motor_button()  # Update the motor button state to reflect readiness
         else:
             # If not at the end of a segment, allow continuation of probing
             allow_motor_run = False
@@ -627,10 +628,56 @@ def on_pin_probe(gui_pin_label):
             reject_sound.play()
 
     # After probing is complete, update the motor button state
-    if current_pin_index % (len(left_panel_labels) // takeouts) == 0:
-        print("Probing for the current segment is complete. Updating motor button.")
-        update_motor_button()  # Update the motor button state to reflect readiness
+    update_motor_button()
 
+def update_motor_button():
+    global motor_button, current_segment, rotation_list, allow_motor_run, all_pins_probed
+
+    if allow_motor_run and current_segment < len(rotation_list):
+        # Update button to indicate motor is ready to run
+        motor_button.config(
+            text=f"Motor\n{current_segment + 1}/{len(rotation_list)} segment\n{rotation_list[current_segment]:.2f} rotations",
+            bg="green"
+        )
+        motor_button.config(state=tk.NORMAL)  # Enable the button
+        print("Motor button updated to READY state.")
+    elif all_pins_probed and current_segment == len(rotation_list) - 1:
+        # Final segment, all pins probed
+        motor_button.config(
+            text=f"Motor\nFinal segment\n{rotation_list[current_segment]:.2f} rotations",
+            bg="green"
+        )
+        motor_button.config(state=tk.NORMAL)  # Enable the button
+        print("Motor button updated for final segment.")
+    else:
+        # Update button to indicate motor is not ready
+        motor_button.config(text="Motor", bg="gray")
+        motor_button.config(state=tk.DISABLED)  # Disable the button
+        print("Motor button updated to NOT READY state.")
+
+def run_motor():
+    global current_segment, all_pins_probed, allow_motor_run
+    if current_segment < len(rotation_list):
+        rotations = rotation_list[current_segment]
+        print(f"Running Motor for Segment {current_segment + 1}:")
+        print(f"  Rotations to perform: {rotations:.2f}")
+
+        # Publish the number of rotations to the MQTT broker
+        client.publish("motor/control", str(rotations))
+
+        current_segment += 1  # Move to the next segment
+        all_pins_probed = False  # Reset for next segment
+        allow_motor_run = False  # Reset motor run flag
+        update_motor_button()  # Update the button after running the motor
+
+        # Enable probing for the next pin
+        enable_probing()
+    else:
+        print("No more segments left to run.")
+        # Handle end of test here
+
+# Make sure to call update_motor_button() after initializing the GUI
+update_motor_button()
 
 
 def activate_relay_and_wait(pin_label):
@@ -681,47 +728,6 @@ rotation_list = calculate_rotations()
 
 # Debug log to verify rotation_list is populated
 print(f"Debug: rotation_list = {rotation_list}")
-
-def update_motor_button():
-    global motor_button, current_segment, rotation_list
-
-    # Check if there are remaining segments
-    if current_segment < len(rotation_list):
-        # Update button to indicate motor is ready to run
-        motor_button.config(
-            text=f"Motor\n{current_segment + 1}st/{len(rotation_list)} segment\n{rotation_list[current_segment]:.2f} rotations",
-            bg="green"
-        )
-        motor_button.config(state=tk.NORMAL)  # Enable the button
-        print("Motor button updated to READY state.")
-    else:
-        # Update button to indicate motor is not ready
-        motor_button.config(text="Motor", bg="gray")
-        motor_button.config(state=tk.DISABLED)  # Disable the button
-        print("Motor button updated to NOT READY state.")
-
-
-def run_motor():
-    global current_segment
-    if current_segment < len(rotation_list):
-        rotations = rotation_list[current_segment]
-        print(f"Running Motor for Segment {current_segment + 1}:")
-        print(f"  Rotations to perform: {rotations:.2f}")
-
-        # Publish the number of rotations to the MQTT broker
-        client.publish("motor/control", str(rotations))
-
-        current_segment += 1  # Move to the next segment
-        update_motor_button()  # Update the button after running the motor
-
-        # Turn the button gray after use
-        motor_button.config(text="Motor", bg="gray")
-        motor_button.config(state=tk.DISABLED)  # Disable the button
-
-        # Enable probing for the next pin
-        enable_probing()
-    else:
-        print("No more segments left to run.")
 
 
 
