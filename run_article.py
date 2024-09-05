@@ -690,22 +690,23 @@ rotation_list = calculate_rotations()
 print(f"Debug: rotation_list = {rotation_list}")
 
 def update_motor_button():
-    global motor_button, current_segment, rotation_list
+    global motor_button, current_segment, rotation_list, allow_motor_run
 
-    # Check if there are remaining segments
-    if current_segment < len(rotation_list):
-        # Update button to indicate motor is ready to run
-        motor_button.config(
-            text=f"Motor\n{current_segment + 1}st/{len(rotation_list)} segment\n{rotation_list[current_segment]:.2f} rotations",
-            bg="green"
-        )
-        motor_button.config(state=tk.NORMAL)  # Enable the button
-        print("Motor button updated to READY state.")
+    if allow_motor_run and current_segment < len(rotation_list):
+        if current_segment == len(rotation_list) - 1:
+            # Final segment
+            motor_button.config(
+                text=f"Motor\nFinal segment\n{rotation_list[current_segment]:.2f} rotations",
+                bg="green", state=tk.NORMAL
+            )
+        else:
+            motor_button.config(
+                text=f"Motor\n{current_segment + 1}/{len(rotation_list)} segment\n{rotation_list[current_segment]:.2f} rotations",
+                bg="green", state=tk.NORMAL
+            )
     else:
-        # Update button to indicate motor is not ready
-        motor_button.config(text="Motor", bg="gray")
-        motor_button.config(state=tk.DISABLED)  # Disable the button
-        print("Motor button updated to NOT READY state.")
+        motor_button.config(text="Motor", bg="gray", state=tk.DISABLED)
+
 
 
 def run_motor():
