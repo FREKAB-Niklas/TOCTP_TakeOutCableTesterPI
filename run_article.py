@@ -710,7 +710,7 @@ def update_motor_button():
 
 
 def run_motor():
-    global current_segment
+    global current_segment, allow_motor_run
     if current_segment < len(rotation_list):
         rotations = rotation_list[current_segment]
         print(f"Running Motor for Segment {current_segment + 1}:")
@@ -720,6 +720,13 @@ def run_motor():
         client.publish("motor/control", str(rotations))
 
         current_segment += 1  # Move to the next segment
+        allow_motor_run = False
+        if current_segment < len(rotation_list):
+            enable_probing()
+        else:
+            # Test complete
+            print("All segments completed.")
+            # Add any end-of-test logic here
         update_motor_button()  # Update the button after running the motor
 
         # Turn the button gray after use
