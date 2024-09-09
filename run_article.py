@@ -5,6 +5,7 @@ from PIL import Image, ImageTk
 import pandas as pd
 import os
 import sys
+import traceback
 import subprocess
 from datetime import datetime, timedelta
 import openpyxl
@@ -1315,6 +1316,20 @@ header_frame = tk.Frame(root)
 header_frame.pack(side=tk.TOP, fill=tk.X)
 
 
+def exit_program(event=None):
+    try:
+        # Attempt to run finish_batch()
+        finish_batch()
+        print("Batch finished successfully.")
+    except Exception as e:
+        # If an error occurs, print it and continue with exit
+        print(f"Error in finish_batch(): {e}")
+        traceback.print_exc()  # This will print the full traceback for debugging
+    finally:
+        # Close the window and exit the program
+        root.destroy()
+        sys.exit()
+
 # Open and resize the image
 image = Image.open(logo_path)
 scale_percent = 50  # percent of original size
@@ -1324,9 +1339,9 @@ new_height = int(height * scale_percent / 100)
 resized_image = image.resize((new_width, new_height), Image.LANCZOS)
 logo_image = ImageTk.PhotoImage(resized_image)
 
-logo_label = tk.Label(header_frame, image=logo_image)
+logo_label = tk.Label(header_frame, image=logo_image, cursor="hand2")  # Change cursor to indicate it's clickable
 logo_label.pack(side=tk.LEFT, padx=10, pady=10)
-logo_label.bind("<Button-1>", lambda e: root.destroy())  # Temporary function to close the app
+logo_label.bind("<Button-1>", exit_program)  # Bind the new exit_program function
 
 
 article_label = tk.Label(header_frame, text=f"Artikelnummer: {filename}", font=body_font)
