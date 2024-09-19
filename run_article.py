@@ -1259,6 +1259,11 @@ def update_log(filename, data, is_cycle_data=False):
 def finish_batch():
     global amount_of_cycles_done, total_elapsed_time, downtime, skipped_tests
 
+    # Only proceed with logging if at least one cycle was completed
+    if amount_of_cycles_done == 0:
+        print("No cycles completed. Skipping log update.")
+        return
+
     batch_date = datetime.now().strftime('%y-%m-%d %H:%M')
     
     script_dir = os.path.dirname(os.path.abspath(__file__))
