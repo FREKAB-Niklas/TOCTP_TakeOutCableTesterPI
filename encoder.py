@@ -3,7 +3,7 @@ import time
 
 # Constants
 PULSES_PER_REVOLUTION = 1000  # Check the encoder spec for correct value
-WHEEL_CIRCUMFERENCE_MM = 157.08  # Set the circumference of the wheel in mm (50 mm diameter wheel)
+WHEEL_CIRCUMFERENCE_MM = 200  # Set the circumference of the wheel in mm (50 mm diameter wheel)
 
 # GPIO pin definitions
 ENCODER_PIN_A = 17
