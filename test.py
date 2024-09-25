@@ -1,21 +1,27 @@
-import pigpio
+import RPi.GPIO as GPIO
+import time
 
-pi = pigpio.pi()
+# Set the GPIO mode to BCM (Broadcom SOC channel numbers)
+GPIO.setmode(GPIO.BCM)
 
-if not pi.connected:
-    print("Failed to connect to pigpio daemon")
-    exit()
-
+# GPIO pins to test (you can test any pins you prefer)
 test_pins = [17, 27, 22]
 
+# Setup the GPIO pins as output (no physical device is required)
 for pin in test_pins:
-    pi.set_mode(pin, pigpio.OUTPUT)
+    GPIO.setup(pin, GPIO.OUT)
     print(f"Pin {pin} set up as OUTPUT.")
 
-    pi.write(pin, 1)
+# Toggle each pin ON (HIGH) and OFF (LOW)
+for pin in test_pins:
+    GPIO.output(pin, GPIO.HIGH)
     print(f"Pin {pin} set to HIGH (ON).")
+    time.sleep(1)
     
-    pi.write(pin, 0)
+    GPIO.output(pin, GPIO.LOW)
     print(f"Pin {pin} set to LOW (OFF).")
+    time.sleep(1)
 
-pi.stop()
+# Cleanup the GPIO settings after the test
+GPIO.cleanup()
+print("GPIO cleanup complete.")
