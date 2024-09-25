@@ -1,6 +1,6 @@
 import RPi.GPIO as GPIO
 
-PIN=17
+PIN=5
 
 # GPIO setup
 GPIO.setmode(GPIO.BCM)
