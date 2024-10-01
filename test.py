@@ -1,27 +1,23 @@
 import RPi.GPIO as GPIO
 import time
 
-# Set the GPIO mode to BCM (Broadcom SOC channel numbers)
+ENCODER_PIN_A = 17
+
+def callback(channel):
+    print("Edge detected on pin", channel)
+
 GPIO.setmode(GPIO.BCM)
+GPIO.setup(ENCODER_PIN_A, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
-# GPIO pins to test (you can test any pins you prefer)
-test_pins = [17, 27, 22]
+GPIO.add_event_detect(ENCODER_PIN_A, GPIO.BOTH, callback=callback)
 
-# Setup the GPIO pins as output (no physical device is required)
-for pin in test_pins:
-    GPIO.setup(pin, GPIO.OUT)
-    print(f"Pin {pin} set up as OUTPUT.")
+try:
+    while True:
+        time.sleep(1)
 
-# Toggle each pin ON (HIGH) and OFF (LOW)
-for pin in test_pins:
-    GPIO.output(pin, GPIO.HIGH)
-    print(f"Pin {pin} set to HIGH (ON).")
-    time.sleep(1)
-    
-    GPIO.output(pin, GPIO.LOW)
-    print(f"Pin {pin} set to LOW (OFF).")
-    time.sleep(1)
+except KeyboardInterrupt:
+    print("Stopped by user")
 
-# Cleanup the GPIO settings after the test
-GPIO.cleanup()
-print("GPIO cleanup complete.")
+finally:
+    GPIO.cleanup()
+
