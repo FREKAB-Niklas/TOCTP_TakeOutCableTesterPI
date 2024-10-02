@@ -151,7 +151,7 @@ root.after(100, lambda: root.attributes('-topmost', False, '-fullscreen', True))
 
 # Open and resize the image
 image = Image.open(logo_path)
-scale_percent = 50  # percent of original size
+scale_percent = 25  # percent of original size
 width, height = image.size
 new_width = int(width * scale_percent / 100)
 new_height = int(height * scale_percent / 100)
