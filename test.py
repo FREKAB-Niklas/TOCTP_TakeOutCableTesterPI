@@ -75,12 +75,19 @@ def run_motor():
     if allow_motor_run:
         rotations = 10  # Example rotation value, can be set dynamically
         print(f"Running motor for {rotations} rotations.")
-        
+
+        # Log the MQTT message being sent
+        log_message = f"Sending MQTT message to start motor: {rotations} rotations"
+        print(log_message)
+
         # Publish the number of rotations to the MQTT broker
         client.publish("motor/control", str(rotations))
-        
+
         allow_motor_run = False  # Prevent further runs until allowed again
         start_button.config(state=tk.DISABLED)  # Disable the button after starting the motor
+
+
+
 
 # Global variable to store the distance label
 distance_label = None
@@ -89,6 +96,11 @@ measuring = False  # Ensure this is set correctly when needed
 # Function to stop the motor via MQTT
 def stop_motor():
     print("Stopping the motor")
+
+    # Log the MQTT message being sent
+    log_message = "Sending MQTT message to stop motor"
+    print(log_message)
+
     client.publish("motor/control", "stop")  # Send a stop command to the motor via MQTT
 
 # Function to update distance on the GUI
