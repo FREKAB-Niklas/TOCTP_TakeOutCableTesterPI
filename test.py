@@ -64,7 +64,7 @@ class EncoderApp(tk.Tk):
         # Ensure the window is brought to the front
         self.lift()
         self.attributes('-topmost', True)
-        self.after(100, lambda: root.attributes('-topmost', False, '-fullscreen', True))
+        self.after(100, lambda: self.attributes('-topmost', False, '-fullscreen', True))
 
         
         # Create Start button
