@@ -83,7 +83,7 @@ def set_target_length():
 # Global flag to track if numpad is open
 numpad_open = False
 
-# Create a simple numpad to input numbers
+# Create a custom numpad for touch-friendly input
 def open_numpad():
     global numpad_open
     if numpad_open:
@@ -93,7 +93,7 @@ def open_numpad():
     
     numpad = tk.Toplevel(root)
     numpad.title("Numpad")
-    numpad.geometry("400x600")  # Larger size for the small display
+    numpad.geometry("480x640")  # Larger size for small touchscreens
 
     # When the numpad window is closed, reset the flag
     numpad.protocol("WM_DELETE_WINDOW", lambda: close_numpad(numpad))
@@ -114,25 +114,26 @@ def open_numpad():
         else:
             längd_entry.insert(tk.END, value)
 
-    # Create numpad buttons using tk.Button with larger size
+    # Create numpad buttons using tk.Button with larger size for touch
     row = 0
     col = 0
     for button in buttons:
         action = lambda x=button: append_to_entry(x)
-        tk.Button(numpad, text=button, command=action, width=10, height=4).grid(row=row, column=col, padx=5, pady=5)
+        tk.Button(numpad, text=button, command=action, width=10, height=4, font=("Arial", 24)).grid(row=row, column=col, padx=10, pady=10)
         col += 1
         if col > 2:
             col = 0
             row += 1
 
     # Confirm button
-    tk.Button(numpad, text="OK", command=lambda: (set_target_length(), close_numpad(numpad)), width=10, height=4).grid(row=row+1, column=0, columnspan=3, pady=10)
+    tk.Button(numpad, text="OK", command=lambda: (set_target_length(), close_numpad(numpad)), width=10, height=4, font=("Arial", 24)).grid(row=row+1, column=0, columnspan=3, pady=20)
 
 # Function to close the numpad and reset the flag
 def close_numpad(numpad):
     global numpad_open
     numpad_open = False  # Reset the flag
     numpad.destroy()  # Close the numpad window
+
 
 
 
