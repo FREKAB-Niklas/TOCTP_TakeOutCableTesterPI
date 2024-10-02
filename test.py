@@ -169,11 +169,11 @@ längd_entry.grid(row=2, column=0, pady=10)
 
 # Define and assign distance_label
 distance_label = ttk.Label(main_frame, text="Kört: 0 mm", font=("Arial", 24))
-distance_label.grid(row=5, column=0, pady=20)
+distance_label.grid(row=3, column=0, pady=20)
 
 # Create Start and Reset buttons side by side with proper centering
 button_frame = tk.Frame(main_frame)
-button_frame.grid(row=3, column=0, columnspan=2, pady=10)
+button_frame.grid(row=5, column=0, columnspan=2, pady=10)
 
 start_button = tk.Button(button_frame, text="Start", command=start_measuring, width=10, height=5, font=("Arial", 16), bd=2, bg="green", fg="white")
 start_button.grid(row=0, column=0, padx=5)
