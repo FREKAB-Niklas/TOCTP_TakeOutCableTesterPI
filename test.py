@@ -5,6 +5,7 @@ import os
 import tkinter as tk
 from tkinter import font, filedialog, messagebox, ttk
 from PIL import Image, ImageTk
+import paho.mqtt.client as mqtt  # Import MQTT
 
 # Global variables
 measuring = False
@@ -13,10 +14,22 @@ PULSES_PER_REVOLUTION = 2400
 WHEEL_CIRCUMFERENCE_MM = 200
 target_length = 0  # Target length from the "Längd" input
 distance_label = None
+mqtt_broker_ip = "192.168.10.9"  # Update to your MQTT broker IP
+current_segment = 0  # Example variable for controlling segments
+allow_motor_run = True  # Control motor flag
 
-# Get the directory where the script is located
-script_dir = os.path.dirname(os.path.abspath(__file__))
-logo_path = os.path.join(script_dir, "logo.png")
+# MQTT setup
+client = mqtt.Client()
+
+def connect_mqtt():
+    try:
+        client.connect(mqtt_broker_ip, 1883, 60)  # Connect to the broker
+        client.loop_start()  # Start the MQTT loop in the background
+        print(f"Connected to MQTT broker at {mqtt_broker_ip}")
+    except Exception as e:
+        print(f"Failed to connect to MQTT broker: {e}")
+
+connect_mqtt()  # Establish the MQTT connection
 
 # GPIO setup for the encoder
 ENCODER_PIN_A = 17
@@ -49,19 +62,36 @@ def read_encoder():
         
         time.sleep(0.001)
 
-# Start measuring function
+# Function to control the motor via MQTT
+def run_motor():
+    global current_segment, allow_motor_run
+    if allow_motor_run:
+        rotations = 10  # Example rotation value, can be set dynamically
+        print(f"Running motor for {rotations} rotations.")
+        
+        # Publish the number of rotations to the MQTT broker
+        client.publish("motor/control", str(rotations))
+        
+        # Handle next segment or further logic if needed
+        allow_motor_run = False  # Prevent further runs until allowed again
+        start_button.config(state=tk.DISABLED)  # Disable the button after starting the motor
+
+# Start measuring function, with MQTT motor control
 def start_measuring():
     global measuring
     measuring = True
+    run_motor()  # Start the motor via MQTT
     thread = threading.Thread(target=read_encoder)
     thread.start()
 
 # Reset the counter and stop measuring
 def reset_counter():
-    global measuring, current_position
+    global measuring, current_position, allow_motor_run
     measuring = False
     current_position = 0
     update_distance()
+    allow_motor_run = True  # Allow motor to run again
+    start_button.config(state=tk.NORMAL)  # Re-enable the start button
 
 # Global variable to store the distance label
 distance_label = None
@@ -84,7 +114,6 @@ def set_target_length():
     except ValueError:
         # If input is not valid, show an error message
         messagebox.showerror("Invalid Input", "Please enter a valid number.")
-
 
 # Create a numpad and embed it in the main window
 def create_numpad(parent):
@@ -124,8 +153,6 @@ def create_numpad(parent):
         if col > 2:
             col = 0
             row += 1
-
-
 
 # Initialize the GUI
 root = tk.Tk()
@@ -181,8 +208,6 @@ start_button.grid(row=0, column=0, padx=5)
 reset_button = tk.Button(button_frame, text="Reset", command=reset_counter, width=10, height=5, font=("Arial", 16), bd=2, bg="yellow", fg="black")
 reset_button.grid(row=0, column=1, padx=5)
 
-
-
 # Frame for Numpad (placed to the right)
 numpad_frame = tk.Frame(root)
 numpad_frame.grid(row=0, column=1, padx=50, pady=50, sticky='n')  # Adjust position as needed
@@ -198,6 +223,3 @@ root.mainloop()
 
 # Cleanup GPIO on exit
 GPIO.cleanup()
-
-
-
