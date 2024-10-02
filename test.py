@@ -74,6 +74,50 @@ def update_distance():
         messagebox("Done", "Target length reached!", reset_counter)  # Show custom messagebox and reset counter
     root.after(1000, update_distance)  # Update every second
 
+# Function to set the target length from entry
+def set_target_length():
+    global target_length
+    try:
+        # Get the value from the entry and convert it to float (the target length)
+        target_length = float(längd_entry.get())
+        längd_label.config(text=f"Längd: {target_length} mm")  # Update label to reflect the set length
+    except ValueError:
+        # If input is not valid, show an error message
+        messagebox.showerror("Invalid Input", "Please enter a valid number.")
+
+
+# Create a numpad and embed it in the main window
+def create_numpad(parent):
+    # List of buttons for the numpad
+    buttons = [
+        '1', '2', '3',
+        '4', '5', '6',
+        '7', '8', '9',
+        '0', '.', 'C'
+    ]
+
+    # Function to append the value to the entry field
+    def append_to_entry(value):
+        current_text = längd_entry.get()
+        if value == "C":
+            längd_entry.delete(0, tk.END)  # Clear the entry field
+        else:
+            längd_entry.insert(tk.END, value)
+
+    # Create numpad buttons using tk.Button with larger size for touch
+    row = 0
+    col = 0
+    for button in buttons:
+        action = lambda x=button: append_to_entry(x)
+        tk.Button(parent, text=button, command=action, width=5, height=2, font=("Arial", 24), bd=2).grid(row=row, column=col, padx=5, pady=5)
+        col += 1
+        if col > 2:
+            col = 0
+            row += 1
+
+    # Confirm button
+    tk.Button(parent, text="OK", command=set_target_length, width=10, height=2, font=("Arial", 24), bd=2).grid(row=row+1, column=0, columnspan=3, pady=20)
+
 
 # Initialize the GUI
 root = tk.Tk()
