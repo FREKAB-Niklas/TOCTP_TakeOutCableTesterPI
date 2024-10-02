@@ -70,8 +70,11 @@ def update_distance():
     distance_mm = calculate_distance_mm(current_position)
     distance_label.config(text=f"Kört: {distance_mm:.2f} mm")
     if target_length > 0 and distance_mm >= target_length:
-        custom_messagebox("Done", "Target length reached!", reset_counter)  # Show custom messagebox and reset counter
+        messagebox("Done", "Target length reached!", reset_counter)  # Show custom messagebox and reset counter
     root.after(1000, update_distance)  # Update every second
+
+# Define distance_label as a global variable at the start
+distance_label = None
 
 # Initialize the GUI
 root = tk.Tk()
@@ -121,8 +124,7 @@ start_button.grid(row=3, column=0, pady=10)
 reset_button = ttk.Button(main_frame, text="Reset", command=reset_counter)
 reset_button.grid(row=4, column=0, pady=10)
 
-# Define distance_label as a global variable
-global distance_label
+# Define and assign distance_label
 distance_label = ttk.Label(main_frame, text="Kört: 0 mm", font=("Arial", 24))
 distance_label.grid(row=5, column=0, pady=20)
 
@@ -141,5 +143,6 @@ root.mainloop()
 
 # Cleanup GPIO on exit
 GPIO.cleanup()
+
 
 
