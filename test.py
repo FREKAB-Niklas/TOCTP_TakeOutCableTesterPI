@@ -2,7 +2,6 @@ import threading
 import time
 import RPi.GPIO as GPIO
 import os
-import sys
 import tkinter as tk
 from tkinter import font, filedialog, messagebox, ttk
 from PIL import Image, ImageTk
@@ -94,20 +93,20 @@ header_frame = tk.Frame(root)
 header_frame.grid(row=0, column=0, pady=10, sticky='nw')  # Adjusted to be top left
 
 logo_label = tk.Label(header_frame, image=logo_image)
-logo_label.pack(side=tk.LEFT, padx=10, pady=0)
+logo_label.grid(row=0, column=0, padx=10, pady=0)
 logo_label.bind("<Button-1>", lambda e: root.destroy())
 
-# Create Start button
+# Create Start button using grid
 start_button = ttk.Button(root, text="Start", command=start_measuring)
-start_button.pack(pady=10)
+start_button.grid(row=1, column=0, pady=10)
 
-# Create Stop button
+# Create Stop button using grid
 stop_button = ttk.Button(root, text="Stop", command=stop_measuring)
-stop_button.pack(pady=10)
+stop_button.grid(row=2, column=0, pady=10)
 
-# Label to show the distance
+# Label to show the distance using grid
 root.distance_label = ttk.Label(root, text="Distance: 0 mm", font=("Arial", 24))
-root.distance_label.pack(pady=20)
+root.distance_label.grid(row=3, column=0, pady=20)
 
 # Update the distance label every second
 update_distance()
