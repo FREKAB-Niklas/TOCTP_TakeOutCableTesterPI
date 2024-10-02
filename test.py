@@ -64,16 +64,16 @@ def stop_measuring():
 
 # GUI Application
 class EncoderApp(tk.Tk):
-    def __init__(self):
+    def __init__(root):
         super().__init__()
         
-        self.title("Encoder Distance Measurement")
-        self.geometry("480x320")  # Match the touchscreen size
+        root.title("Encoder Distance Measurement")
+        root.geometry("480x320")  # Match the touchscreen size
 
         # Ensure the window is brought to the front
-        self.lift()
-        self.attributes('-topmost', True)
-        self.after(100, lambda: self.attributes('-topmost', False, '-fullscreen', True))
+        root.lift()
+        root.attributes('-topmost', True)
+        root.after(100, lambda: root.attributes('-topmost', False, '-fullscreen', True))
 
         
 
@@ -95,24 +95,24 @@ class EncoderApp(tk.Tk):
 
 
         # Create Start button
-        self.start_button = ttk.Button(self, text="Start", command=start_measuring)
-        self.start_button.pack(pady=10)
+        root.start_button = ttk.Button(root, text="Start", command=start_measuring)
+        root.start_button.pack(pady=10)
         
         # Create Stop button
-        self.stop_button = ttk.Button(self, text="Stop", command=stop_measuring)
-        self.stop_button.pack(pady=10)
+        root.stop_button = ttk.Button(root, text="Stop", command=stop_measuring)
+        root.stop_button.pack(pady=10)
         
         # Label to show the distance
-        self.distance_label = ttk.Label(self, text="Distance: 0 mm", font=("Arial", 24))
-        self.distance_label.pack(pady=20)
+        root.distance_label = ttk.Label(root, text="Distance: 0 mm", font=("Arial", 24))
+        root.distance_label.pack(pady=20)
         
         # Update the distance label every second
-        self.update_distance()
+        root.update_distance()
     
-    def update_distance(self):
+    def update_distance(root):
         distance_mm = calculate_distance_mm(current_position)
-        self.distance_label.config(text=f"Distance: {distance_mm:.2f} mm")
-        self.after(1000, self.update_distance)  # Update every second
+        root.distance_label.config(text=f"Distance: {distance_mm:.2f} mm")
+        root.after(1000, root.update_distance)  # Update every second
 
 # Initialize and run the application
 if __name__ == "__main__":
