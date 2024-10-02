@@ -12,6 +12,7 @@ current_position = 0
 PULSES_PER_REVOLUTION = 2400
 WHEEL_CIRCUMFERENCE_MM = 200
 target_length = 0  # Target length from the "Längd" input
+distance_label = None
 
 # Get the directory where the script is located
 script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -73,8 +74,6 @@ def update_distance():
         messagebox("Done", "Target length reached!", reset_counter)  # Show custom messagebox and reset counter
     root.after(1000, update_distance)  # Update every second
 
-# Define distance_label as a global variable at the start
-distance_label = None
 
 # Initialize the GUI
 root = tk.Tk()
