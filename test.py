@@ -82,33 +82,45 @@ def run_motor():
         allow_motor_run = False  # Prevent further runs until allowed again
         start_button.config(state=tk.DISABLED)  # Disable the button after starting the motor
 
-# Start measuring function, with MQTT motor control
+# Global variable to store the distance label
+distance_label = None
+measuring = False  # Ensure this is set correctly when needed
+
+# Function to stop the motor via MQTT
+def stop_motor():
+    print("Stopping the motor")
+    client.publish("motor/control", "stop")  # Send a stop command to the motor via MQTT
+
+# Function to update distance on the GUI
+def update_distance():
+    global measuring
+    distance_mm = calculate_distance_mm(current_position)
+    distance_label.config(text=f"Kört: {distance_mm:.2f} mm")
+
+    # Check if the target length is reached
+    if target_length > 0 and distance_mm >= target_length:
+        messagebox.showinfo("Done", "Target length reached!")
+        stop_motor()  # Stop the motor when the target length is hit
+        measuring = False  # Stop measuring further
+    else:
+        # Continue updating the distance every second if still measuring
+        if measuring:
+            root.after(1000, update_distance)
+
+# Start measuring function
 def start_measuring():
     global measuring
     measuring = True
-    run_motor()  # Start the motor via MQTT
-    thread = threading.Thread(target=read_encoder)
+    update_distance()  # Start updating the distance
+    thread = threading.Thread(target=read_encoder)  # Start encoder reading in a separate thread
     thread.start()
 
 # Reset the counter and stop measuring
 def reset_counter():
-    global measuring, current_position, allow_motor_run
+    global measuring, current_position
     measuring = False
     current_position = 0
-    update_distance()
-    allow_motor_run = True  # Allow motor to run again
-    start_button.config(state=tk.NORMAL)  # Re-enable the start button
-
-# Global variable to store the distance label
-distance_label = None
-
-# Function to update distance on the GUI
-def update_distance():
-    distance_mm = calculate_distance_mm(current_position)
-    distance_label.config(text=f"Kört: {distance_mm:.2f} mm")
-    if target_length > 0 and distance_mm >= target_length:
-        messagebox("Done", "Target length reached!", reset_counter)  # Show custom messagebox and reset counter
-    root.after(1000, update_distance)  # Update every second
+    update_distance()  # Reset the displayed distance
 
 # Function to set the target length from entry
 def set_target_length():
