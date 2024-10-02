@@ -171,7 +171,8 @@ längd_label.grid(row=1, column=0, pady=10)
 
 längd_entry = ttk.Entry(root, font=("Arial", 20))
 längd_entry.grid(row=2, column=0, pady=10)
-längd_entry.bind("<FocusIn>", lambda e: open_numpad())  # Show numpad on focus
+längd_entry.bind("<Button-1>", lambda e: open_numpad())  # Show numpad on mouse click
+
 
 # Create Start button using grid
 start_button = ttk.Button(root, text="Start", command=start_measuring)
