@@ -96,7 +96,6 @@ def update_distance():
     # Check if the target length is reached
     if target_length > 0 and distance_mm >= target_length:
         if not motor_stopped:  # Ensure the motor is only stopped once
-            messagebox.showinfo("Done", "Target length reached!")  # Show a message when the target length is reached
             stop_motor()  # Stop the motor when the target length is hit
             measuring = False  # Stop measuring further
             reset_counter()  # Reset the counter once the target length is hit
@@ -104,6 +103,7 @@ def update_distance():
         # Continue updating the distance every second if still measuring
         if measuring:
             root.after(1000, update_distance)
+
 
 # Continuously send "run manual" messages until the target is reached
 def start_measuring():
