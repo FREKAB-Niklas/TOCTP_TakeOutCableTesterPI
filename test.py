@@ -69,22 +69,7 @@ def read_encoder():
         
         time.sleep(0.001)
 
-# Function to control the motor via MQTT
-def run_motor():
-    global current_segment, allow_motor_run
-    if allow_motor_run:
-        rotations = 10  # Example rotation value, can be set dynamically
-        print(f"Running motor for {rotations} rotations.")
 
-        # Log the MQTT message being sent
-        log_message = f"Sending MQTT message to start motor: {rotations} rotations"
-        print(log_message)
-
-        # Publish the number of rotations to the MQTT broker
-        client.publish("motor/control", str(rotations))
-
-        allow_motor_run = False  # Prevent further runs until allowed again
-        start_button.config(state=tk.DISABLED)  # Disable the button after starting the motor
 
 
 
