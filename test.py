@@ -80,24 +80,8 @@ def set_target_length():
     except ValueError:
         messagebox.showerror("Invalid Input", "Please enter a valid number.")
 
-# Global flag to track if numpad is open
-numpad_open = False
-
-# Create a custom numpad for touch-friendly input
-def open_numpad():
-    global numpad_open
-    if numpad_open:
-        return  # Don't reopen the numpad if it's already open
-    
-    numpad_open = True  # Set flag to True when numpad is opened
-    
-    numpad = tk.Toplevel(root)
-    numpad.title("Numpad")
-    numpad.geometry("480x640")  # Larger size for small touchscreens
-
-    # When the numpad window is closed, reset the flag
-    numpad.protocol("WM_DELETE_WINDOW", lambda: close_numpad(numpad))
-
+# Create a numpad and embed it in the main window
+def create_numpad(parent):
     # List of buttons for the numpad
     buttons = [
         '1', '2', '3',
@@ -119,23 +103,14 @@ def open_numpad():
     col = 0
     for button in buttons:
         action = lambda x=button: append_to_entry(x)
-        tk.Button(numpad, text=button, command=action, width=10, height=5, font=("Arial", 28), bd=2).grid(row=row, column=col, padx=5, pady=5)
+        tk.Button(parent, text=button, command=action, width=5, height=2, font=("Arial", 24), bd=2).grid(row=row, column=col, padx=5, pady=5)
         col += 1
         if col > 2:
             col = 0
             row += 1
 
     # Confirm button
-    tk.Button(numpad, text="OK", command=lambda: (set_target_length(), close_numpad(numpad)), width=10, height=5, font=("Arial", 28), bd=2).grid(row=row+1, column=0, columnspan=3, pady=20)
-
-# Function to close the numpad and reset the flag
-def close_numpad(numpad):
-    global numpad_open
-    numpad_open = False  # Reset the flag
-    numpad.destroy()  # Close the numpad window
-
-
-
+    tk.Button(parent, text="OK", command=set_target_length, width=10, height=2, font=("Arial", 24), bd=2).grid(row=row+1, column=0, columnspan=3, pady=20)
 
 # Initialize the GUI
 root = tk.Tk()
@@ -149,6 +124,10 @@ root.lift()
 root.attributes('-topmost', True)
 root.after(100, lambda: root.attributes('-topmost', False, '-fullscreen', True))
 
+# Main Frame
+main_frame = tk.Frame(root)
+main_frame.grid(row=0, column=0, sticky='nw')
+
 # Open and resize the image
 image = Image.open(logo_path)
 scale_percent = 25  # percent of original size
@@ -159,7 +138,7 @@ resized_image = image.resize((new_width, new_height), Image.LANCZOS)
 logo_image = ImageTk.PhotoImage(resized_image)
 
 # Create header frame for the logo
-header_frame = tk.Frame(root)
+header_frame = tk.Frame(main_frame)
 header_frame.grid(row=0, column=0, pady=10, sticky='nw')  # Adjusted to be top left
 
 logo_label = tk.Label(header_frame, image=logo_image)
@@ -167,25 +146,30 @@ logo_label.grid(row=0, column=0, padx=10, pady=0)
 logo_label.bind("<Button-1>", lambda e: root.destroy())
 
 # Entry field for "Längd" with label
-längd_label = ttk.Label(root, text="Längd: 0 mm", font=("Arial", 20))
+längd_label = ttk.Label(main_frame, text="Längd: 0 mm", font=("Arial", 20))
 längd_label.grid(row=1, column=0, pady=10)
 
-längd_entry = ttk.Entry(root, font=("Arial", 20))
+längd_entry = ttk.Entry(main_frame, font=("Arial", 20))
 längd_entry.grid(row=2, column=0, pady=10)
-längd_entry.bind("<Button-1>", lambda e: open_numpad())  # Show numpad on mouse click
-
 
 # Create Start button using grid
-start_button = ttk.Button(root, text="Start", command=start_measuring)
+start_button = ttk.Button(main_frame, text="Start", command=start_measuring)
 start_button.grid(row=3, column=0, pady=10)
 
 # Create Reset button using grid
-reset_button = ttk.Button(root, text="Reset", command=reset_counter)
+reset_button = ttk.Button(main_frame, text="Reset", command=reset_counter)
 reset_button.grid(row=4, column=0, pady=10)
 
 # Label to show the distance as "Kört"
-root.distance_label = ttk.Label(root, text="Kört: 0 mm", font=("Arial", 24))
-root.distance_label.grid(row=5, column=0, pady=20)
+distance_label = ttk.Label(main_frame, text="Kört: 0 mm", font=("Arial", 24))
+distance_label.grid(row=5, column=0, pady=20)
+
+# Frame for Numpad (placed to the right)
+numpad_frame = tk.Frame(root)
+numpad_frame.grid(row=0, column=1, padx=50, pady=50, sticky='n')  # Adjust position as needed
+
+# Create the numpad in the main window
+create_numpad(numpad_frame)
 
 # Update the distance label every second
 update_distance()
@@ -195,3 +179,4 @@ root.mainloop()
 
 # Cleanup GPIO on exit
 GPIO.cleanup()
+
