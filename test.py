@@ -84,7 +84,7 @@ def set_target_length():
 def open_numpad():
     numpad = tk.Toplevel(root)
     numpad.title("Numpad")
-    numpad.geometry("200x300")
+    numpad.geometry("400x600")  # Larger size for the small display
 
     # List of buttons for the numpad
     buttons = [
@@ -94,26 +94,27 @@ def open_numpad():
         '0', '.', 'C'
     ]
 
+    # Function to append the value to the entry field
     def append_to_entry(value):
         current_text = längd_entry.get()
         if value == "C":
-            längd_entry.delete(0, tk.END)
+            längd_entry.delete(0, tk.END)  # Clear the entry field
         else:
             längd_entry.insert(tk.END, value)
 
-    # Create numpad buttons
+    # Create numpad buttons with larger size
     row = 0
     col = 0
     for button in buttons:
         action = lambda x=button: append_to_entry(x)
-        ttk.Button(numpad, text=button, command=action, width=5, height=2).grid(row=row, column=col)
+        ttk.Button(numpad, text=button, command=action, width=10, height=4).grid(row=row, column=col, padx=5, pady=5)
         col += 1
         if col > 2:
             col = 0
             row += 1
 
     # Confirm button
-    ttk.Button(numpad, text="OK", command=lambda: (set_target_length(), numpad.destroy()), width=5, height=2).grid(row=row+1, column=0, columnspan=3)
+    ttk.Button(numpad, text="OK", command=lambda: (set_target_length(), numpad.destroy()), width=10, height=4).grid(row=row+1, column=0, columnspan=3, pady=10)
 
 # Initialize the GUI
 root = tk.Tk()
