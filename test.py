@@ -100,7 +100,7 @@ def update_distance():
 
     # Check if the target length is reached
     if target_length > 0 and distance_mm >= target_length:
-        messagebox.showinfo("Done", "Target length reached!")  # Use showinfo to show message
+        messagebox.showinfo("Done", "Target length reached!")  # Show a message when the target length is reached
         stop_motor()  # Stop the motor when the target length is hit
         measuring = False  # Stop measuring further
         reset_counter()  # Reset the counter once the target length is hit
@@ -109,14 +109,20 @@ def update_distance():
         if measuring:
             root.after(1000, update_distance)
 
-
 # Start measuring function
 def start_measuring():
     global measuring
     measuring = True
     update_distance()  # Start updating the distance
-    thread = threading.Thread(target=read_encoder)  # Start encoder reading in a separate thread
+
+    # Start reading the encoder in a separate thread
+    thread = threading.Thread(target=read_encoder)
     thread.start()
+
+    # Send MQTT start command for motor
+    rotations = 10  # Adjust based on your needs
+    client.publish("motor/control", str(rotations))  # Start the motor
+    print(f"Running motor for {rotations} rotations.")
 
 # Reset the counter and stop measuring
 def reset_counter():
@@ -124,6 +130,7 @@ def reset_counter():
     measuring = False
     current_position = 0
     update_distance()  # Reset the displayed distance
+
 
 
 # Function to set the target length from entry
