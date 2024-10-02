@@ -68,7 +68,7 @@ class EncoderApp(tk.Tk):
         super().__init__()
         
         root.title("Encoder Distance Measurement")
-        root.geometry("480x320")  # Match the touchscreen size
+        root.geometry("800x480")  # Match the touchscreen size
 
         # Ensure the window is brought to the front
         root.lift()
