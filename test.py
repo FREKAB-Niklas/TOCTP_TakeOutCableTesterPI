@@ -18,6 +18,12 @@ mqtt_broker_ip = "192.168.10.9"  # Update to your MQTT broker IP
 current_segment = 0  # Example variable for controlling segments
 allow_motor_run = True  # Control motor flag
 
+# Get the directory where the script is located
+script_dir = os.path.dirname(os.path.abspath(__file__))
+
+# Construct the full path to the image file inside the PI folder
+logo_path = os.path.join(script_dir, "logo.png")
+
 # MQTT setup
 client = mqtt.Client()
 
