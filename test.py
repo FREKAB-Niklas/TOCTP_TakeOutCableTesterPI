@@ -115,6 +115,8 @@ def update_distance(root):
     root.distance_label.config(text=f"Distance: {distance_mm:.2f} mm")
     root.after(1000, root.update_distance)  # Update every second
 
+    root.mainloop()
+
 
     # Cleanup GPIO on exit
     GPIO.cleanup()
