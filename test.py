@@ -3,12 +3,20 @@ from tkinter import ttk
 import threading
 import time
 import RPi.GPIO as GPIO
+import os
+import sys
 
 # Global variables
 measuring = False
 current_position = 0
 PULSES_PER_REVOLUTION = 2400
 WHEEL_CIRCUMFERENCE_MM = 200
+
+# Get the directory where the script is located
+script_dir = os.path.dirname(os.path.abspath(__file__))
+
+# Construct the full path to the image file inside the PI folder
+logo_path = os.path.join(script_dir, "logo.png")
 
 # GPIO setup for the encoder
 ENCODER_PIN_A = 17
@@ -67,6 +75,24 @@ class EncoderApp(tk.Tk):
         self.after(100, lambda: self.attributes('-topmost', False, '-fullscreen', True))
 
         
+
+        # Open and resize the image
+        image = Image.open(logo_path)
+        scale_percent = 50  # percent of original size
+        width, height = image.size
+        new_width = int(width * scale_percent / 100)
+        new_height = int(height * scale_percent / 100)
+        resized_image = image.resize((new_width, new_height), Image.LANCZOS)
+        logo_image = ImageTk.PhotoImage(resized_image)
+
+        header_frame = tk.Frame(root)
+        header_frame.grid(row=0, column=0, pady=10, sticky='nw')  # Adjusted to be top left
+
+        logo_label = tk.Label(header_frame, image=logo_image)
+        logo_label.pack(side=tk.LEFT, padx=10, pady=0)
+        logo_label.bind("<Button-1>", lambda e: root.destroy())
+
+
         # Create Start button
         self.start_button = ttk.Button(self, text="Start", command=start_measuring)
         self.start_button.pack(pady=10)
