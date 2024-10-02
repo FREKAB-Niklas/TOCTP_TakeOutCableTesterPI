@@ -105,7 +105,7 @@ def update_distance():
         if measuring:
             root.after(1000, update_distance)
 
-# Start measuring function
+# Continuously send "run manual" messages until the target is reached
 def start_measuring():
     global measuring
     measuring = True
@@ -115,10 +115,18 @@ def start_measuring():
     thread = threading.Thread(target=read_encoder)
     thread.start()
 
-    # Send MQTT start command for motor
-    rotations = 10  # Adjust based on your needs
-    client.publish("motor/control", str(rotations))  # Start the motor
-    print(f"Running motor for {rotations} rotations.")
+    # Function to continuously send "run manual" messages
+    def send_run_manual():
+        while measuring:
+            client.publish("motor/control", "run manual")  # Send the run manual command
+            time.sleep(0.001)  # Send every 0.001 seconds
+
+    # Start sending "run manual" commands in a separate thread
+    run_thread = threading.Thread(target=send_run_manual)
+    run_thread.start()
+
+    print("Sending continuous 'run manual' commands.")
+
 
 # Reset the counter and stop measuring
 def reset_counter():
