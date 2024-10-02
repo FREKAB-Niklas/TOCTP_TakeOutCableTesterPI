@@ -167,13 +167,13 @@ längd_label.grid(row=1, column=0, pady=10)
 längd_entry = ttk.Entry(main_frame, font=("Arial", 20))
 längd_entry.grid(row=2, column=0, pady=10)
 
-# Create Start button using grid
-start_button = ttk.Button(main_frame, text="Start", command=start_measuring)
-start_button.grid(row=3, column=0, pady=10)
+# Create Start and Reset buttons next to each other, with custom colors and larger height
+start_button = tk.Button(main_frame, text="Start", command=start_measuring, width=10, height=2, font=("Arial", 16), bd=2, bg="green", fg="white")
+start_button.grid(row=3, column=0, padx=5, pady=10, sticky='e')
 
-# Create Reset button using grid
-reset_button = ttk.Button(main_frame, text="Reset", command=reset_counter)
-reset_button.grid(row=4, column=0, pady=10)
+reset_button = tk.Button(main_frame, text="Reset", command=reset_counter, width=10, height=2, font=("Arial", 16), bd=2, bg="yellow", fg="black")
+reset_button.grid(row=3, column=1, padx=5, pady=10, sticky='w')
+
 
 # Define and assign distance_label
 distance_label = ttk.Label(main_frame, text="Kört: 0 mm", font=("Arial", 24))
