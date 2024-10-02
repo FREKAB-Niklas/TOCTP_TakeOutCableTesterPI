@@ -167,12 +167,15 @@ längd_label.grid(row=1, column=0, pady=10)
 längd_entry = ttk.Entry(main_frame, font=("Arial", 20))
 längd_entry.grid(row=2, column=0, pady=10)
 
-# Create Start and Reset buttons next to each other, with custom colors and larger height
-start_button = tk.Button(main_frame, text="Start", command=start_measuring, width=10, height=2, font=("Arial", 16), bd=2, bg="green", fg="white")
-start_button.grid(row=3, column=0, padx=0, pady=10, sticky='e')
+# Create Start and Reset buttons side by side with proper centering
+button_frame = tk.Frame(main_frame)
+button_frame.grid(row=3, column=0, columnspan=2, pady=10)
 
-reset_button = tk.Button(main_frame, text="Reset", command=reset_counter, width=10, height=2, font=("Arial", 16), bd=2, bg="yellow", fg="black")
-reset_button.grid(row=3, column=1, padx=5, pady=10, sticky='w')
+start_button = tk.Button(button_frame, text="Start", command=start_measuring, width=10, height=2, font=("Arial", 16), bd=2, bg="green", fg="white")
+start_button.grid(row=0, column=0, padx=5)
+
+reset_button = tk.Button(button_frame, text="Reset", command=reset_counter, width=10, height=2, font=("Arial", 16), bd=2, bg="yellow", fg="black")
+reset_button.grid(row=0, column=1, padx=5)
 
 
 # Define and assign distance_label
