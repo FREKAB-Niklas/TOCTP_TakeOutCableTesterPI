@@ -185,9 +185,9 @@ def create_numpad(parent):
 
         # Special colors for 'OK' and 'C'
         if button == "OK":
-            tk.Button(parent, text=button, command=action, width=5, height=2, font=("Arial", 24), bd=2, bg="green", fg="white").grid(row=row, column=col, padx=5, pady=5)
+            tk.Button(parent, text=button, command=action, width=5, height=2, font=("Arial", 24), bd=2, bg="#32CD32", fg="black").grid(row=row, column=col, padx=5, pady=5)
         elif button == "C":
-            tk.Button(parent, text=button, command=action, width=5, height=2, font=("Arial", 24), bd=2, bg="red", fg="white").grid(row=row, column=col, padx=5, pady=5)
+            tk.Button(parent, text=button, command=action, width=5, height=2, font=("Arial", 24), bd=2, bg="red", fg="black").grid(row=row, column=col, padx=5, pady=5)
         else:
             tk.Button(parent, text=button, command=action, width=5, height=2, font=("Arial", 24), bd=2).grid(row=row, column=col, padx=5, pady=5)
 
@@ -244,7 +244,7 @@ distance_label.grid(row=3, column=0, pady=20)
 button_frame = tk.Frame(main_frame)
 button_frame.grid(row=5, column=0, columnspan=2, pady=10)
 
-start_button = tk.Button(button_frame, text="Start", command=start_measuring, width=10, height=5, font=("Arial", 16), bd=2, bg="green", fg="white")
+start_button = tk.Button(button_frame, text="Start", command=start_measuring, width=10, height=5, font=("Arial", 16), bd=2, bg="#32CD32", fg="black")
 start_button.grid(row=0, column=0, padx=5)
 
 reset_button = tk.Button(button_frame, text="Reset", command=reset_counter, width=10, height=5, font=("Arial", 16), bd=2, bg="yellow", fg="black")
