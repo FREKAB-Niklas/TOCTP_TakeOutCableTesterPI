@@ -1,10 +1,11 @@
-import tkinter as tk
-from tkinter import ttk
 import threading
 import time
 import RPi.GPIO as GPIO
 import os
 import sys
+import tkinter as tk
+from tkinter import font, filedialog, messagebox, ttk
+from PIL import Image, ImageTk
 
 # Global variables
 measuring = False
