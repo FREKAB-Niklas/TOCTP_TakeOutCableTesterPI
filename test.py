@@ -81,22 +81,25 @@ measuring = False  # Ensure this is set correctly when needed
 
 # Function to stop the motor via MQTT
 def stop_motor():
-    client.publish("motor/control", "stop")  # Send a stop command to the motor via MQTT
-    print("Sending MQTT message to stop motor")
-
+    global motor_stopped
+    if not motor_stopped:  # Only send the stop command if the motor is still running
+        client.publish("motor/control", "stop")  # Send a stop command to the motor via MQTT
+        motor_stopped = True  # Set the flag to indicate the motor has been stopped
+        print("Sending MQTT message to stop motor")
 
 # Function to update distance on the GUI
 def update_distance():
-    global measuring
+    global measuring, motor_stopped
     distance_mm = calculate_distance_mm(current_position)
     distance_label.config(text=f"Kört: {distance_mm:.2f} mm")
 
     # Check if the target length is reached
     if target_length > 0 and distance_mm >= target_length:
-        messagebox.showinfo("Done", "Target length reached!")  # Show a message when the target length is reached
-        stop_motor()  # Stop the motor when the target length is hit
-        measuring = False  # Stop measuring further
-        reset_counter()  # Reset the counter once the target length is hit
+        if not motor_stopped:  # Ensure the motor is only stopped once
+            messagebox.showinfo("Done", "Target length reached!")  # Show a message when the target length is reached
+            stop_motor()  # Stop the motor when the target length is hit
+            measuring = False  # Stop measuring further
+            reset_counter()  # Reset the counter once the target length is hit
     else:
         # Continue updating the distance every second if still measuring
         if measuring:
@@ -104,7 +107,8 @@ def update_distance():
 
 # Continuously send "run manual" messages until the target is reached
 def start_measuring():
-    global measuring
+    global measuring, motor_stopped
+    motor_stopped = False  # Reset the motor stopped flag when starting
     measuring = True
     update_distance()  # Start updating the distance
 
@@ -114,7 +118,7 @@ def start_measuring():
 
     # Function to continuously send "run manual" messages
     def send_run_manual():
-        while measuring:
+        while measuring and not motor_stopped:  # Only send if the motor hasn't been stopped
             client.publish("motor/control", "run manual")  # Send the run manual command
             time.sleep(0.001)  # Send every 0.001 seconds
 
