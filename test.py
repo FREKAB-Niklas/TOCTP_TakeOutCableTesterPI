@@ -71,6 +71,11 @@ def stop_measuring():
     root.attributes('-fullscreen', True)
     root.bind("<Escape>", lambda e: root.destroy())  # Allow exiting fullscreen with the Esc key
 
+    # Ensure the window is brought to the front
+    root.lift()
+    root.attributes('-topmost', True)
+    root.after(100, lambda: root.attributes('-topmost', False, '-fullscreen', True))
+
     # Open and resize the image
     image = Image.open(logo_path)
     scale_percent = 50  # percent of original size
@@ -79,11 +84,6 @@ def stop_measuring():
     new_height = int(height * scale_percent / 100)
     resized_image = image.resize((new_width, new_height), Image.LANCZOS)
     logo_image = ImageTk.PhotoImage(resized_image)
-
-    # Ensure the window is brought to the front
-    root.lift()
-    root.attributes('-topmost', True)
-    root.after(100, lambda: root.attributes('-topmost', False, '-fullscreen', True))
 
     
 
