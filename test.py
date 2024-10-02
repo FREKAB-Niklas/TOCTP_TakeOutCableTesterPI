@@ -11,11 +11,10 @@ measuring = False
 current_position = 0
 PULSES_PER_REVOLUTION = 2400
 WHEEL_CIRCUMFERENCE_MM = 200
+target_length = 0  # Target length from the "Längd" input
 
 # Get the directory where the script is located
 script_dir = os.path.dirname(os.path.abspath(__file__))
-
-# Construct the full path to the image file inside the PI folder
 logo_path = os.path.join(script_dir, "logo.png")
 
 # GPIO setup for the encoder
@@ -56,16 +55,65 @@ def start_measuring():
     thread = threading.Thread(target=read_encoder)
     thread.start()
 
-# Stop measuring function
-def stop_measuring():
-    global measuring
+# Reset the counter and stop measuring
+def reset_counter():
+    global measuring, current_position
     measuring = False
+    current_position = 0
+    update_distance()
 
 # Function to update distance on the GUI
 def update_distance():
     distance_mm = calculate_distance_mm(current_position)
-    root.distance_label.config(text=f"Distance: {distance_mm:.2f} mm")
+    root.distance_label.config(text=f"Kört: {distance_mm:.2f} mm")
+    if target_length > 0 and distance_mm >= target_length:
+        messagebox.showinfo("Done", "Target length reached!")
+        reset_counter()  # Auto-reset after reaching the target length
     root.after(1000, update_distance)  # Update every second
+
+# Function to set the target length from entry
+def set_target_length():
+    global target_length
+    try:
+        target_length = float(längd_entry.get())  # Convert input to a float
+        längd_label.config(text=f"Längd: {target_length} mm")
+    except ValueError:
+        messagebox.showerror("Invalid Input", "Please enter a valid number.")
+
+# Create a simple numpad to input numbers
+def open_numpad():
+    numpad = tk.Toplevel(root)
+    numpad.title("Numpad")
+    numpad.geometry("200x300")
+
+    # List of buttons for the numpad
+    buttons = [
+        '1', '2', '3',
+        '4', '5', '6',
+        '7', '8', '9',
+        '0', '.', 'C'
+    ]
+
+    def append_to_entry(value):
+        current_text = längd_entry.get()
+        if value == "C":
+            längd_entry.delete(0, tk.END)
+        else:
+            längd_entry.insert(tk.END, value)
+
+    # Create numpad buttons
+    row = 0
+    col = 0
+    for button in buttons:
+        action = lambda x=button: append_to_entry(x)
+        ttk.Button(numpad, text=button, command=action, width=5, height=2).grid(row=row, column=col)
+        col += 1
+        if col > 2:
+            col = 0
+            row += 1
+
+    # Confirm button
+    ttk.Button(numpad, text="OK", command=lambda: (set_target_length(), numpad.destroy()), width=5, height=2).grid(row=row+1, column=0, columnspan=3)
 
 # Initialize the GUI
 root = tk.Tk()
@@ -96,17 +144,25 @@ logo_label = tk.Label(header_frame, image=logo_image)
 logo_label.grid(row=0, column=0, padx=10, pady=0)
 logo_label.bind("<Button-1>", lambda e: root.destroy())
 
+# Entry field for "Längd" with label
+längd_label = ttk.Label(root, text="Längd: 0 mm", font=("Arial", 20))
+längd_label.grid(row=1, column=0, pady=10)
+
+längd_entry = ttk.Entry(root, font=("Arial", 20))
+längd_entry.grid(row=2, column=0, pady=10)
+längd_entry.bind("<FocusIn>", lambda e: open_numpad())  # Show numpad on focus
+
 # Create Start button using grid
 start_button = ttk.Button(root, text="Start", command=start_measuring)
-start_button.grid(row=1, column=0, pady=10)
+start_button.grid(row=3, column=0, pady=10)
 
-# Create Stop button using grid
-stop_button = ttk.Button(root, text="Stop", command=stop_measuring)
-stop_button.grid(row=2, column=0, pady=10)
+# Create Reset button using grid
+reset_button = ttk.Button(root, text="Reset", command=reset_counter)
+reset_button.grid(row=4, column=0, pady=10)
 
-# Label to show the distance using grid
-root.distance_label = ttk.Label(root, text="Distance: 0 mm", font=("Arial", 24))
-root.distance_label.grid(row=3, column=0, pady=20)
+# Label to show the distance as "Kört"
+root.distance_label = ttk.Label(root, text="Kört: 0 mm", font=("Arial", 24))
+root.distance_label.grid(row=5, column=0, pady=20)
 
 # Update the distance label every second
 update_distance()
