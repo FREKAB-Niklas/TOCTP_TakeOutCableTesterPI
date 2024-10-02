@@ -115,10 +115,17 @@ def start_measuring():
     thread = threading.Thread(target=read_encoder)
     thread.start()
 
-    # Send MQTT start command for motor
-    rotations = 10  # Adjust based on your needs
-    client.publish("motor/control", str(rotations))  # Start the motor
-    print(f"Running motor for {rotations} rotations.")
+    # Define how many rotations we want to run
+    rotations = 10  # Adjust this based on your needs
+
+    # Calculate time in seconds based on motor speed and rotations
+    motor_speed_rps = 1  # For example, motor rotates at 1 rotation per second (adjust accordingly)
+    duration = rotations / motor_speed_rps  # Time in seconds for the given number of rotations
+
+    # Send MQTT start command with the duration (time) for motor to run
+    client.publish("motor/control", f"run {duration}")  # Start the motor for the calculated time
+    print(f"Running motor for {rotations} rotations, which is approximately {duration} seconds.")
+
 
 # Reset the counter and stop measuring
 def reset_counter():
