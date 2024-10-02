@@ -119,14 +119,14 @@ def open_numpad():
     col = 0
     for button in buttons:
         action = lambda x=button: append_to_entry(x)
-        tk.Button(numpad, text=button, command=action, width=10, height=4, font=("Arial", 24)).grid(row=row, column=col, padx=10, pady=10)
+        tk.Button(numpad, text=button, command=action, width=10, height=5, font=("Arial", 28), bd=2).grid(row=row, column=col, padx=5, pady=5)
         col += 1
         if col > 2:
             col = 0
             row += 1
 
     # Confirm button
-    tk.Button(numpad, text="OK", command=lambda: (set_target_length(), close_numpad(numpad)), width=10, height=4, font=("Arial", 24)).grid(row=row+1, column=0, columnspan=3, pady=20)
+    tk.Button(numpad, text="OK", command=lambda: (set_target_length(), close_numpad(numpad)), width=10, height=5, font=("Arial", 28), bd=2).grid(row=row+1, column=0, columnspan=3, pady=20)
 
 # Function to close the numpad and reset the flag
 def close_numpad(numpad):
