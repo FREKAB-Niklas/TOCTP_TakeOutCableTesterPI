@@ -49,9 +49,9 @@ def calculate_distance_mm(pulses):
     distance_per_pulse = WHEEL_CIRCUMFERENCE_MM / PULSES_PER_REVOLUTION
     return pulses * distance_per_pulse
 
-# Encoder reading function
 def read_encoder():
     global current_position, measuring
+    GPIO.setmode(GPIO.BCM)  # Ensure BCM mode is set inside the thread
     last_state_A = GPIO.input(ENCODER_PIN_A)
     while measuring:
         current_state_A = GPIO.input(ENCODER_PIN_A)
@@ -67,6 +67,7 @@ def read_encoder():
             last_state_A = current_state_A
         
         time.sleep(0.001)
+
 
 # Function to control the motor via MQTT
 def run_motor():
@@ -99,13 +100,15 @@ def update_distance():
 
     # Check if the target length is reached
     if target_length > 0 and distance_mm >= target_length:
-        messagebox.showinfo("Done", "Target length reached!")
+        messagebox.showinfo("Done", "Target length reached!")  # Use showinfo to show message
         stop_motor()  # Stop the motor when the target length is hit
         measuring = False  # Stop measuring further
+        reset_counter()  # Reset the counter once the target length is hit
     else:
         # Continue updating the distance every second if still measuring
         if measuring:
             root.after(1000, update_distance)
+
 
 # Start measuring function
 def start_measuring():
@@ -121,6 +124,7 @@ def reset_counter():
     measuring = False
     current_position = 0
     update_distance()  # Reset the displayed distance
+
 
 # Function to set the target length from entry
 def set_target_length():
