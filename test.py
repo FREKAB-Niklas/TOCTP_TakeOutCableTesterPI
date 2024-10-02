@@ -60,6 +60,12 @@ class EncoderApp(tk.Tk):
         
         self.title("Encoder Distance Measurement")
         self.geometry("480x320")  # Match the touchscreen size
+
+        # Ensure the window is brought to the front
+        self.lift()
+        self.attributes('-topmost', True)
+        self.after(100, lambda: root.attributes('-topmost', False, '-fullscreen', True))
+
         
         # Create Start button
         self.start_button = ttk.Button(self, text="Start", command=start_measuring)
