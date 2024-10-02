@@ -48,7 +48,7 @@ try:
             print(f"Distance traveled: {distance_mm:.2f} mm (Position: {current_position})")
 
         # Poll every 10 ms (adjust this based on the speed of your encoder)
-        time.sleep(0.01)
+        time.sleep(0.05)
 
 except KeyboardInterrupt:
     print("Measurement stopped.")
