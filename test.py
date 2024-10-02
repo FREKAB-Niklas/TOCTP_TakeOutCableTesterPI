@@ -80,11 +80,23 @@ def set_target_length():
     except ValueError:
         messagebox.showerror("Invalid Input", "Please enter a valid number.")
 
+# Global flag to track if numpad is open
+numpad_open = False
+
 # Create a simple numpad to input numbers
 def open_numpad():
+    global numpad_open
+    if numpad_open:
+        return  # Don't reopen the numpad if it's already open
+    
+    numpad_open = True  # Set flag to True when numpad is opened
+    
     numpad = tk.Toplevel(root)
     numpad.title("Numpad")
     numpad.geometry("400x600")  # Larger size for the small display
+
+    # When the numpad window is closed, reset the flag
+    numpad.protocol("WM_DELETE_WINDOW", lambda: close_numpad(numpad))
 
     # List of buttons for the numpad
     buttons = [
@@ -114,7 +126,14 @@ def open_numpad():
             row += 1
 
     # Confirm button
-    tk.Button(numpad, text="OK", command=lambda: (set_target_length(), numpad.destroy()), width=10, height=4).grid(row=row+1, column=0, columnspan=3, pady=10)
+    tk.Button(numpad, text="OK", command=lambda: (set_target_length(), close_numpad(numpad)), width=10, height=4).grid(row=row+1, column=0, columnspan=3, pady=10)
+
+# Function to close the numpad and reset the flag
+def close_numpad(numpad):
+    global numpad_open
+    numpad_open = False  # Reset the flag
+    numpad.destroy()  # Close the numpad window
+
 
 
 # Initialize the GUI
