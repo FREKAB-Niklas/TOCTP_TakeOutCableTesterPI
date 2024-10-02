@@ -99,16 +99,28 @@ def reset_counter():
     allow_motor_run = True  # Allow motor to run again
     start_button.config(state=tk.NORMAL)  # Re-enable the start button
 
-# Global variable to store the distance label
-distance_label = None
+# Function to stop the motor via MQTT
+def stop_motor():
+    print("Stopping the motor")
+    client.publish("motor/control", "stop")  # Send a stop command to the motor via MQTT
 
 # Function to update distance on the GUI
 def update_distance():
+    global measuring
     distance_mm = calculate_distance_mm(current_position)
     distance_label.config(text=f"Kört: {distance_mm:.2f} mm")
+    
+    # If the target length is reached, stop measuring and stop the motor
     if target_length > 0 and distance_mm >= target_length:
-        messagebox("Done", "Target length reached!", reset_counter)  # Show custom messagebox and reset counter
-    root.after(1000, update_distance)  # Update every second
+        messagebox.showinfo("Done", "Target length reached!")
+        measuring = False  # Stop the measurement
+        stop_motor()  # Stop the motor when the target length is hit
+        reset_counter()  # Optionally reset the counter or just stop measuring
+
+    # Continue updating the distance every second if still measuring
+    if measuring:
+        root.after(1000, update_distance)
+
 
 # Function to set the target length from entry
 def set_target_length():
