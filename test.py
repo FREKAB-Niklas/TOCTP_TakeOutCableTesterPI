@@ -62,55 +62,16 @@ def reset_counter():
     current_position = 0
     update_distance()
 
+# Global variable to store the distance label
+distance_label = None
+
 # Function to update distance on the GUI
 def update_distance():
     distance_mm = calculate_distance_mm(current_position)
-    root.distance_label.config(text=f"Kört: {distance_mm:.2f} mm")
+    distance_label.config(text=f"Kört: {distance_mm:.2f} mm")
     if target_length > 0 and distance_mm >= target_length:
-        messagebox.showinfo("Done", "Target length reached!")
-        reset_counter()  # Auto-reset after reaching the target length
+        custom_messagebox("Done", "Target length reached!", reset_counter)  # Show custom messagebox and reset counter
     root.after(1000, update_distance)  # Update every second
-
-# Function to set the target length from entry
-def set_target_length():
-    global target_length
-    try:
-        target_length = float(längd_entry.get())  # Convert input to a float
-        längd_label.config(text=f"Längd: {target_length} mm")
-    except ValueError:
-        messagebox.showerror("Invalid Input", "Please enter a valid number.")
-
-# Create a numpad and embed it in the main window
-def create_numpad(parent):
-    # List of buttons for the numpad
-    buttons = [
-        '1', '2', '3',
-        '4', '5', '6',
-        '7', '8', '9',
-        '0', '.', 'C'
-    ]
-
-    # Function to append the value to the entry field
-    def append_to_entry(value):
-        current_text = längd_entry.get()
-        if value == "C":
-            längd_entry.delete(0, tk.END)  # Clear the entry field
-        else:
-            längd_entry.insert(tk.END, value)
-
-    # Create numpad buttons using tk.Button with larger size for touch
-    row = 0
-    col = 0
-    for button in buttons:
-        action = lambda x=button: append_to_entry(x)
-        tk.Button(parent, text=button, command=action, width=5, height=2, font=("Arial", 24), bd=2).grid(row=row, column=col, padx=5, pady=5)
-        col += 1
-        if col > 2:
-            col = 0
-            row += 1
-
-    # Confirm button
-    tk.Button(parent, text="OK", command=set_target_length, width=10, height=2, font=("Arial", 24), bd=2).grid(row=row+1, column=0, columnspan=3, pady=20)
 
 # Initialize the GUI
 root = tk.Tk()
@@ -130,7 +91,7 @@ main_frame.grid(row=0, column=0, sticky='nw')
 
 # Open and resize the image
 image = Image.open(logo_path)
-scale_percent = 25  # percent of original size
+scale_percent = 50  # percent of original size
 width, height = image.size
 new_width = int(width * scale_percent / 100)
 new_height = int(height * scale_percent / 100)
@@ -160,7 +121,8 @@ start_button.grid(row=3, column=0, pady=10)
 reset_button = ttk.Button(main_frame, text="Reset", command=reset_counter)
 reset_button.grid(row=4, column=0, pady=10)
 
-# Label to show the distance as "Kört"
+# Define distance_label as a global variable
+global distance_label
 distance_label = ttk.Label(main_frame, text="Kört: 0 mm", font=("Arial", 24))
 distance_label.grid(row=5, column=0, pady=20)
 
@@ -179,4 +141,5 @@ root.mainloop()
 
 # Cleanup GPIO on exit
 GPIO.cleanup()
+
 
