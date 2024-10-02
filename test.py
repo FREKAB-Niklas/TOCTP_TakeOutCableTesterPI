@@ -93,6 +93,13 @@ def update_distance():
     distance_mm = calculate_distance_mm(current_position)
     distance_label.config(text=f"Kört: {distance_mm:.2f} mm")
 
+    slowdown_threshold = target_length - 50  # Example: Slow down 50mm before the target
+
+    # Check if we are within the slowdown range
+    if target_length > 0 and distance_mm >= slowdown_threshold and not motor_stopped:
+        client.publish("motor/control", "slowdown")  # Send slowdown command via MQTT
+        print("Sending MQTT message to slow down motor")
+
     # Check if the target length is reached
     if target_length > 0 and distance_mm >= target_length:
         if not motor_stopped:  # Ensure the motor is only stopped once
@@ -103,6 +110,7 @@ def update_distance():
         # Continue updating the distance every second if still measuring
         if measuring:
             root.after(1000, update_distance)
+
 
 
 # Continuously send "run manual" messages until the target is reached
