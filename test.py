@@ -93,15 +93,15 @@ def run_motor():
 distance_label = None
 measuring = False  # Ensure this is set correctly when needed
 
+
 # Function to stop the motor via MQTT
 def stop_motor():
     print("Stopping the motor")
+    for _ in range(10):  # Send the stop command 10 times
+        client.publish("motor/control", "stop")  # Send a stop command to the motor via MQTT
+        print("Sending MQTT message to stop motor")
+        time.sleep(0.1)  # Short delay between each message to ensure it's sent
 
-    # Log the MQTT message being sent
-    log_message = "Sending MQTT message to stop motor"
-    print(log_message)
-
-    client.publish("motor/control", "stop")  # Send a stop command to the motor via MQTT
 
 # Function to update distance on the GUI
 def update_distance():
