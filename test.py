@@ -102,19 +102,20 @@ def open_numpad():
         else:
             längd_entry.insert(tk.END, value)
 
-    # Create numpad buttons with larger size
+    # Create numpad buttons using tk.Button with larger size
     row = 0
     col = 0
     for button in buttons:
         action = lambda x=button: append_to_entry(x)
-        ttk.Button(numpad, text=button, command=action, width=10, height=4).grid(row=row, column=col, padx=5, pady=5)
+        tk.Button(numpad, text=button, command=action, width=10, height=4).grid(row=row, column=col, padx=5, pady=5)
         col += 1
         if col > 2:
             col = 0
             row += 1
 
     # Confirm button
-    ttk.Button(numpad, text="OK", command=lambda: (set_target_length(), numpad.destroy()), width=10, height=4).grid(row=row+1, column=0, columnspan=3, pady=10)
+    tk.Button(numpad, text="OK", command=lambda: (set_target_length(), numpad.destroy()), width=10, height=4).grid(row=row+1, column=0, columnspan=3, pady=10)
+
 
 # Initialize the GUI
 root = tk.Tk()
