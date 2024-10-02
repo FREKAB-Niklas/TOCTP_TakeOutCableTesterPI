@@ -40,6 +40,8 @@ connect_mqtt()  # Establish the MQTT connection
 # GPIO setup for the encoder
 ENCODER_PIN_A = 17
 ENCODER_PIN_B = 27
+
+# **Set GPIO mode once globally at the start**
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(ENCODER_PIN_A, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 GPIO.setup(ENCODER_PIN_B, GPIO.IN, pull_up_down=GPIO.PUD_UP)
@@ -51,7 +53,6 @@ def calculate_distance_mm(pulses):
 
 def read_encoder():
     global current_position, measuring
-    GPIO.setmode(GPIO.BCM)  # Ensure BCM mode is set inside the thread
     last_state_A = GPIO.input(ENCODER_PIN_A)
     while measuring:
         current_state_A = GPIO.input(ENCODER_PIN_A)
@@ -68,7 +69,6 @@ def read_encoder():
         
         time.sleep(0.001)
 
-
 # Function to control the motor via MQTT
 def run_motor():
     global current_segment, allow_motor_run
@@ -79,7 +79,6 @@ def run_motor():
         # Publish the number of rotations to the MQTT broker
         client.publish("motor/control", str(rotations))
         
-        # Handle next segment or further logic if needed
         allow_motor_run = False  # Prevent further runs until allowed again
         start_button.config(state=tk.DISABLED)  # Disable the button after starting the motor
 
