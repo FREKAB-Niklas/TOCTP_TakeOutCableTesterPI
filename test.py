@@ -114,15 +114,9 @@ def update_distance():
 def start_measuring():
     global measuring
     measuring = True
-    update_distance()
-    thread = threading.Thread(target=read_encoder)
+    update_distance()  # Start updating the distance
+    thread = threading.Thread(target=read_encoder)  # Start encoder reading in a separate thread
     thread.start()
-
-    # Send MQTT start command (assuming 10 rotations as an example)
-    rotations = 10  # You can adjust this based on your needs
-    client.publish("motor/control", str(rotations))
-    print(f"Running motor for {rotations} rotations.")
-
 
 # Reset the counter and stop measuring
 def reset_counter():
