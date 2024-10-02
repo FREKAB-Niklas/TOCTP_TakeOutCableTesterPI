@@ -114,6 +114,7 @@ def update_distance():
 def start_measuring():
     global measuring
     measuring = True
+    update_distance()
     thread = threading.Thread(target=read_encoder)
     thread.start()
 
