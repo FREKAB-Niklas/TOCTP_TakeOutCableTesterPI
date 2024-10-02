@@ -99,6 +99,9 @@ def reset_counter():
     allow_motor_run = True  # Allow motor to run again
     start_button.config(state=tk.NORMAL)  # Re-enable the start button
 
+# Global variable to store the distance label
+distance_label = None
+
 # Function to stop the motor via MQTT
 def stop_motor():
     print("Stopping the motor")
