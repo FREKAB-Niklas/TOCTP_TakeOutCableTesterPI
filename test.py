@@ -1,57 +1,90 @@
-import RPi.GPIO as GPIO
+import tkinter as tk
+from tkinter import ttk
+import threading
 import time
+import RPi.GPIO as GPIO
 
-# Constants
-PULSES_PER_REVOLUTION = 2400  # Check the encoder spec for correct value
-WHEEL_CIRCUMFERENCE_MM = 200  # Set the circumference of the wheel in mm (50 mm diameter wheel)
+# Global variables
+measuring = False
+current_position = 0
+PULSES_PER_REVOLUTION = 2400
+WHEEL_CIRCUMFERENCE_MM = 200
 
-# GPIO pin definitions
+# GPIO setup for the encoder
 ENCODER_PIN_A = 17
 ENCODER_PIN_B = 27
-
-# Variables
-last_state_A = GPIO.HIGH  # Track the previous state of ENCODER_PIN_A
-current_position = 0
-
-# Setup GPIO
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(ENCODER_PIN_A, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 GPIO.setup(ENCODER_PIN_B, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
+# Function to calculate distance
 def calculate_distance_mm(pulses):
-    """Calculate distance traveled in mm based on encoder pulses"""
     distance_per_pulse = WHEEL_CIRCUMFERENCE_MM / PULSES_PER_REVOLUTION
     return pulses * distance_per_pulse
 
-try:
-    while True:
-        # Read the current states of both encoder pins
+# Encoder reading function
+def read_encoder():
+    global current_position, measuring
+    last_state_A = GPIO.input(ENCODER_PIN_A)
+    while measuring:
         current_state_A = GPIO.input(ENCODER_PIN_A)
         current_state_B = GPIO.input(ENCODER_PIN_B)
-
-        # Detect if there's been a state change (i.e., a pulse) on A
+        
+        # Detect pulse and direction
         if current_state_A != last_state_A:
             if current_state_A == GPIO.LOW:
-                # If A has changed to LOW, check the state of B to determine direction
                 if current_state_B == GPIO.LOW:
-                    # B is LOW -> forward direction
                     current_position += 1
                 else:
-                    # B is HIGH -> reverse direction
                     current_position -= 1
-
-            # Update last_state_A to the current state
             last_state_A = current_state_A
-
-            # Calculate and print the distance traveled
-            distance_mm = calculate_distance_mm(current_position)
-            print(f"Distance traveled: {distance_mm:.2f} mm (Position: {current_position})")
-
-        # Poll every 10 ms (adjust this based on the speed of your encoder)
+        
         time.sleep(0.001)
 
-except KeyboardInterrupt:
-    print("Measurement stopped.")
+# Start measuring function
+def start_measuring():
+    global measuring
+    measuring = True
+    thread = threading.Thread(target=read_encoder)
+    thread.start()
 
-finally:
+# Stop measuring function
+def stop_measuring():
+    global measuring
+    measuring = False
+
+# GUI Application
+class EncoderApp(tk.Tk):
+    def __init__(self):
+        super().__init__()
+        
+        self.title("Encoder Distance Measurement")
+        self.geometry("480x320")  # Match the touchscreen size
+        
+        # Create Start button
+        self.start_button = ttk.Button(self, text="Start", command=start_measuring)
+        self.start_button.pack(pady=10)
+        
+        # Create Stop button
+        self.stop_button = ttk.Button(self, text="Stop", command=stop_measuring)
+        self.stop_button.pack(pady=10)
+        
+        # Label to show the distance
+        self.distance_label = ttk.Label(self, text="Distance: 0 mm", font=("Arial", 24))
+        self.distance_label.pack(pady=20)
+        
+        # Update the distance label every second
+        self.update_distance()
+    
+    def update_distance(self):
+        distance_mm = calculate_distance_mm(current_position)
+        self.distance_label.config(text=f"Distance: {distance_mm:.2f} mm")
+        self.after(1000, self.update_distance)  # Update every second
+
+# Initialize and run the application
+if __name__ == "__main__":
+    app = EncoderApp()
+    app.mainloop()
+
+    # Cleanup GPIO on exit
     GPIO.cleanup()
