@@ -2,7 +2,7 @@ import RPi.GPIO as GPIO
 import time
 
 # Constants
-PULSES_PER_REVOLUTION = 600  # Check the encoder spec for correct value
+PULSES_PER_REVOLUTION = 2400  # Check the encoder spec for correct value
 WHEEL_CIRCUMFERENCE_MM = 200  # Set the circumference of the wheel in mm (50 mm diameter wheel)
 
 # GPIO pin definitions
@@ -48,7 +48,7 @@ try:
             print(f"Distance traveled: {distance_mm:.2f} mm (Position: {current_position})")
 
         # Poll every 10 ms (adjust this based on the speed of your encoder)
-        time.sleep(0.005)
+        time.sleep(0.001)
 
 except KeyboardInterrupt:
     print("Measurement stopped.")
