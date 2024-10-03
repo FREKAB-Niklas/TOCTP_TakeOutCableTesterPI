@@ -94,11 +94,18 @@ def update_distance():
     distance_label.config(text=f"Kört: {distance_mm:.2f} mm")
 
     slowdown_threshold = target_length - 50  # Example: Slow down 50mm before the target
+    startup_threshold = 50
+    
+    # Check if we are within the startup range
+    if target_length > 0 and distance_mm >= startup_threshold and not motor_stopped:
+        client.publish("motor/control", "slowdown")  # Send slowdown command via MQTT
+        print("Sending MQTT message to startup")
 
     # Check if we are within the slowdown range
     if target_length > 0 and distance_mm >= slowdown_threshold and not motor_stopped:
         client.publish("motor/control", "slowdown")  # Send slowdown command via MQTT
         print("Sending MQTT message to slow down motor")
+
 
     # Check if the target length is reached
     if target_length > 0 and distance_mm >= target_length:
@@ -128,7 +135,7 @@ def start_measuring():
     def send_run_manual():
         while measuring and not motor_stopped:  # Only send if the motor hasn't been stopped
             client.publish("motor/control", "run manual")  # Send the run manual command
-            time.sleep(0.0001)  # Send every 0.001 seconds
+            time.sleep(0.001)  # Send every 0.001 seconds
 
     # Start sending "run manual" commands in a separate thread
     run_thread = threading.Thread(target=send_run_manual)
@@ -201,7 +208,6 @@ root = tk.Tk()
 root.title("Ladda Artikel")
 root.geometry("800x480")
 root.attributes('-fullscreen', True)
-root.bind("<Escape>", lambda e: root.destroy())  # Allow exiting fullscreen with the Esc key
 
 # Ensure the window is brought to the front
 root.lift()
@@ -227,7 +233,6 @@ header_frame.grid(row=0, column=0, pady=10, sticky='nw')  # Adjusted to be top l
 
 logo_label = tk.Label(header_frame, image=logo_image)
 logo_label.grid(row=0, column=0, padx=10, pady=0)
-logo_label.bind("<Button-1>", lambda e: root.destroy())
 
 # Entry field for "Längd" with label
 längd_label = ttk.Label(main_frame, text="Längd: 0 mm", font=("Arial", 20))
