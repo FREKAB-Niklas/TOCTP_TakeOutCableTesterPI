@@ -10,7 +10,7 @@ import paho.mqtt.client as mqtt  # Import MQTT
 # Global variables
 measuring = False
 current_position = 0
-PULSES_PER_REVOLUTION = 600
+PULSES_PER_REVOLUTION = 2400
 WHEEL_CIRCUMFERENCE_MM = 200
 target_length = 0  # Target length from the "Längd" input
 distance_label = None
@@ -37,24 +37,27 @@ def connect_mqtt():
 
 connect_mqtt()  # Establish the MQTT connection
 
-# GPIO setup for the encoder
-ENCODER_PIN_A = 17
-ENCODER_PIN_B = 27
 
 # **Set GPIO mode once globally at the start**
-GPIO.setmode(GPIO.BCM)
+GPIO.setmode(GPIO.BCM)  # Set the mode here, as early as possible
+ENCODER_PIN_A = 17
+ENCODER_PIN_B = 27
 GPIO.setup(ENCODER_PIN_A, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 GPIO.setup(ENCODER_PIN_B, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+
+# Variables
+current_position = 0
 
 # Function to calculate distance
 def calculate_distance_mm(pulses):
     distance_per_pulse = WHEEL_CIRCUMFERENCE_MM / PULSES_PER_REVOLUTION
     return pulses * distance_per_pulse
 
+# Encoder reading function
 def read_encoder():
-    global current_position, measuring
+    global current_position
     last_state_A = GPIO.input(ENCODER_PIN_A)
-    while measuring:
+    while True:
         current_state_A = GPIO.input(ENCODER_PIN_A)
         current_state_B = GPIO.input(ENCODER_PIN_B)
         
@@ -67,7 +70,7 @@ def read_encoder():
                     current_position -= 1
             last_state_A = current_state_A
         
-        time.sleep(0.001)
+        time.sleep(0.001)  # Short delay to avoid high CPU usage
 
 
 
