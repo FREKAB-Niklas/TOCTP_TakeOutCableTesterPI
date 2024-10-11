@@ -10,7 +10,7 @@ import paho.mqtt.client as mqtt  # Import MQTT
 # Global variables
 measuring = False
 current_position = 0
-PULSES_PER_REVOLUTION = 2400
+PULSES_PER_REVOLUTION = 600
 WHEEL_CIRCUMFERENCE_MM = 200
 target_length = 0  # Target length from the "Längd" input
 distance_label = None
