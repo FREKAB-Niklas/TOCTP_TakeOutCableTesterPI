@@ -10,7 +10,7 @@ import paho.mqtt.client as mqtt
 # Global variables
 measuring = False
 current_position = 0
-PULSES_PER_REVOLUTION = 2400
+PULSES_PER_REVOLUTION = 600
 WHEEL_CIRCUMFERENCE_MM = 200
 target_length = 0
 distance_label = None
@@ -46,7 +46,7 @@ connect_mqtt()
 # Calculate distance based on encoder pulses
 def calculate_distance_mm(pulses):
     distance_per_pulse = WHEEL_CIRCUMFERENCE_MM / PULSES_PER_REVOLUTION
-    return pulses * distance_per_pulse * 4
+    return pulses * distance_per_pulse
 
 # Encoder read function to track position
 def read_encoder():
