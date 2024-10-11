@@ -5,23 +5,29 @@ import os
 import tkinter as tk
 from tkinter import font, filedialog, messagebox, ttk
 from PIL import Image, ImageTk
-import paho.mqtt.client as mqtt  # Import MQTT
+import paho.mqtt.client as mqtt
 
 # Global variables
 measuring = False
 current_position = 0
 PULSES_PER_REVOLUTION = 2400
 WHEEL_CIRCUMFERENCE_MM = 200
-target_length = 0  # Target length from the "Längd" input
+target_length = 0
 distance_label = None
-mqtt_broker_ip = "192.168.10.9"  # Update to your MQTT broker IP
-current_segment = 0  # Example variable for controlling segments
-allow_motor_run = True  # Control motor flag
+mqtt_broker_ip = "192.168.10.9"
+current_segment = 0
+allow_motor_run = True
+motor_stopped = False  # Initialize motor_stopped for controlling motor state
 
-# Get the directory where the script is located
+# Set GPIO mode and pin configurations
+GPIO.setmode(GPIO.BCM)  # Set BCM mode at the start
+ENCODER_PIN_A = 17
+ENCODER_PIN_B = 27
+GPIO.setup(ENCODER_PIN_A, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+GPIO.setup(ENCODER_PIN_B, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+
+# Directory and image setup for GUI logo
 script_dir = os.path.dirname(os.path.abspath(__file__))
-
-# Construct the full path to the image file inside the PI folder
 logo_path = os.path.join(script_dir, "logo.png")
 
 # MQTT setup
@@ -29,31 +35,20 @@ client = mqtt.Client()
 
 def connect_mqtt():
     try:
-        client.connect(mqtt_broker_ip, 1883, 60)  # Connect to the broker
-        client.loop_start()  # Start the MQTT loop in the background
+        client.connect(mqtt_broker_ip, 1883, 60)
+        client.loop_start()
         print(f"Connected to MQTT broker at {mqtt_broker_ip}")
     except Exception as e:
         print(f"Failed to connect to MQTT broker: {e}")
 
-connect_mqtt()  # Establish the MQTT connection
+connect_mqtt()
 
-
-# **Set GPIO mode once globally at the start**
-GPIO.setmode(GPIO.BCM)  # Set the mode here, as early as possible
-ENCODER_PIN_A = 17
-ENCODER_PIN_B = 27
-GPIO.setup(ENCODER_PIN_A, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-GPIO.setup(ENCODER_PIN_B, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-
-# Variables
-current_position = 0
-
-# Function to calculate distance
+# Calculate distance based on encoder pulses
 def calculate_distance_mm(pulses):
     distance_per_pulse = WHEEL_CIRCUMFERENCE_MM / PULSES_PER_REVOLUTION
     return pulses * distance_per_pulse
 
-# Encoder reading function
+# Encoder read function to track position
 def read_encoder():
     global current_position
     last_state_A = GPIO.input(ENCODER_PIN_A)
@@ -61,7 +56,7 @@ def read_encoder():
         current_state_A = GPIO.input(ENCODER_PIN_A)
         current_state_B = GPIO.input(ENCODER_PIN_B)
         
-        # Detect pulse and direction
+        # Pulse and direction detection
         if current_state_A != last_state_A:
             if current_state_A == GPIO.LOW:
                 if current_state_B == GPIO.LOW:
@@ -70,97 +65,73 @@ def read_encoder():
                     current_position -= 1
             last_state_A = current_state_A
         
-        time.sleep(0.001)  # Short delay to avoid high CPU usage
+        time.sleep(0.001)
 
+# Start encoder reading in a separate thread
+encoder_thread = threading.Thread(target=read_encoder, daemon=True)
+encoder_thread.start()
 
-
-
-
-
-# Global variable to store the distance label
-distance_label = None
-measuring = False  # Ensure this is set correctly when needed
-
-
-# Function to stop the motor via MQTT
+# Stop motor function for MQTT control
 def stop_motor():
     global motor_stopped
-    if not motor_stopped:  # Only send the stop command if the motor is still running
-        client.publish("motor/control", "stop")  # Send a stop command to the motor via MQTT
-        motor_stopped = True  # Set the flag to indicate the motor has been stopped
+    if not motor_stopped:
+        client.publish("motor/control", "stop")
+        motor_stopped = True
         print("Sending MQTT message to stop motor")
 
-# Function to update distance on the GUI
+# Update GUI distance label and handle motor stopping
 def update_distance():
     global measuring, motor_stopped
     distance_mm = calculate_distance_mm(current_position)
     distance_label.config(text=f"Kört: {distance_mm:.2f} mm")
 
-    slowdown_threshold = target_length - 50  # Example: Slow down 50mm before the target
-        
-
-    # Check if we are within the slowdown range
+    slowdown_threshold = target_length - 50
     if target_length > 0 and distance_mm >= slowdown_threshold and not motor_stopped:
-        client.publish("motor/control", "stop")  # Send slowdown command via MQTT
+        client.publish("motor/control", "stop")
         print("Sending MQTT message to slow down motor")
         motor_stopped = True
 
-
-    # Check if the target length is reached
+    # Check target length
     if target_length > 0 and distance_mm >= target_length:
-        if not motor_stopped:  # Ensure the motor is only stopped once
-            stop_motor()  # Stop the motor when the target length is hit
-            measuring = False  # Stop measuring further
-            reset_counter()  # Reset the counter once the target length is hit
+        if not motor_stopped:
+            stop_motor()
+            measuring = False
+            reset_counter()
     else:
-        # Continue updating the distance every second if still measuring
         if measuring:
             root.after(1000, update_distance)
 
-
-
-# Continuously send "run manual" messages until the target is reached
+# Start measuring process
 def start_measuring():
     global measuring, motor_stopped
-    motor_stopped = False  # Reset the motor stopped flag when starting
+    motor_stopped = False
     measuring = True
-    update_distance()  # Start updating the distance
+    update_distance()
 
-    # Start reading the encoder in a separate thread
-    thread = threading.Thread(target=read_encoder)
-    thread.start()
-
-    # Function to continuously send "run manual" messages
+    # Thread to send continuous "run manual" messages
     def send_run_manual():
-        while measuring and not motor_stopped:  # Only send if the motor hasn't been stopped
-            client.publish("motor/control", "run manual")  # Send the run manual command
-            time.sleep(0.1)  # Send every 0.001 seconds
+        while measuring and not motor_stopped:
+            client.publish("motor/control", "run manual")
+            time.sleep(0.1)
 
-    # Start sending "run manual" commands in a separate thread
-    run_thread = threading.Thread(target=send_run_manual)
+    run_thread = threading.Thread(target=send_run_manual, daemon=True)
     run_thread.start()
-
     print("Sending continuous 'run manual' commands.")
 
-
-# Reset the counter and stop measuring
+# Reset encoder counter
 def reset_counter():
     global measuring, current_position
     measuring = False
     current_position = 0
-    update_distance()  # Reset the displayed distance
+    update_distance()
 
-
-
-# Function to set the target length from entry
+# GUI element for setting target length
 def set_target_length():
     global target_length
     try:
-        # Get the value from the entry and convert it to float (the target length)
         target_length = float(längd_entry.get())
-        längd_label.config(text=f"Längd: {target_length} mm")  # Update label to reflect the set length
+        längd_label.config(text=f"Längd: {target_length} mm")
     except ValueError:
-        # If input is not valid, show an error message
         messagebox.showerror("Invalid Input", "Please enter a valid number.")
 
 # Create a numpad and embed it in the main window
