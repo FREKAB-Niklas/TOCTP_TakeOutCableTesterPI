@@ -1,47 +1,28 @@
-import RPi.GPIO as GPIO
-import time
+import cv2
 
-# Constants
-PULSES_PER_REVOLUTION = 1000  # Check the encoder spec for correct value
-WHEEL_CIRCUMFERENCE_MM = 200  # Set the circumference of the wheel in mm (50 mm diameter wheel)
+# Open the default webcam
+cap = cv2.VideoCapture(0)
 
-# GPIO pin definitions
-ENCODER_PIN_A = 17
-ENCODER_PIN_B = 27
+# Check if the webcam opened successfully
+if not cap.isOpened():
+    print("Error: Could not open webcam.")
+    exit()
 
-# Variables
-last_encoder_a = GPIO.LOW
-current_position = 0
+while True:
+    # Capture frame-by-frame
+    ret, frame = cap.read()
 
-# Setup GPIO
-GPIO.setmode(GPIO.BCM)
-GPIO.setup(ENCODER_PIN_A, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-GPIO.setup(ENCODER_PIN_B, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+    if not ret:
+        print("Error: Could not read frame.")
+        break
 
-def calculate_distance_mm(pulses):
-    """Calculate distance traveled in mm based on encoder pulses"""
-    distance_per_pulse = WHEEL_CIRCUMFERENCE_MM / PULSES_PER_REVOLUTION
-    return pulses * distance_per_pulse
+    # Display the resulting frame
+    cv2.imshow('Webcam Feed', frame)
 
-def encoder_callback(channel):
-    global current_position
-    encoder_b = GPIO.input(ENCODER_PIN_B)
-    if encoder_b != GPIO.input(ENCODER_PIN_A):
-        current_position += 1
-    else:
-        current_position -= 1
+    # Break the loop if 'q' is pressed
+    if cv2.waitKey(1) & 0xFF == ord('q'):
+        break
 
-# Interrupt setup for rotary encoder
-GPIO.add_event_detect(ENCODER_PIN_A, GPIO.BOTH, callback=encoder_callback)
-
-try:
-    while True:
-        distance_mm = calculate_distance_mm(current_position)
-        print(f"Distance traveled: {distance_mm:.2f} mm")
-        time.sleep(0.1)
-
-except KeyboardInterrupt:
-    print("Measurement stopped.")
-
-finally:
-    GPIO.cleanup()
+# Release the webcam and close the window
+cap.release()
+cv2.destroyAllWindows()
