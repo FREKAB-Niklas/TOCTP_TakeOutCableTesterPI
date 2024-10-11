@@ -64,8 +64,6 @@ def read_encoder():
                 else:
                     current_position -= 1
             last_state_A = current_state_A
-        
-        time.sleep(0.001)
 
 # Start encoder reading in a separate thread
 encoder_thread = threading.Thread(target=read_encoder, daemon=True)
