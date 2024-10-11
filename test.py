@@ -102,8 +102,9 @@ def update_distance():
 
 # Start measurement only
 def start_measure():
-    global measuring
+    global measuring, current_position
     measuring = True
+    current_position = 0
     update_distance()
     start_button.config(text="Start Motor", command=start_motor)  # Change button to "Start Motor"
 
