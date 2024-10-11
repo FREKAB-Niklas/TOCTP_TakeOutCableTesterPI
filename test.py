@@ -98,12 +98,12 @@ def update_distance():
     
     # Check if we are within the startup range
     if target_length > 0 and distance_mm >= startup_threshold and not motor_stopped:
-        client.publish("motor/control", "slowdown")  # Send slowdown command via MQTT
+        client.publish("motor/control", "stop")  # Send slowdown command via MQTT
         print("Sending MQTT message to startup")
 
     # Check if we are within the slowdown range
     if target_length > 0 and distance_mm >= slowdown_threshold and not motor_stopped:
-        client.publish("motor/control", "slowdown")  # Send slowdown command via MQTT
+        client.publish("motor/control", "stop")  # Send slowdown command via MQTT
         print("Sending MQTT message to slow down motor")
 
 
