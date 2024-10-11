@@ -10,7 +10,7 @@ import paho.mqtt.client as mqtt  # Import MQTT
 # Global variables
 measuring = False
 current_position = 0
-PULSES_PER_REVOLUTION = 2400 * 4
+PULSES_PER_REVOLUTION = 2400
 WHEEL_CIRCUMFERENCE_MM = 200
 target_length = 0  # Target length from the "Längd" input
 distance_label = None
@@ -57,7 +57,7 @@ def read_encoder():
     while measuring:
         current_state_A = GPIO.input(ENCODER_PIN_A)
         current_state_B = GPIO.input(ENCODER_PIN_B)
-        
+
         # Detect pulse and direction
         if current_state_A != last_state_A:
             if current_state_A == GPIO.LOW:
@@ -66,8 +66,11 @@ def read_encoder():
                 else:
                     current_position -= 1
             last_state_A = current_state_A
-        
+
+        # Print for debugging purposes
+        print(f"Pulse Count: {current_position}")
         time.sleep(0.001)
+
 
 
 
