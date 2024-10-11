@@ -46,7 +46,7 @@ connect_mqtt()
 # Calculate distance based on encoder pulses
 def calculate_distance_mm(pulses):
     distance_per_pulse = WHEEL_CIRCUMFERENCE_MM / PULSES_PER_REVOLUTION
-    return pulses * distance_per_pulse
+    return pulses * distance_per_pulse * 4
 
 # Encoder read function to track position
 def read_encoder():
