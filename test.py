@@ -135,7 +135,7 @@ def start_measuring():
     def send_run_manual():
         while measuring and not motor_stopped:  # Only send if the motor hasn't been stopped
             client.publish("motor/control", "run manual")  # Send the run manual command
-            time.sleep(0.001)  # Send every 0.001 seconds
+            time.sleep(0.1)  # Send every 0.001 seconds
 
     # Start sending "run manual" commands in a separate thread
     run_thread = threading.Thread(target=send_run_manual)
