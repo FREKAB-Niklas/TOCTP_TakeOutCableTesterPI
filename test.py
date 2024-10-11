@@ -99,12 +99,17 @@ def update_distance():
         if measuring:
             root.after(1000, update_distance)
 
-# Start measuring process
-def start_measuring():
-    global measuring, motor_stopped
-    motor_stopped = False
+# Start measurement only
+def start_measure():
+    global measuring
     measuring = True
     update_distance()
+    start_button.config(text="Start Motor", command=start_motor)  # Change button to "Start Motor"
+
+# Start motor after measurement
+def start_motor():
+    global motor_stopped
+    motor_stopped = False
 
     # Thread to send continuous "run manual" messages
     def send_run_manual():
@@ -116,12 +121,14 @@ def start_measuring():
     run_thread.start()
     print("Sending continuous 'run manual' commands.")
 
-# Reset encoder counter
+# Reset encoder counter and GUI
 def reset_counter():
     global measuring, current_position
     measuring = False
     current_position = 0
     update_distance()
+    start_button.config(text="Start Measure", command=start_measure)  # Reset button to "Start Measure"
+
 
 # GUI element for setting target length
 def set_target_length():
@@ -213,12 +220,13 @@ längd_entry.grid(row=2, column=0, pady=10)
 distance_label = ttk.Label(main_frame, text="Kört: 0 mm", font=("Arial", 24))
 distance_label.grid(row=3, column=0, pady=20)
 
-# Create Start and Reset buttons side by side with proper centering
+# Start and Reset buttons with dynamic start functionality
 button_frame = tk.Frame(main_frame)
 button_frame.grid(row=5, column=0, columnspan=2, pady=10)
 
-start_button = tk.Button(button_frame, text="Start", command=start_measuring, width=10, height=5, font=("Arial", 16), bd=2, bg="#32CD32", fg="black")
+start_button = tk.Button(button_frame, text="Start Measure", command=start_measure, width=10, height=5, font=("Arial", 16), bd=2, bg="#32CD32", fg="black")
 start_button.grid(row=0, column=0, padx=5)
+
 
 reset_button = tk.Button(button_frame, text="Reset", command=reset_counter, width=10, height=5, font=("Arial", 16), bd=2, bg="yellow", fg="black")
 reset_button.grid(row=0, column=1, padx=5)
