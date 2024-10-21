@@ -52,18 +52,31 @@ def calculate_distance_mm(pulses):
 def read_encoder():
     global current_position
     last_state_A = GPIO.input(ENCODER_PIN_A)
+    debounce_time = 0.01  # 10ms debounce time (adjust if needed)
+
     while True:
         current_state_A = GPIO.input(ENCODER_PIN_A)
         current_state_B = GPIO.input(ENCODER_PIN_B)
-        
-        # Pulse and direction detection
+
+        # Only update if there's an actual state change
         if current_state_A != last_state_A:
+            # Debounce - ensure enough time has passed to ignore noise
+            time.sleep(debounce_time)
+
+            # Re-check the state after debounce
+            current_state_A = GPIO.input(ENCODER_PIN_A)
+            current_state_B = GPIO.input(ENCODER_PIN_B)
+
             if current_state_A == GPIO.LOW:
                 if current_state_B == GPIO.LOW:
-                    current_position += 1
+                    current_position += 1  # Moving forward
                 else:
-                    current_position -= 1
+                    current_position -= 1  # Moving backward
+
             last_state_A = current_state_A
+
+        # Short delay to avoid excessive CPU usage
+        time.sleep(0.001)
 
 # Start encoder reading in a separate thread
 encoder_thread = threading.Thread(target=read_encoder, daemon=True)
