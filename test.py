@@ -48,35 +48,35 @@ def calculate_distance_mm(pulses):
     distance_per_pulse = WHEEL_CIRCUMFERENCE_MM / PULSES_PER_REVOLUTION
     return pulses * distance_per_pulse
 
-# Encoder read function to track position
+# Encoder read function with quadrature handling and debouncing
 def read_encoder():
     global current_position
     last_state_A = GPIO.input(ENCODER_PIN_A)
-    debounce_time = 0.01  # 10ms debounce time (adjust if needed)
+    last_state_B = GPIO.input(ENCODER_PIN_B)
+    debounce_time = 0.005  # Debounce time (5ms)
 
     while True:
         current_state_A = GPIO.input(ENCODER_PIN_A)
         current_state_B = GPIO.input(ENCODER_PIN_B)
 
-        # Only update if there's an actual state change
-        if current_state_A != last_state_A:
-            # Debounce - ensure enough time has passed to ignore noise
-            time.sleep(debounce_time)
+        # Check for state changes (quadrature encoding)
+        if current_state_A != last_state_A or current_state_B != last_state_B:
+            time.sleep(debounce_time)  # Debounce to filter out noise
 
-            # Re-check the state after debounce
+            # Recheck after debounce to ensure state has really changed
             current_state_A = GPIO.input(ENCODER_PIN_A)
             current_state_B = GPIO.input(ENCODER_PIN_B)
 
-            if current_state_A == GPIO.LOW:
-                if current_state_B == GPIO.LOW:
-                    current_position += 1  # Moving forward
-                else:
-                    current_position -= 1  # Moving backward
+            # Handle quadrature logic
+            if current_state_A == last_state_B:  # A follows B, moving forward
+                current_position += 1
+            elif current_state_B == last_state_A:  # B follows A, moving backward
+                current_position -= 1
 
             last_state_A = current_state_A
+            last_state_B = current_state_B
 
-        # Short delay to avoid excessive CPU usage
-        time.sleep(0.001)
+        time.sleep(0.001)  # Small delay to prevent CPU overuse
 
 # Start encoder reading in a separate thread
 encoder_thread = threading.Thread(target=read_encoder, daemon=True)
