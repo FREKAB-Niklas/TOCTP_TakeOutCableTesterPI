@@ -48,35 +48,22 @@ def calculate_distance_mm(pulses):
     distance_per_pulse = WHEEL_CIRCUMFERENCE_MM / PULSES_PER_REVOLUTION
     return pulses * distance_per_pulse
 
-# Encoder read function with quadrature handling and debouncing
+# Encoder read function to track position
 def read_encoder():
     global current_position
     last_state_A = GPIO.input(ENCODER_PIN_A)
-    last_state_B = GPIO.input(ENCODER_PIN_B)
-    debounce_time = 0.005  # Debounce time (5ms)
-
     while True:
         current_state_A = GPIO.input(ENCODER_PIN_A)
         current_state_B = GPIO.input(ENCODER_PIN_B)
-
-        # Check for state changes (quadrature encoding)
-        if current_state_A != last_state_A or current_state_B != last_state_B:
-            time.sleep(debounce_time)  # Debounce to filter out noise
-
-            # Recheck after debounce to ensure state has really changed
-            current_state_A = GPIO.input(ENCODER_PIN_A)
-            current_state_B = GPIO.input(ENCODER_PIN_B)
-
-            # Handle quadrature logic
-            if current_state_A == last_state_B:  # A follows B, moving forward
-                current_position += 1
-            elif current_state_B == last_state_A:  # B follows A, moving backward
-                current_position -= 1
-
+        
+        # Pulse and direction detection
+        if current_state_A != last_state_A:
+            if current_state_A == GPIO.LOW:
+                if current_state_B == GPIO.LOW:
+                    current_position += 1
+                else:
+                    current_position -= 1
             last_state_A = current_state_A
-            last_state_B = current_state_B
-
-        time.sleep(0.001)  # Small delay to prevent CPU overuse
 
 # Start encoder reading in a separate thread
 encoder_thread = threading.Thread(target=read_encoder, daemon=True)
