@@ -18,8 +18,6 @@ def load_article():
 def create_article():
     subprocess.run([sys.executable, os.path.join(os.path.dirname(__file__), "create_article.py")])
 
-def manual_run():
-    subprocess.run([sys.executable, os.path.join(os.path.dirname(__file__), "manual_run.py")])
 
 # Initialize main window
 root = tk.Tk()
@@ -68,7 +66,6 @@ button_frame.pack(expand=True)
 buttons = [
     ("Ladda artikel", "#32CD32", load_article),
     ("Skapa ny artikel", "#9900AB", create_article),
-    ("Manuell körning", "yellow", manual_run),
 ]
 
 for text, color, command in buttons:
