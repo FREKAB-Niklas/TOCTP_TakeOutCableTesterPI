@@ -982,7 +982,7 @@ def toggle_timer():
     global is_running
     is_running = not is_running
     if is_running:
-        current_wire_label.config(bg="yellow", text=pins[current_pin_index])
+        current_wire_label.config(bg="white", text=pins[current_pin_index])
         print("System unpaused. Ready to probe.")
         # No automatic relay activation on start
         root.after(1000, lambda: start_probing(pins[current_pin_index]))  # Allow probing after unpausing
@@ -1044,7 +1044,7 @@ def on_pin_click(idx):
     
     current_pin_index = idx
     left_panel_labels[current_pin_index].config(bg="yellow")
-    current_wire_label.config(text=pins[current_pin_index], bg="yellow")
+    current_wire_label.config(text=pins[current_pin_index], bg="white")
     if not is_running:
         current_wire_label.config(bg="#32CD32", text="Starta")
 
