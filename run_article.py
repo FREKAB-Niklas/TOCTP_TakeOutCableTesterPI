@@ -982,13 +982,20 @@ def toggle_timer():
     global is_running
     is_running = not is_running
     if is_running:
-        current_wire_label.config(text=pins[current_pin_index])
+        next_pin_label = pins[current_pin_index]
+        # Update the central label color
+        if isinstance(color_mapping[next_pin_label], tuple):
+            set_dual_color(current_wire_label, *color_mapping[next_pin_label])
+        else:
+            current_wire_label.config(text=next_pin_label, bg=color_mapping[next_pin_label])
+
         print("System unpaused. Ready to probe.")
         # No automatic relay activation on start
         root.after(1000, lambda: start_probing(pins[current_pin_index]))  # Allow probing after unpausing
     else:
         print(f"System paused at pin {pins[current_pin_index]}")
         current_wire_label.config(bg="orange", text="Pausad")
+
 
 def manual_relay_control():
     global relay_active, expecting_probe, allow_motor_run
