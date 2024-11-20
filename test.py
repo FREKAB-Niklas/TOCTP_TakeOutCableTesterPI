@@ -83,7 +83,7 @@ def update_distance():
     distance_mm = calculate_distance_mm(current_position)
     distance_label.config(text=f"Kört: {distance_mm:.2f} mm")
 
-    slowdown_threshold = target_length - 150
+    slowdown_threshold = target_length - 500
     if target_length > 0 and distance_mm >= slowdown_threshold and not motor_stopped:
         client.publish("motor/control", "stop")
         print("Sending MQTT message to slow down motor")
